@@ -19,6 +19,19 @@
   #hud .done { color: #b6ff8a; }
   #toast { position: fixed; top: 22%; left: 0; right: 0; text-align: center; color: #fff; font-size: 54px; font-weight: 900; text-shadow: 0 4px 8px rgba(0,0,0,.6); pointer-events: none; opacity: 0; transition: opacity .25s; }
   #view { position: fixed; top: max(10px, env(safe-area-inset-top)); right: max(14px, env(safe-area-inset-right)); padding: 10px 16px; border-radius: 22px; border: 3px solid #fff; background: rgba(0,0,0,.35); color: #fff; font-size: 18px; font-weight: 800; touch-action: none; }
+  #shopBtn { position: fixed; top: calc(max(10px, env(safe-area-inset-top)) + 56px); right: max(14px, env(safe-area-inset-right)); padding: 10px 16px; border-radius: 22px; border: 3px solid #fff; background: rgba(0,0,0,.35); color: #fff; font-size: 18px; font-weight: 800; touch-action: none; }
+  #shop { position: fixed; inset: 0; background: rgba(20,30,40,.88); display: none; flex-direction: column; align-items: center; padding: 18px; overflow: auto; color: #fff; z-index: 10; touch-action: pan-y; }
+  #shop.open { display: flex; }
+  #shop h2 { margin: 6px 0 2px; font-size: 30px; }
+  #shop .bal { font-size: 22px; font-weight: 800; margin-bottom: 12px; }
+  #shop .cards { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; max-width: 900px; }
+  #shop .card { width: 160px; padding: 12px; border-radius: 16px; background: rgba(255,255,255,.12); text-align: center; }
+  #shop .sw { width: 54px; height: 54px; border-radius: 50%; margin: 4px auto 8px; border: 3px solid #fff; }
+  #shop .name { font-weight: 800; font-size: 17px; }
+  #shop .card button, #shop .close { margin-top: 8px; padding: 10px 14px; border-radius: 14px; border: none; font-size: 16px; font-weight: 800; background: #6fd36f; color: #123; }
+  #shop .card button.off { background: #888; color: #eee; }
+  #shop .card button.eq { background: #e8a33a; }
+  #shop .close { background: #fff; margin-top: 18px; font-size: 20px; padding: 12px 28px; }
   #hint { position: fixed; bottom: 18px; left: 0; right: 0; text-align: center; color: #fff; font-size: 20px; font-weight: 700; text-shadow: 0 2px 4px rgba(0,0,0,.6); pointer-events: none; }
 </style>
 </head>
@@ -29,10 +42,41 @@
 <div id="stick"><div id="knob"></div></div>
 <button id="shell">SHELL!</button>
 <button id="view">👁 View</button>
+<button id="shopBtn">🛍 Shop</button>
+<div id="shop"></div>
 <script type="importmap">{ "imports": { "three": "./vendor/three.module.min.js", "cannon-es": "./vendor/cannon-es.js" } }</script>
 <script type="module">
 import * as THREE from 'three';
 import * as CANNON from 'cannon-es';
+
+// ---------- sound (tiny synth, no files) ----------
+let ac = null;
+function audio() { try { ac = ac || new (window.AudioContext || window.webkitAudioContext)(); if (ac.state === 'suspended') ac.resume(); } catch (e) {} return ac; }
+addEventListener('pointerdown', audio);
+addEventListener('keydown', audio);
+function tone(f0, f1, dur, type = 'sine', vol = 0.15) {
+  const a = audio(); if (!a) return;
+  const o = a.createOscillator(), g = a.createGain();
+  o.type = type; o.frequency.setValueAtTime(f0, a.currentTime); o.frequency.exponentialRampToValueAtTime(f1, a.currentTime + dur);
+  g.gain.setValueAtTime(vol, a.currentTime); g.gain.exponentialRampToValueAtTime(0.001, a.currentTime + dur);
+  o.connect(g); g.connect(a.destination); o.start(); o.stop(a.currentTime + dur);
+}
+function noise(dur, vol = 0.2) {
+  const a = audio(); if (!a) return;
+  const buf = a.createBuffer(1, a.sampleRate * dur, a.sampleRate), d = buf.getChannelData(0);
+  for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / d.length);
+  const src = a.createBufferSource(), g = a.createGain(); g.gain.value = vol;
+  src.buffer = buf; src.connect(g); g.connect(a.destination); src.start();
+}
+function sfx(k) {
+  if (k === 'coin') tone(880, 1320, 0.12, 'triangle', 0.1);
+  else if (k === 'crash') noise(0.3, 0.25);
+  else if (k === 'bonk') tone(320, 70, 0.35, 'square', 0.12);
+  else if (k === 'launch') tone(200, 900, 0.45, 'sine', 0.15);
+  else if (k === 'timber') tone(140, 50, 0.45, 'sawtooth', 0.12);
+  else if (k === 'shell') tone(160, 330, 0.2, 'sine', 0.15);
+  else if (k === 'win') { tone(523, 1047, 0.5, 'triangle', 0.15); }
+}
 
 // ---------- renderer, scene ----------
 const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -97,7 +141,13 @@ staticFurniture(1.6, 0.9, 0.5, 4.6, -5.5, 0x7a5232);
 // ---------- props ----------
 const props = []; // { mesh, body, kind, alive }
 const pendingBreaks = new Set();
-let coins = 0;
+// progress (coins, skins) is saved on this device so the kids keep what they bought
+const SAVE_KEY = 'i-am-lena-save';
+let save = { coins: 0, owned: ['green'], skin: 'green' };
+try { Object.assign(save, JSON.parse(localStorage.getItem(SAVE_KEY) || '{}')); } catch (e) {}
+function persist() { try { localStorage.setItem(SAVE_KEY, JSON.stringify(save)); } catch (e) {} }
+let coins = save.coins;
+function addCoins(n) { coins += n; save.coins = coins; persist(); sfx('coin'); }
 function addProp(kind, x, y, z, ry = 0) {
   let mesh, shape, mass;
   if (kind === 'vase') {
@@ -144,6 +194,28 @@ for (const [x, y, z] of [[0, 0.25, -4], [0.55, 0.25, -4], [-0.55, 0.25, -4], [0.
 for (const [x, z] of [[2, 1], [-2, 1.5], [0.5, 3]]) addProp('ball', x, 0.2, z);
 addProp('lamp', 5, 0.6, 3); addProp('lamp', -5, 0.6, 4);
 
+// ---------- the rafters: a long beam up the left wall, reached with the launch pad ----------
+const LOFT_Y = 2.0;
+const loft = new THREE.Mesh(new THREE.BoxGeometry(1.8, 0.16, 7), mat(0x7a5232));
+loft.position.set(-5.1, LOFT_Y, -0.5); loft.castShadow = loft.receiveShadow = true; scene.add(loft);
+staticBox(0.9, 0.08, 3.5, -5.1, LOFT_Y, -0.5);
+for (const pz of [-3.8, 2.8]) {
+  const post = new THREE.Mesh(new THREE.BoxGeometry(0.18, LOFT_Y, 0.18), mat(0x5e3f23));
+  post.position.set(-4.3, LOFT_Y / 2, pz); post.castShadow = true; scene.add(post);
+  staticBox(0.09, LOFT_Y / 2, 0.09, -4.3, LOFT_Y / 2, pz);
+}
+const TOP = LOFT_Y + 0.08;
+for (const [kind, z] of [['crate', -3.0], ['ball', -2.2], ['vase', -1.5], ['crate', -0.6], ['ball', 0.2], ['vase', 1.0], ['crate', 1.9]]) {
+  addProp(kind, -5.4, TOP + (kind === 'crate' ? 0.25 : kind === 'ball' ? 0.2 : 0.18) + 0.02, z);
+}
+const PAD = { x: -2.6, z: -0.5, r: 0.6 };
+const padMesh = new THREE.Mesh(new THREE.CylinderGeometry(PAD.r, PAD.r, 0.05, 24), new THREE.MeshLambertMaterial({ color: 0x33dd77, emissive: 0x116633 }));
+padMesh.position.set(PAD.x, 0.025, PAD.z); padMesh.receiveShadow = true; scene.add(padMesh);
+const padArrow = new THREE.Mesh(new THREE.ConeGeometry(0.17, 0.4, 12), new THREE.MeshLambertMaterial({ color: 0xffffff, emissive: 0x888888 }));
+padArrow.rotation.z = Math.PI / 2; padArrow.position.set(PAD.x, 0.12, PAD.z); scene.add(padArrow);
+const drift = { t: 0, x: 0, z: 0 };
+let padCool = 0;
+
 // ---------- shards ----------
 const shards = [];
 const shardGeo = new THREE.BoxGeometry(0.06, 0.06, 0.06);
@@ -187,6 +259,32 @@ for (const [lx, lz] of [[-0.2, 0.2], [0.2, 0.2], [-0.2, -0.2], [0.2, -0.2]]) {
   leg.position.set(lx, 0.06, lz); leg.castShadow = true; limbs.add(leg); legs.push(leg);
 }
 scene.add(lena);
+// skins: colour plus optional dino spikes or a Jedi lightsaber
+const SKINS = [
+  { id: 'green', name: 'Classic Lena', price: 0, color: 0x5b8c3a },
+  { id: 'gold', name: 'Golden Lena', price: 30, color: 0xe6b422 },
+  { id: 'pink', name: 'Bubblegum', price: 30, color: 0xe56bb0 },
+  { id: 'blue', name: 'Blueberry', price: 40, color: 0x3b6fd1 },
+  { id: 'dino', name: 'Dino Lena', price: 60, color: 0x6b8f2a, spikes: true },
+  { id: 'jedi', name: 'Jedi Lena', price: 80, color: 0x6b4a2b, saber: true },
+];
+const shellAcc = new THREE.Group(); shellGroup.add(shellAcc);
+function applySkin(id) {
+  const sk = SKINS.find((k) => k.id === id) || SKINS[0];
+  shellMesh.material.color.setHex(sk.color);
+  while (shellAcc.children.length) shellAcc.remove(shellAcc.children[0]);
+  if (sk.spikes) for (let i = 0; i < 5; i++) {
+    const c = new THREE.Mesh(new THREE.ConeGeometry(0.06, 0.16, 6), mat(0xd9532f));
+    c.position.set(0, 0.23 - Math.abs(i - 2) * 0.03, -0.3 + i * 0.15); shellAcc.add(c);
+  }
+  if (sk.saber) {
+    const hilt = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.025, 0.12, 8), mat(0x888888)); hilt.position.set(0, 0.28, 0);
+    const blade = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, 0.5, 8), new THREE.MeshBasicMaterial({ color: 0x55d6ff })); blade.position.set(0, 0.6, 0);
+    shellAcc.add(hilt, blade);
+  }
+  save.skin = sk.id; persist();
+}
+applySkin(save.skin);
 const LENA_START = new CANNON.Vec3(0, 0.15, 3.5);
 // Lena glides: her velocity is set directly each frame, so floor friction must not fight it.
 const lenaMat = new CANNON.Material('lena');
@@ -218,7 +316,7 @@ for (let i = 0; i < 4; i++) {
 }
 stars.position.y = 2.2; stars.visible = false; adam.add(stars);
 scene.add(adam);
-const WAYPOINTS = [[-4, 3], [4, 3.5], [4, -1], [-4, -1]].map(([x, z]) => new THREE.Vector3(x, 0, z));
+const WAYPOINTS = [[-3.7, 3], [4, 3.5], [4, -1], [-3.7, -1]].map(([x, z]) => new THREE.Vector3(x, 0, z));
 let wp = 0;
 adam.position.copy(WAYPOINTS[0]);
 const A = { state: 'patrol', t: 0, grace: 0, bonks: 0 };
@@ -260,9 +358,9 @@ const SHELL_TIME = 3, SHELL_COOL = 2.5;
 const S = { on: false, t: 0, cool: 0 };
 function setLenaMass(m) { lenaBody.mass = m; lenaBody.updateMassProperties(); }
 function tuckIn() {
-  if (S.on || S.cool > 0) return;
+  if (S.on || S.cool > 0 || paused) return;
   S.on = true; S.t = SHELL_TIME;
-  setLenaMass(140);
+  setLenaMass(140); sfx('shell');
   limbs.visible = false;
   document.getElementById('hint').style.opacity = 0;
 }
@@ -273,8 +371,34 @@ function popOut() {
   shellGroup.rotation.set(0, 0, 0);
 }
 
+// ---------- coin shop ----------
+let paused = false;
+const shopEl = document.getElementById('shop');
+function hex(c) { return '#' + c.toString(16).padStart(6, '0'); }
+function renderShop() {
+  shopEl.innerHTML = `<h2>Shell shop</h2><div class="bal">🪙 ${coins}</div><div class="cards">` + SKINS.map((k) => {
+    const owned = save.owned.includes(k.id), eq = save.skin === k.id;
+    const label = eq ? 'Wearing' : owned ? 'Wear' : `Buy 🪙${k.price}`;
+    const cls = eq ? 'eq' : owned || coins >= k.price ? '' : 'off';
+    return `<div class="card"><div class="sw" style="background:${hex(k.color)}"></div><div class="name">${k.name}</div><button class="${cls}" data-id="${k.id}">${label}</button></div>`;
+  }).join('') + `</div><button class="close" id="shopClose">Back to the game</button>`;
+}
+function openShop() { paused = true; renderShop(); shopEl.classList.add('open'); resetStick(); }
+function closeShop() { paused = false; shopEl.classList.remove('open'); }
+shopEl.addEventListener('click', (e) => {
+  if (e.target.id === 'shopClose') return closeShop();
+  const id = e.target.dataset && e.target.dataset.id; if (!id) return;
+  const k = SKINS.find((x) => x.id === id);
+  if (!save.owned.includes(id)) {
+    if (coins < k.price) return;
+    coins -= k.price; save.coins = coins; save.owned.push(id); sfx('coin');
+  }
+  applySkin(id); renderShop(); renderHud();
+});
+document.getElementById('shopBtn').addEventListener('pointerdown', (e) => { e.preventDefault(); openShop(); });
+
 // ---------- quests and HUD ----------
-const Q = { vases: 0, bonks: 0, tables: 0 };
+const Q = { vases: 0, bonks: 0, tables: 0, loft: 0, drops: 0 };
 const hud = document.getElementById('hud');
 const toastEl = document.getElementById('toast');
 let toastTimer = 0;
@@ -284,11 +408,13 @@ function renderHud() {
   hud.innerHTML = `<div>🪙 ${coins}</div>`
     + q(Q.vases >= 5, `Break 5 vases (${Math.min(Q.vases, 5)}/5)`)
     + q(Q.bonks >= 3, `Bonk Uncle Adam 3 times (${Math.min(Q.bonks, 3)}/3)`)
-    + q(Q.tables >= 2, `Topple both side tables (${Math.min(Q.tables, 2)}/2)`);
+    + q(Q.tables >= 2, `Topple both side tables (${Math.min(Q.tables, 2)}/2)`)
+    + q(Q.loft >= 1, 'Launch up to the rafters')
+    + q(Q.drops >= 1, 'Drop something on Uncle Adam from the rafters');
 }
 let won = false;
 function checkWin() {
-  if (!won && Q.vases >= 5 && Q.bonks >= 3 && Q.tables >= 2) { won = true; toast('LENA WINS! CHAOS MAXED!'); }
+  if (!won && Q.vases >= 5 && Q.bonks >= 3 && Q.tables >= 2 && Q.loft >= 1 && Q.drops >= 1) { won = true; toast('LENA WINS! CHAOS MAXED!'); sfx('win'); }
 }
 renderHud();
 
@@ -296,18 +422,20 @@ function breakProp(p) {
   p.alive = false;
   world.removeBody(p.body);
   scene.remove(p.mesh);
+  sfx('crash');
   burst(new THREE.Vector3().copy(p.body.position), p.kind === 'vase' ? 0x3aa6c9 : 0xffe27a, 12);
-  if (p.kind === 'vase') { coins += 5; Q.vases++; toast('CRASH! +5'); }
-  else { coins += 3; toast('CLANG! +3'); }
+  if (p.kind === 'vase') { addCoins(5); Q.vases++; toast('CRASH! +5'); }
+  else { addCoins(3); toast('CLANG! +3'); }
   renderHud(); checkWin();
 }
 
 // ---------- Uncle Adam behaviour ----------
 // Slapstick, never violent: a bonk launches him up spinning, he lands dizzy with stars, then shakes it off.
-function bonkAdam() {
+function bonkAdam(prop) {
   if (A.state !== 'patrol') return;
-  A.state = 'flying'; A.t = 0; A.bonks++; Q.bonks++; coins += 10;
-  toast('BONK! Uncle Adam! +10');
+  if (prop && prop.high) { Q.drops++; addCoins(15); toast('FROM THE RAFTERS! +15'); sfx('bonk'); }
+  A.state = 'flying'; A.t = 0; A.bonks++; Q.bonks++; addCoins(10);
+  toast('BONK! Uncle Adam! +10'); sfx('bonk');
   renderHud(); checkWin();
 }
 function updateAdam(dt) {
@@ -338,15 +466,16 @@ function updateAdam(dt) {
   }
 
   // hit by rolling shell or a flying prop
-  if (S.on && dL < 0.85 && lenaBody.velocity.length() > 1.5) { bonkAdam(); return; }
+  const lenaUp = lp.y > 1.0; // up in the rafters, out of his reach
+  if (!lenaUp && S.on && dL < 0.85 && lenaBody.velocity.length() > 1.5) { bonkAdam(); return; }
   for (const p of props) {
     if (!p.alive || p.kind === 'table') continue;
     const bp = p.body.position;
-    if (bp.y < 2.2 && Math.hypot(bp.x - adam.position.x, bp.z - adam.position.z) < 0.6 && p.body.velocity.length() > 3) { bonkAdam(); return; }
+    if (bp.y < 2.2 && Math.hypot(bp.x - adam.position.x, bp.z - adam.position.z) < 0.6 && p.body.velocity.length() > 3) { bonkAdam(p); return; }
   }
 
   let target = WAYPOINTS[wp], speed = 1.0;
-  if (!S.on && A.grace <= 0 && dL < 3.2) { target = new THREE.Vector3(lp.x, 0, lp.z); speed = 1.3; } // Lena (1.6) can outrun him
+  if (!S.on && !lenaUp && A.grace <= 0 && dL < 3.2) { target = new THREE.Vector3(lp.x, 0, lp.z); speed = 1.3; } // Lena (1.6) can outrun him
   const dx = target.x - adam.position.x, dz = target.z - adam.position.z;
   const d = Math.hypot(dx, dz);
   if (d < 0.2) wp = (wp + 1) % WAYPOINTS.length;
@@ -361,7 +490,7 @@ function updateAdam(dt) {
     aarms[0].rotation.x = -sw * 0.4; aarms[1].rotation.x = sw * 0.4;
   }
   // a tortoise out of her shell gets carried back to the start
-  if (!S.on && A.grace <= 0 && dL < 0.7) {
+  if (!S.on && !lenaUp && A.grace <= 0 && dL < 0.7) {
     lenaBody.position.copy(LENA_START); lenaBody.velocity.set(0, 0, 0);
     A.grace = 3;
     toast('Gotcha, Lena! Back to the start!');
@@ -376,6 +505,7 @@ camera.position.set(0, 2.8, 5.5);
 const upVec = new CANNON.Vec3(0, 1, 0);
 function frame() {
   const dt = Math.min(clock.getDelta(), 0.05);
+  if (paused) { renderer.render(scene, camera); requestAnimationFrame(frame); return; }
   let ix = input.x, iy = input.y;
   if (keys.has('a') || keys.has('arrowleft')) ix -= 1;
   if (keys.has('d') || keys.has('arrowright')) ix += 1;
@@ -407,6 +537,13 @@ function frame() {
   } else {
     lenaBody.velocity.x *= 0.8; lenaBody.velocity.z *= 0.8;
   }
+  // launch pad
+  padCool = Math.max(0, padCool - dt);
+  if (padCool <= 0 && lenaBody.position.y < 0.4 && Math.hypot(lenaBody.position.x - PAD.x, lenaBody.position.z - PAD.z) < PAD.r) {
+    lenaBody.velocity.y = 8; drift.t = 1.35; drift.x = -1.6; drift.z = 0; padCool = 1.2; sfx('launch'); toast('BOING!');
+  }
+  if (drift.t > 0) { lenaBody.velocity.x += drift.x; lenaBody.velocity.z += drift.z; drift.t -= dt; }
+  if (!Q.loft && lenaBody.position.y > 2.0 && lenaBody.position.x < -4.2) { Q.loft = 1; addCoins(15); toast('RAFTERS! +15'); renderHud(); checkWin(); }
   lenaBody.wakeUp();
 
   world.step(1 / 60, dt, 3);
@@ -417,8 +554,9 @@ function frame() {
     if (!p.alive) continue;
     p.mesh.position.copy(p.body.position);
     p.mesh.quaternion.copy(p.body.quaternion);
+    if (p.body.position.y > 1.6) p.high = true;
     if (p.kind === 'table' && !p.toppled && p.body.quaternion.vmult(upVec).y < 0.75) {
-      p.toppled = true; Q.tables++; coins += 8; toast('TIMBER! +8'); renderHud(); checkWin();
+      p.toppled = true; Q.tables++; addCoins(8); toast('TIMBER! +8'); sfx('timber'); renderHud(); checkWin();
     }
   }
 
@@ -433,8 +571,8 @@ function frame() {
 
   if (firstPerson) {
     const fx = Math.sin(yaw), fz = Math.cos(yaw);
-    camera.position.set(lena.position.x + fx * 0.3, 0.45, lena.position.z + fz * 0.3);
-    camera.lookAt(lena.position.x + fx * 3, 0.35, lena.position.z + fz * 3);
+    camera.position.set(lena.position.x + fx * 0.3, lena.position.y + 0.45, lena.position.z + fz * 0.3);
+    camera.lookAt(lena.position.x + fx * 3, lena.position.y + 0.35, lena.position.z + fz * 3);
   } else {
     // keep the camera inside the walls so they never block the view
     const lim = ROOM - 0.5;
@@ -442,8 +580,8 @@ function frame() {
     const cz = Math.min(lim, lena.position.z + 3.2);
     camera.position.x += (cx - camera.position.x) * Math.min(1, dt * 4);
     camera.position.z += (cz - camera.position.z) * Math.min(1, dt * 4);
-    camera.position.y = 2.8;
-    camera.lookAt(lena.position.x, 0.4, lena.position.z - 0.4);
+    camera.position.y = 2.8 + lena.position.y;
+    camera.lookAt(lena.position.x, lena.position.y + 0.4, lena.position.z - 0.4);
   }
   renderer.render(scene, camera);
   requestAnimationFrame(frame);
