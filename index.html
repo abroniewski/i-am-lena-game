@@ -32,6 +32,16 @@
   #shop .card button.off { background: #888; color: #eee; }
   #shop .card button.eq { background: #e8a33a; }
   #shop .close { background: #fff; margin-top: 18px; font-size: 20px; padding: 12px 28px; }
+  #missionsBtn { position: fixed; top: calc(max(10px, env(safe-area-inset-top)) + 112px); right: max(14px, env(safe-area-inset-right)); padding: 10px 16px; border-radius: 22px; border: 3px solid #fff; background: rgba(0,0,0,.35); color: #fff; font-size: 18px; font-weight: 800; touch-action: none; }
+  #missions { position: fixed; inset: 0; background: rgba(20,30,40,.9); display: none; flex-direction: column; align-items: center; padding: 18px; overflow: auto; color: #fff; z-index: 10; touch-action: pan-y; }
+  #missions.open { display: flex; }
+  #missions h2 { margin: 6px 0 12px; font-size: 30px; }
+  #missions .row { width: min(640px, 94vw); padding: 10px 14px; margin-bottom: 8px; border-radius: 14px; background: rgba(255,255,255,.12); display: flex; justify-content: space-between; gap: 12px; font-size: 17px; }
+  #missions .row.done { background: rgba(110,210,110,.3); }
+  #missions .row b { display: block; font-size: 18px; }
+  #missions .row span { opacity: .8; font-size: 15px; }
+  #missions .close { margin-top: 14px; padding: 12px 28px; border-radius: 14px; border: none; font-size: 20px; font-weight: 800; background: #fff; color: #123; }
+  #timer { position: fixed; top: max(12px, env(safe-area-inset-top)); left: 0; right: 0; text-align: center; color: #fff; font-size: 30px; font-weight: 900; text-shadow: 0 3px 6px rgba(0,0,0,.7); pointer-events: none; }
   #hint { position: fixed; bottom: 18px; left: 0; right: 0; text-align: center; color: #fff; font-size: 20px; font-weight: 700; text-shadow: 0 2px 4px rgba(0,0,0,.6); pointer-events: none; }
 </style>
 </head>
@@ -43,6 +53,9 @@
 <button id="shell">SHELL!</button>
 <button id="view">👁 View</button>
 <button id="shopBtn">🛍 Shop</button>
+<button id="missionsBtn">📜 Missions</button>
+<div id="missions"></div>
+<div id="timer"></div>
 <div id="shop"></div>
 <script type="importmap">{ "imports": { "three": "./vendor/three.module.min.js", "cannon-es": "./vendor/cannon-es.js" } }</script>
 <script type="module">
@@ -162,6 +175,9 @@ function addProp(kind, x, y, z, ry = 0) {
   } else if (kind === 'table') {
     mesh = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.7, 0.6), mat(0x8a5a33));
     shape = new CANNON.Box(new CANNON.Vec3(0.3, 0.35, 0.3)); mass = 5;
+  } else if (kind === 'book') {
+    mesh = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.32, 0.22), mat([0xc0392b, 0x2980b9, 0x27ae60, 0xf39c12, 0x8e44ad][props.length % 5]));
+    shape = new CANNON.Box(new CANNON.Vec3(0.025, 0.16, 0.11)); mass = 0.15;
   } else if (kind === 'lamp') {
     mesh = new THREE.Group();
     const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.05, 1.2, 8), mat(0x333333));
@@ -208,13 +224,124 @@ const TOP = LOFT_Y + 0.08;
 for (const [kind, z] of [['crate', -3.0], ['ball', -2.2], ['vase', -1.5], ['crate', -0.6], ['ball', 0.2], ['vase', 1.0], ['crate', 1.9]]) {
   addProp(kind, -5.4, TOP + (kind === 'crate' ? 0.25 : kind === 'ball' ? 0.2 : 0.18) + 0.02, z);
 }
-const PAD = { x: -2.6, z: -0.5, r: 0.6 };
-const padMesh = new THREE.Mesh(new THREE.CylinderGeometry(PAD.r, PAD.r, 0.05, 24), new THREE.MeshLambertMaterial({ color: 0x33dd77, emissive: 0x116633 }));
-padMesh.position.set(PAD.x, 0.025, PAD.z); padMesh.receiveShadow = true; scene.add(padMesh);
-const padArrow = new THREE.Mesh(new THREE.ConeGeometry(0.17, 0.4, 12), new THREE.MeshLambertMaterial({ color: 0xffffff, emissive: 0x888888 }));
-padArrow.rotation.z = Math.PI / 2; padArrow.position.set(PAD.x, 0.12, PAD.z); scene.add(padArrow);
+// launch pads: the green one flies Lena up to the rafters, the blue one to the top of the fridge
+const PADS = [
+  { x: -2.6, z: -0.5, r: 0.6, vy: 8, dx: -1.6, dz: 0, color: 0x33dd77, glow: 0x116633 },
+  { x: 1.7, z: -3.2, r: 0.6, vy: 7.5, dx: 0.42, dz: -1.93, color: 0x3399ff, glow: 0x113366 },
+];
+for (const pd of PADS) {
+  const m = new THREE.Mesh(new THREE.CylinderGeometry(pd.r, pd.r, 0.05, 24), new THREE.MeshLambertMaterial({ color: pd.color, emissive: pd.glow }));
+  m.position.set(pd.x, 0.025, pd.z); m.receiveShadow = true; scene.add(m);
+  const g = new THREE.Group(); g.position.set(pd.x, 0.12, pd.z); g.rotation.y = Math.atan2(pd.dx, pd.dz);
+  const arrow = new THREE.Mesh(new THREE.ConeGeometry(0.17, 0.4, 12), new THREE.MeshLambertMaterial({ color: 0xffffff, emissive: 0x888888 }));
+  arrow.rotation.x = Math.PI / 2; g.add(arrow); scene.add(g);
+}
 const drift = { t: 0, x: 0, z: 0 };
 let padCool = 0;
+
+// ---------- mission pack: Lena flavoured versions of I Am Cat's tasks ----------
+// fridge (king of the fridge)
+const FRIDGE = { x: 2.2, z: -5.5, top: 1.9 };
+{
+  const f = new THREE.Mesh(new THREE.BoxGeometry(0.9, 1.9, 0.8), mat(0xf2f2f2));
+  f.position.set(FRIDGE.x, 0.95, FRIDGE.z); f.castShadow = f.receiveShadow = true; scene.add(f);
+  staticBox(0.45, 0.95, 0.4, FRIDGE.x, 0.95, FRIDGE.z);
+  const h = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.5, 0.05), mat(0x999999)); h.position.set(FRIDGE.x + 0.3, 1.1, FRIDGE.z + 0.42); scene.add(h);
+}
+// radio (disco)
+const RADIO = { x: 5.4, z: 1.2 };
+{
+  const r = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.3, 0.25), mat(0xd23f3f));
+  r.position.set(RADIO.x, 0.15, RADIO.z); r.castShadow = true; scene.add(r);
+  staticBox(0.25, 0.15, 0.125, RADIO.x, 0.15, RADIO.z);
+  const sp = new THREE.Mesh(new THREE.CircleGeometry(0.09, 16), mat(0x222222)); sp.position.set(RADIO.x - 0.13, 0.15, RADIO.z + 0.13); scene.add(sp);
+}
+const disco = { t: 0, beat: 0, cool: 0, i: 0 };
+// domino library: 12 books standing in a row, push the first
+for (let i = 0; i < 12; i++) addProp('book', 0.2 + i * 0.16, 0.16, 5.3);
+// paintings to say hi to
+const paintings = [];
+function addPainting(x, z, ry, emoji, bg) {
+  const c = document.createElement('canvas'); c.width = c.height = 128;
+  const g = c.getContext('2d'); g.fillStyle = bg; g.fillRect(0, 0, 128, 128);
+  g.font = '80px serif'; g.textAlign = 'center'; g.fillText(emoji, 64, 92);
+  const grp = new THREE.Group();
+  const frame = new THREE.Mesh(new THREE.BoxGeometry(0.56, 0.46, 0.05), new THREE.MeshLambertMaterial({ color: 0x5e3f23 }));
+  const pic = new THREE.Mesh(new THREE.PlaneGeometry(0.46, 0.36), new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(c) }));
+  pic.position.z = 0.03; grp.add(frame, pic);
+  grp.position.set(x, 0.3, z); grp.rotation.y = ry; scene.add(grp);
+  paintings.push({ x, z, frame, touched: false, emoji });
+}
+addPainting(-5.4, -5.85, 0, '🦖', '#cfe8c0'); addPainting(-0.9, -5.85, 0, '🚀', '#1c2a4a');
+addPainting(0.9, -5.85, 0, '🐢', '#bfe3f5'); addPainting(3.2, -5.85, 0, '🥬', '#e5f5c8');
+addPainting(5.85, -3.2, -Math.PI / 2, '⭐', '#2a2a40'); addPainting(5.85, 3.0, -Math.PI / 2, '🦕', '#f5e0c0');
+// balloons: some on the floor, two on the launch arc, two up in the rafters
+const balloons = [];
+function addBalloon(x, y, z, color, tether) {
+  const g = new THREE.Group();
+  const b = new THREE.Mesh(new THREE.SphereGeometry(0.17, 14, 12), new THREE.MeshLambertMaterial({ color })); b.scale.y = 1.2; g.add(b);
+  const len = tether ? y : 0.35;
+  const str = new THREE.Mesh(new THREE.CylinderGeometry(0.004, 0.004, len, 4), mat(0xffffff)); str.position.y = -0.2 - len / 2; g.add(str);
+  g.position.set(x, y, z); scene.add(g);
+  balloons.push({ g, x, y, z, color, alive: true, ph: Math.random() * 6 });
+}
+for (const [x, z, c] of [[-1.0, 5.0, 0xff5577], [3.0, 1.8, 0x55aaff], [-3.5, 1.5, 0xffcc33], [1.0, -1.8, 0x66dd77]]) addBalloon(x, 0.55, z, c, true);
+addBalloon(-3.5, 1.8, -0.4, 0xff8844); addBalloon(-4.55, 2.8, -0.4, 0xcc66ff);
+addBalloon(-5.2, 2.55, -2.6, 0xff5577); addBalloon(-5.2, 2.55, 1.6, 0x55aaff);
+// bug hunt: step on the orange pad, catch 5 bugs in 30 seconds
+const HUNT = { x: 4.4, z: -1.0, r: 0.5, t: 0, active: false, cool: 0, caught: 0, goal: 5, time: 30 };
+{
+  const m = new THREE.Mesh(new THREE.CylinderGeometry(HUNT.r, HUNT.r, 0.05, 24), new THREE.MeshLambertMaterial({ color: 0xff9933, emissive: 0x663300 }));
+  m.position.set(HUNT.x, 0.025, HUNT.z); scene.add(m);
+  const bug = new THREE.Mesh(new THREE.SphereGeometry(0.12, 10, 8), mat(0x222222)); bug.scale.set(1, 0.6, 1.4); bug.position.set(HUNT.x, 0.1, HUNT.z); scene.add(bug);
+}
+const bugs = [];
+function clearBugs() { for (const b of bugs) scene.remove(b.m); bugs.length = 0; }
+function startHunt() {
+  clearBugs(); HUNT.active = true; HUNT.t = HUNT.time; HUNT.caught = 0;
+  for (let i = 0; i < HUNT.goal; i++) {
+    const m = new THREE.Mesh(new THREE.SphereGeometry(0.1, 10, 8), mat(0x222222)); m.scale.set(1, 0.6, 1.4);
+    const dot = new THREE.Mesh(new THREE.SphereGeometry(0.03, 6, 6), mat(0xdd2222)); dot.position.set(0, 0.07, 0); m.add(dot);
+    let x, z; do { x = -3.5 + Math.random() * 8.5; z = -5 + Math.random() * 10; } while (Math.hypot(x - lenaBody.position.x, z - lenaBody.position.z) < 2.5);
+    m.position.set(x, 0.07, z); scene.add(m);
+    bugs.push({ m, h: Math.random() * 6.28, ht: 0 });
+  }
+  toast('CATCH 5 BUGS! 30s');
+}
+function updateHunt(dt) {
+  const lp = lenaBody.position;
+  HUNT.cool = Math.max(0, HUNT.cool - dt);
+  if (!HUNT.active) {
+    if (HUNT.cool <= 0 && lp.y < 0.4 && Math.hypot(lp.x - HUNT.x, lp.z - HUNT.z) < HUNT.r) startHunt();
+    return;
+  }
+  HUNT.t -= dt;
+  for (let i = bugs.length - 1; i >= 0; i--) {
+    const b = bugs[i], m = b.m;
+    b.ht -= dt; if (b.ht <= 0) { b.h += (Math.random() - 0.5) * 2.5; b.ht = 0.7; }
+    const dx = m.position.x - lp.x, dz = m.position.z - lp.z, d = Math.hypot(dx, dz);
+    let sp = 0.8;
+    if (d < 1.8) { b.h = Math.atan2(dx, dz); sp = 1.2; }   // they run, but Lena is faster
+    m.position.x = Math.max(-3.6, Math.min(5.5, m.position.x + Math.sin(b.h) * sp * dt));
+    m.position.z = Math.max(-5.5, Math.min(5.5, m.position.z + Math.cos(b.h) * sp * dt));
+    m.rotation.y = b.h;
+    if (d < 0.45 && lp.y < 0.6) {
+      scene.remove(m); bugs.splice(i, 1); HUNT.caught++; sfx('coin');
+      burst(new THREE.Vector3(m.position.x, 0.1, m.position.z), 0x222222, 5);
+      toast(`Got one! ${HUNT.caught}/${HUNT.goal}`);
+    }
+  }
+  timerEl.textContent = `🪲 ${HUNT.caught}/${HUNT.goal}   ${Math.ceil(HUNT.t)}s`;
+  if (HUNT.caught >= HUNT.goal) { HUNT.active = false; HUNT.cool = 3; Q.bugs = 1; timerEl.textContent = ''; clearBugs(); renderHud(); }
+  else if (HUNT.t <= 0) { HUNT.active = false; HUNT.cool = 3; timerEl.textContent = ''; clearBugs(); toast('Too slow! Step on the orange pad to retry'); }
+}
+// cardboard box: hide in it for 3 seconds and Uncle Adam can't see you
+const BOX = { x: -1.2, z: -1.6, t: 0, inside: false };
+for (const [x, z, hx, hz] of [[-1.65, -1.6, 0.02, 0.5], [-0.75, -1.6, 0.02, 0.5], [-1.2, -2.1, 0.45, 0.02]]) {
+  const w = new THREE.Mesh(new THREE.BoxGeometry(hx * 2, 0.3, hz * 2), mat(0xc8a165));
+  w.position.set(x, 0.15, z); w.castShadow = true; scene.add(w);
+  staticBox(hx, 0.15, hz, x, 0.15, z);
+}
 
 // ---------- shards ----------
 const shards = [];
@@ -376,9 +503,9 @@ let paused = false;
 const shopEl = document.getElementById('shop');
 function hex(c) { return '#' + c.toString(16).padStart(6, '0'); }
 function renderShop() {
-  shopEl.innerHTML = `<h2>Shell shop</h2><div class="bal">🪙 ${coins}</div><div class="cards">` + SKINS.map((k) => {
+  shopEl.innerHTML = `<h2>Shell shop</h2><div class="bal">🥬 ${coins}</div><div class="cards">` + SKINS.map((k) => {
     const owned = save.owned.includes(k.id), eq = save.skin === k.id;
-    const label = eq ? 'Wearing' : owned ? 'Wear' : `Buy 🪙${k.price}`;
+    const label = eq ? 'Wearing' : owned ? 'Wear' : `Buy 🥬${k.price}`;
     const cls = eq ? 'eq' : owned || coins >= k.price ? '' : 'off';
     return `<div class="card"><div class="sw" style="background:${hex(k.color)}"></div><div class="name">${k.name}</div><button class="${cls}" data-id="${k.id}">${label}</button></div>`;
   }).join('') + `</div><button class="close" id="shopClose">Back to the game</button>`;
@@ -398,24 +525,55 @@ shopEl.addEventListener('click', (e) => {
 document.getElementById('shopBtn').addEventListener('pointerdown', (e) => { e.preventDefault(); openShop(); });
 
 // ---------- quests and HUD ----------
-const Q = { vases: 0, bonks: 0, tables: 0, loft: 0, drops: 0 };
+const Q = { vases: 0, bonks: 0, tables: 0, loft: 0, drops: 0, disco: 0, books: 0, fridge: 0, paintings: 0, bugs: 0, balloons: 0, box: 0 };
+const MISSIONS = [
+  { key: 'vases', goal: 5, name: 'Vase Smasher', desc: 'Break 5 vases', reward: 7 },
+  { key: 'bonks', goal: 3, name: 'Uncle Adam Bonker', desc: 'Bonk Uncle Adam 3 times', reward: 8 },
+  { key: 'tables', goal: 2, name: 'Timber!', desc: 'Topple both side tables', reward: 6 },
+  { key: 'loft', goal: 1, name: 'Curiosity', desc: 'Use the green pad to launch up to the rafters', reward: 4 },
+  { key: 'drops', goal: 1, name: 'From Above', desc: 'Drop something on Uncle Adam from the rafters', reward: 8 },
+  { key: 'disco', goal: 1, name: 'Disco Lena', desc: 'Bump the radio and make Uncle Adam dance', reward: 3 },
+  { key: 'books', goal: 8, name: 'Domino Library', desc: 'Knock over 8 books (try the first one)', reward: 7 },
+  { key: 'fridge', goal: 1, name: 'King of the Fridge', desc: 'Use the blue pad to land on top of the fridge', reward: 8 },
+  { key: 'paintings', goal: 6, name: 'Art Lover', desc: 'Say hi to all 6 paintings', reward: 6 },
+  { key: 'bugs', goal: 1, name: 'Bug Hunter', desc: 'Step on the orange pad, catch 5 bugs in 30 seconds', reward: 8 },
+  { key: 'balloons', goal: 8, name: 'Balloon Pop', desc: 'Pop 8 balloons, some are very high up', reward: 7 },
+  { key: 'box', goal: 1, name: 'Hide in the Box', desc: 'Hide in the cardboard box for 3 seconds', reward: 5 },
+];
+const missionDone = new Set();
 const hud = document.getElementById('hud');
 const toastEl = document.getElementById('toast');
+const timerEl = document.getElementById('timer');
 let toastTimer = 0;
 function toast(msg) { toastEl.textContent = msg; toastEl.style.opacity = 1; toastTimer = 1.6; }
+function checkMissions() {
+  for (const m of MISSIONS) {
+    if (!missionDone.has(m.key) && Q[m.key] >= m.goal) {
+      missionDone.add(m.key); addCoins(m.reward);
+      toast(`MISSION DONE: ${m.name}! +${m.reward}`);
+      if (missionDone.size === MISSIONS.length) setTimeout(() => { toast('LENA WINS! ALL MISSIONS DONE!'); sfx('win'); }, 1800);
+    }
+  }
+}
 function renderHud() {
-  const q = (done, text) => `<div class="${done ? 'done' : ''}">${done ? '✓' : '○'} ${text}</div>`;
-  hud.innerHTML = `<div>🪙 ${coins}</div>`
-    + q(Q.vases >= 5, `Break 5 vases (${Math.min(Q.vases, 5)}/5)`)
-    + q(Q.bonks >= 3, `Bonk Uncle Adam 3 times (${Math.min(Q.bonks, 3)}/3)`)
-    + q(Q.tables >= 2, `Topple both side tables (${Math.min(Q.tables, 2)}/2)`)
-    + q(Q.loft >= 1, 'Launch up to the rafters')
-    + q(Q.drops >= 1, 'Drop something on Uncle Adam from the rafters');
+  checkMissions();
+  const next = MISSIONS.filter((m) => !missionDone.has(m.key)).slice(0, 3);
+  hud.innerHTML = `<div>🥬 ${coins} &nbsp; 📜 ${missionDone.size}/${MISSIONS.length}</div>`
+    + next.map((m) => `<div>○ ${m.name}${m.goal > 1 ? ` (${Math.min(Q[m.key], m.goal)}/${m.goal})` : ''}</div>`).join('');
 }
-let won = false;
-function checkWin() {
-  if (!won && Q.vases >= 5 && Q.bonks >= 3 && Q.tables >= 2 && Q.loft >= 1 && Q.drops >= 1) { won = true; toast('LENA WINS! CHAOS MAXED!'); sfx('win'); }
+function checkWin() { renderHud(); }
+// full mission board
+const missionsEl = document.getElementById('missions');
+function openMissions() {
+  paused = true; resetStick();
+  missionsEl.innerHTML = `<h2>Missions (${missionDone.size}/${MISSIONS.length})</h2>` + MISSIONS.map((m) => {
+    const d = missionDone.has(m.key);
+    return `<div class="row ${d ? 'done' : ''}"><div><b>${d ? '✓' : '○'} ${m.name}</b><span>${m.desc}${m.goal > 1 && !d ? ` (${Math.min(Q[m.key], m.goal)}/${m.goal})` : ''}</span></div><div>🥬 ${m.reward}</div></div>`;
+  }).join('') + '<button class="close" id="missionsClose">Back to the game</button>';
+  missionsEl.classList.add('open');
 }
+missionsEl.addEventListener('click', (e) => { if (e.target.id === 'missionsClose') { missionsEl.classList.remove('open'); paused = false; } });
+document.getElementById('missionsBtn').addEventListener('pointerdown', (e) => { e.preventDefault(); openMissions(); });
 renderHud();
 
 function breakProp(p) {
@@ -433,6 +591,7 @@ function breakProp(p) {
 // Slapstick, never violent: a bonk launches him up spinning, he lands dizzy with stars, then shakes it off.
 function bonkAdam(prop) {
   if (A.state !== 'patrol') return;
+  disco.t = 0;
   if (prop && prop.high) { Q.drops++; addCoins(15); toast('FROM THE RAFTERS! +15'); sfx('bonk'); }
   A.state = 'flying'; A.t = 0; A.bonks++; Q.bonks++; addCoins(10);
   toast('BONK! Uncle Adam! +10'); sfx('bonk');
@@ -474,8 +633,18 @@ function updateAdam(dt) {
     if (bp.y < 2.2 && Math.hypot(bp.x - adam.position.x, bp.z - adam.position.z) < 0.6 && p.body.velocity.length() > 3) { bonkAdam(p); return; }
   }
 
+  if (disco.t > 0) { // the radio is on: Uncle Adam cannot help dancing
+    const t = performance.now() / 1000;
+    adam.rotation.y += dt * 3;
+    adam.position.y = Math.abs(Math.sin(t * 8)) * 0.12;
+    aarms[0].rotation.z = 2.4 + Math.sin(t * 9) * 0.4; aarms[1].rotation.z = -2.4 - Math.sin(t * 9) * 0.4;
+    alegs[0].rotation.x = Math.sin(t * 8) * 0.5; alegs[1].rotation.x = -Math.sin(t * 8) * 0.5;
+    return;
+  }
+  adam.position.y = 0; aarms[0].rotation.z = 0; aarms[1].rotation.z = 0;
+  const hidden = BOX.inside;
   let target = WAYPOINTS[wp], speed = 1.0;
-  if (!S.on && !lenaUp && A.grace <= 0 && dL < 3.2) { target = new THREE.Vector3(lp.x, 0, lp.z); speed = 1.3; } // Lena (1.6) can outrun him
+  if (!S.on && !lenaUp && !hidden && A.grace <= 0 && dL < 3.2) { target = new THREE.Vector3(lp.x, 0, lp.z); speed = 1.3; } // Lena (1.6) can outrun him
   const dx = target.x - adam.position.x, dz = target.z - adam.position.z;
   const d = Math.hypot(dx, dz);
   if (d < 0.2) wp = (wp + 1) % WAYPOINTS.length;
@@ -490,7 +659,7 @@ function updateAdam(dt) {
     aarms[0].rotation.x = -sw * 0.4; aarms[1].rotation.x = sw * 0.4;
   }
   // a tortoise out of her shell gets carried back to the start
-  if (!S.on && !lenaUp && A.grace <= 0 && dL < 0.7) {
+  if (!S.on && !lenaUp && !hidden && A.grace <= 0 && dL < 0.7) {
     lenaBody.position.copy(LENA_START); lenaBody.velocity.set(0, 0, 0);
     A.grace = 3;
     toast('Gotcha, Lena! Back to the start!');
@@ -537,13 +706,19 @@ function frame() {
   } else {
     lenaBody.velocity.x *= 0.8; lenaBody.velocity.z *= 0.8;
   }
-  // launch pad
+  // launch pads
   padCool = Math.max(0, padCool - dt);
-  if (padCool <= 0 && lenaBody.position.y < 0.4 && Math.hypot(lenaBody.position.x - PAD.x, lenaBody.position.z - PAD.z) < PAD.r) {
-    lenaBody.velocity.y = 8; drift.t = 1.35; drift.x = -1.6; drift.z = 0; padCool = 1.2; sfx('launch'); toast('BOING!');
+  if (padCool <= 0 && lenaBody.position.y < 0.4) {
+    for (const pd of PADS) {
+      if (Math.hypot(lenaBody.position.x - pd.x, lenaBody.position.z - pd.z) < pd.r) {
+        lenaBody.velocity.y = pd.vy; drift.t = 1.35; drift.x = pd.dx; drift.z = pd.dz; padCool = 1.2; sfx('launch'); toast('BOING!');
+        break;
+      }
+    }
   }
   if (drift.t > 0) { lenaBody.velocity.x += drift.x; lenaBody.velocity.z += drift.z; drift.t -= dt; }
   if (!Q.loft && lenaBody.position.y > 2.0 && lenaBody.position.x < -4.2) { Q.loft = 1; addCoins(15); toast('RAFTERS! +15'); renderHud(); checkWin(); }
+  if (!Q.fridge && lenaBody.position.y > 1.8 && Math.abs(lenaBody.position.x - FRIDGE.x) < 0.5 && Math.abs(lenaBody.position.z - FRIDGE.z) < 0.45) { Q.fridge = 1; renderHud(); }
   lenaBody.wakeUp();
 
   world.step(1 / 60, dt, 3);
@@ -555,6 +730,7 @@ function frame() {
     p.mesh.position.copy(p.body.position);
     p.mesh.quaternion.copy(p.body.quaternion);
     if (p.body.position.y > 1.6) p.high = true;
+    if (p.kind === 'book' && !p.toppled && p.body.quaternion.vmult(upVec).y < 0.7) { p.toppled = true; Q.books++; sfx('coin'); renderHud(); }
     if (p.kind === 'table' && !p.toppled && p.body.quaternion.vmult(upVec).y < 0.75) {
       p.toppled = true; Q.tables++; addCoins(8); toast('TIMBER! +8'); sfx('timber'); renderHud(); checkWin();
     }
@@ -565,6 +741,34 @@ function frame() {
   if (S.on) shellGroup.rotation.x += dt * 14;
   legs.forEach((l, i) => { l.position.y = 0.06 + Math.max(0, Math.sin(walk + (i % 3 ? 0 : Math.PI))) * 0.03; });
 
+  { // mission pack checks
+    const lp = lenaBody.position;
+    disco.cool = Math.max(0, disco.cool - dt);
+    if (disco.t <= 0 && disco.cool <= 0 && lp.y < 0.6 && Math.hypot(lp.x - RADIO.x, lp.z - RADIO.z) < 0.8) {
+      disco.t = 6; disco.cool = 9; Q.disco = 1; toast('DISCO TIME!'); renderHud();
+    }
+    if (disco.t > 0) {
+      disco.t -= dt; disco.beat -= dt;
+      if (disco.beat <= 0) { disco.beat = 0.22; { const f = [262, 330, 392, 523, 392, 330][disco.i++ % 6]; tone(f, f, 0.18, 'square', 0.06); } }
+    }
+    for (const pt of paintings) {
+      if (!pt.touched && lp.y < 0.8 && Math.hypot(lp.x - pt.x, lp.z - pt.z) < 0.7) {
+        pt.touched = true; pt.frame.material.color.setHex(0x55dd66); Q.paintings++; sfx('coin'); toast(`Hi ${pt.emoji}!`); renderHud();
+      }
+    }
+    for (const b of balloons) {
+      if (!b.alive) continue;
+      b.ph += dt * 2; b.g.position.y = b.y + Math.sin(b.ph) * 0.04;
+      if (Math.hypot(lp.x - b.x, lp.z - b.z, lp.y - b.y) < 0.5) {
+        b.alive = false; scene.remove(b.g); burst(new THREE.Vector3(b.x, b.y, b.z), b.color, 8);
+        Q.balloons++; tone(900, 200, 0.12, 'square', 0.12); toast(`POP! ${Q.balloons}/8`); renderHud();
+      }
+    }
+    updateHunt(dt);
+    BOX.inside = Math.abs(lp.x - BOX.x) < 0.3 && Math.abs(lp.z - BOX.z) < 0.45 && lp.y < 0.5;
+    if (BOX.inside) { BOX.t += dt; if (!Q.box) timerEl.textContent = `Hiding... ${Math.max(0, Math.ceil(3 - BOX.t))}`; if (BOX.t >= 3 && !Q.box) { Q.box = 1; timerEl.textContent = ''; toast('HIDDEN! Uncle Adam cannot find you'); renderHud(); } }
+    else { BOX.t = 0; if (!HUNT.active) timerEl.textContent = ''; }
+  }
   updateAdam(dt);
   updateShards(dt);
   if (toastTimer > 0) { toastTimer -= dt; if (toastTimer <= 0) toastEl.style.opacity = 0; }
@@ -588,7 +792,7 @@ function frame() {
 }
 frame();
 addEventListener('resize', () => { renderer.setSize(innerWidth, innerHeight); camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); });
-window.__game = { lenaBody, adam, props, Q, S, A, tuckIn, toggleView, get yaw() { return yaw; }, keys, input, world };
+window.__game = { lenaBody, adam, props, Q, S, A, tuckIn, toggleView, bugs, HUNT, missionDone, balloons, paintings, BOX, disco, get yaw() { return yaw; }, keys, input, world };
 </script>
 </body>
 </html>
