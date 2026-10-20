@@ -1,8 +1,13 @@
 # I Am Lena
 
-A tortoise chaos game for Adam's niece and nephew. Three.js, no build step, runs in Safari on an iPad.
+A tortoise chaos game for Adam's niece and nephew. Three.js and cannon-es, no build step, runs in Safari on an iPad.
 
-Slice 1: Lena walks around an empty room with a touch joystick (WASD/arrows on desktop).
+You are Lena, a tortoise loose in the living room.
 
-Run locally: `python3 -m http.server` in this folder, open http://localhost:8000.
-iPad: host the folder (GitHub Pages), open the link in Safari, Share > Add to Home Screen.
+- Left thumb: walk. Right thumb: SHELL, tuck in and roll like an unstoppable bowling ball for 3 seconds.
+- Knock over side tables, break vases and lamps for coins, bonk Uncle Adam (cartoon slapstick: he spins into the air and lands dizzy).
+- Uncle Adam patrols and chases. If he catches Lena out of her shell, she gets carried back to the start. In shell mode he can't touch her.
+- Quests: break 5 vases, bonk Uncle Adam 3 times, topple both side tables.
+
+Run locally: `python3 -m http.server` in this folder, open http://localhost:8000 (WASD or arrows, space for shell).
+Live: https://abroniewski.github.io/i-am-lena-game/

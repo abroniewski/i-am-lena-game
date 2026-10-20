@@ -12,77 +12,216 @@
   canvas { display: block; width: 100%; height: 100%; }
   #stick { position: fixed; left: max(28px, env(safe-area-inset-left)); bottom: max(28px, env(safe-area-inset-bottom)); width: 150px; height: 150px; border-radius: 50%; background: rgba(255,255,255,.28); border: 3px solid rgba(255,255,255,.6); touch-action: none; }
   #knob { position: absolute; left: 50%; top: 50%; width: 64px; height: 64px; margin: -32px 0 0 -32px; border-radius: 50%; background: rgba(255,255,255,.85); box-shadow: 0 2px 8px rgba(0,0,0,.3); }
-  #hint { position: fixed; top: 14px; left: 0; right: 0; text-align: center; color: #fff; font-size: 22px; font-weight: 700; text-shadow: 0 2px 4px rgba(0,0,0,.5); pointer-events: none; }
+  #shell { position: fixed; right: max(28px, env(safe-area-inset-right)); bottom: max(28px, env(safe-area-inset-bottom)); width: 130px; height: 130px; border-radius: 50%; border: 4px solid #fff; background: #5b8c3a; color: #fff; font-size: 22px; font-weight: 800; text-shadow: 0 2px 3px rgba(0,0,0,.5); touch-action: none; }
+  #shell.on { background: #e8a33a; }
+  #shell.cool { background: #777; opacity: .7; }
+  #hud { position: fixed; top: max(10px, env(safe-area-inset-top)); left: max(14px, env(safe-area-inset-left)); color: #fff; font-size: 19px; font-weight: 700; text-shadow: 0 2px 4px rgba(0,0,0,.6); pointer-events: none; line-height: 1.5; }
+  #hud .done { color: #b6ff8a; }
+  #toast { position: fixed; top: 22%; left: 0; right: 0; text-align: center; color: #fff; font-size: 54px; font-weight: 900; text-shadow: 0 4px 8px rgba(0,0,0,.6); pointer-events: none; opacity: 0; transition: opacity .25s; }
+  #hint { position: fixed; bottom: 18px; left: 0; right: 0; text-align: center; color: #fff; font-size: 20px; font-weight: 700; text-shadow: 0 2px 4px rgba(0,0,0,.6); pointer-events: none; }
 </style>
 </head>
 <body>
-<div id="hint">Drag the circle to walk, Lena!</div>
+<div id="hud"></div>
+<div id="toast"></div>
+<div id="hint">Drag the circle to walk. Tap SHELL to roll like a bowling ball!</div>
 <div id="stick"><div id="knob"></div></div>
-<script type="importmap">{ "imports": { "three": "./vendor/three.module.min.js" } }</script>
+<button id="shell">SHELL!</button>
+<script type="importmap">{ "imports": { "three": "./vendor/three.module.min.js", "cannon-es": "./vendor/cannon-es.js" } }</script>
 <script type="module">
 import * as THREE from 'three';
+import * as CANNON from 'cannon-es';
 
+// ---------- renderer, scene ----------
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.setSize(innerWidth, innerHeight);
 renderer.shadowMap.enabled = true;
 document.body.appendChild(renderer.domElement);
-
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x87ceeb);
 const camera = new THREE.PerspectiveCamera(55, innerWidth / innerHeight, 0.1, 100);
-
-scene.add(new THREE.HemisphereLight(0xffffff, 0x886644, 0.9));
-const sun = new THREE.DirectionalLight(0xffffff, 1.1);
+scene.add(new THREE.HemisphereLight(0xffffff, 0x998866, 1.1));
+const sun = new THREE.DirectionalLight(0xffffff, 1.0);
 sun.position.set(4, 8, 3);
 sun.castShadow = true;
-sun.shadow.camera.left = -8; sun.shadow.camera.right = 8;
-sun.shadow.camera.top = 8; sun.shadow.camera.bottom = -8;
+sun.shadow.camera.left = -9; sun.shadow.camera.right = 9;
+sun.shadow.camera.top = 9; sun.shadow.camera.bottom = -9;
 scene.add(sun);
-
-// The room: 12 x 12 metres, units are metres.
-const ROOM = 6;
 const mat = (c) => new THREE.MeshLambertMaterial({ color: c });
-const floor = new THREE.Mesh(new THREE.BoxGeometry(ROOM * 2, 0.2, ROOM * 2), mat(0xc89a62));
-floor.position.y = -0.1; floor.receiveShadow = true;
-scene.add(floor);
-for (let i = -ROOM; i < ROOM; i += 1) { // floorboard lines
-  const line = new THREE.Mesh(new THREE.BoxGeometry(0.02, 0.01, ROOM * 2), mat(0x9a7344));
-  line.position.set(i, 0.005, 0);
-  scene.add(line);
+
+// ---------- physics ----------
+const world = new CANNON.World({ gravity: new CANNON.Vec3(0, -9.8, 0) });
+world.allowSleep = true;
+world.defaultContactMaterial.friction = 0.35;
+world.defaultContactMaterial.restitution = 0.25;
+const baseMat = new CANNON.Material('base'); // everything except Lena
+const ROOM = 6;
+function staticBox(hx, hy, hz, x, y, z) {
+  const b = new CANNON.Body({ mass: 0, material: baseMat, shape: new CANNON.Box(new CANNON.Vec3(hx, hy, hz)) });
+  b.position.set(x, y, z);
+  world.addBody(b);
+  return b;
 }
-const wallMat = mat(0xf2e6cf);
+staticBox(ROOM, 0.1, ROOM, 0, -0.1, 0);
+staticBox(ROOM, 2, 0.1, 0, 2, -ROOM);
+staticBox(ROOM, 2, 0.1, 0, 2, ROOM);
+staticBox(0.1, 2, ROOM, -ROOM, 2, 0);
+staticBox(0.1, 2, ROOM, ROOM, 2, 0);
+
+// ---------- the room ----------
+const floor = new THREE.Mesh(new THREE.BoxGeometry(ROOM * 2, 0.2, ROOM * 2), mat(0xc89a62));
+floor.position.y = -0.1; floor.receiveShadow = true; scene.add(floor);
+for (let i = -ROOM; i < ROOM; i += 1) {
+  const line = new THREE.Mesh(new THREE.BoxGeometry(0.02, 0.01, ROOM * 2), mat(0x9a7344));
+  line.position.set(i, 0.005, 0); scene.add(line);
+}
+const wallMat = mat(0xf6ecd6);
 for (const [x, z, ry] of [[0, -ROOM, 0], [0, ROOM, 0], [-ROOM, 0, Math.PI / 2], [ROOM, 0, Math.PI / 2]]) {
-  const w = new THREE.Mesh(new THREE.BoxGeometry(ROOM * 2, 3, 0.2), wallMat);
-  w.position.set(x, 1.5, z); w.rotation.y = ry; w.receiveShadow = true;
-  scene.add(w);
+  const w = new THREE.Mesh(new THREE.BoxGeometry(ROOM * 2, 4, 0.2), wallMat);
+  w.position.set(x, 2, z); w.rotation.y = ry; w.receiveShadow = true; scene.add(w);
+}
+const rug = new THREE.Mesh(new THREE.BoxGeometry(5, 0.02, 3.4), mat(0xb5483a));
+rug.position.set(0, 0.011, 1); rug.receiveShadow = true; scene.add(rug);
+function staticFurniture(w, h, d, x, z, color) {
+  const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat(color));
+  m.position.set(x, h / 2, z); m.castShadow = m.receiveShadow = true; scene.add(m);
+  staticBox(w / 2, h / 2, d / 2, x, h / 2, z);
+}
+staticFurniture(2.6, 0.5, 1.0, -3.2, -5.3, 0x4a6fa5);
+staticFurniture(2.6, 0.5, 0.25, -3.2, -5.75, 0x3b5a87);
+staticFurniture(1.6, 0.9, 0.5, 4.6, -5.5, 0x7a5232);
+
+// ---------- props ----------
+const props = []; // { mesh, body, kind, alive }
+const pendingBreaks = new Set();
+let coins = 0;
+function addProp(kind, x, y, z, ry = 0) {
+  let mesh, shape, mass;
+  if (kind === 'vase') {
+    mesh = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.08, 0.36, 12), mat([0x3aa6c9, 0xd9534f, 0xe9b949][props.length % 3]));
+    shape = new CANNON.Box(new CANNON.Vec3(0.1, 0.18, 0.1)); mass = 0.6;
+  } else if (kind === 'crate') {
+    mesh = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.5, 0.5), mat(0xb8803c));
+    shape = new CANNON.Box(new CANNON.Vec3(0.25, 0.25, 0.25)); mass = 2;
+  } else if (kind === 'ball') {
+    mesh = new THREE.Mesh(new THREE.SphereGeometry(0.2, 16, 12), mat(0xe04a8a));
+    shape = new CANNON.Sphere(0.2); mass = 0.8;
+  } else if (kind === 'table') {
+    mesh = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.7, 0.6), mat(0x8a5a33));
+    shape = new CANNON.Box(new CANNON.Vec3(0.3, 0.35, 0.3)); mass = 5;
+  } else if (kind === 'lamp') {
+    mesh = new THREE.Group();
+    const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.05, 1.2, 8), mat(0x333333));
+    const shade = new THREE.Mesh(new THREE.ConeGeometry(0.22, 0.3, 12, 1, true), new THREE.MeshLambertMaterial({ color: 0xffe27a, side: THREE.DoubleSide }));
+    shade.position.y = 0.6;
+    mesh.add(pole, shade);
+    shape = new CANNON.Box(new CANNON.Vec3(0.08, 0.6, 0.08)); mass = 1.5;
+  }
+  mesh.traverse((o) => { if (o.isMesh) o.castShadow = true; });
+  scene.add(mesh);
+  const body = new CANNON.Body({ mass, shape, material: baseMat, sleepSpeedLimit: 0.15, sleepTimeLimit: 0.6 });
+  body.position.set(x, y, z);
+  body.quaternion.setFromEuler(0, ry, 0);
+  world.addBody(body);
+  const p = { mesh, body, kind, alive: true, breakable: kind === 'vase' || kind === 'lamp' };
+  body.addEventListener('collide', (e) => {
+    if (p.breakable && p.alive && Math.abs(e.contact.getImpactVelocityAlongNormal()) > 1.0) pendingBreaks.add(p);
+  });
+  props.push(p);
+  return p;
+}
+// vases on the floor
+for (const [x, z] of [[-4, 2], [-1.5, 4], [3.5, 3.5], [4.5, 0], [-4.5, -2], [1.5, -1]]) addProp('vase', x, 0.18, z);
+// side tables with vases on top
+addProp('table', -2.5, 0.35, -2.5); addProp('table', 2.8, 0.35, -3);
+addProp('vase', -2.5, 0.88, -2.5); addProp('vase', 2.8, 0.88, -3);
+// crate pyramid
+for (const [x, y, z] of [[0, 0.25, -4], [0.55, 0.25, -4], [-0.55, 0.25, -4], [0.27, 0.75, -4], [-0.27, 0.75, -4], [0, 1.25, -4]]) addProp('crate', x, y, z);
+// balls and lamps
+for (const [x, z] of [[2, 1], [-2, 1.5], [0.5, 3]]) addProp('ball', x, 0.2, z);
+addProp('lamp', 5, 0.6, 3); addProp('lamp', -5, 0.6, 4);
+
+// ---------- shards ----------
+const shards = [];
+const shardGeo = new THREE.BoxGeometry(0.06, 0.06, 0.06);
+function burst(pos, color, n = 10) {
+  for (let i = 0; i < n; i++) {
+    const m = new THREE.Mesh(shardGeo, mat(color));
+    m.position.copy(pos);
+    scene.add(m);
+    shards.push({ m, v: new THREE.Vector3((Math.random() - 0.5) * 3, Math.random() * 3 + 1, (Math.random() - 0.5) * 3), life: 1.3 });
+  }
+}
+function updateShards(dt) {
+  for (let i = shards.length - 1; i >= 0; i--) {
+    const s = shards[i];
+    s.v.y -= 9.8 * dt;
+    s.m.position.addScaledVector(s.v, dt);
+    if (s.m.position.y < 0.03) { s.m.position.y = 0.03; s.v.set(0, 0, 0); }
+    s.m.rotation.x += dt * 6;
+    s.life -= dt;
+    if (s.life <= 0) { scene.remove(s.m); shards.splice(i, 1); }
+  }
 }
 
-// Lena the tortoise, built from primitives. Faces +Z when yaw = 0.
+// ---------- Lena ----------
 const lena = new THREE.Group();
-const shell = new THREE.Mesh(new THREE.SphereGeometry(0.28, 20, 12, 0, Math.PI * 2, 0, Math.PI / 2), mat(0x5b8c3a));
-shell.scale.set(1, 0.8, 1.25); shell.position.y = 0.1; shell.castShadow = true;
-lena.add(shell);
+const shellGroup = new THREE.Group(); shellGroup.position.y = 0.1; lena.add(shellGroup);
+const shellMesh = new THREE.Mesh(new THREE.SphereGeometry(0.28, 20, 12, 0, Math.PI * 2, 0, Math.PI / 2), mat(0x5b8c3a));
+shellMesh.scale.set(1, 0.8, 1.25); shellMesh.castShadow = true; shellGroup.add(shellMesh);
 const belly = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.28, 0.06, 20), mat(0xe8d9a0));
-belly.scale.set(1, 1, 1.25); belly.position.y = 0.1;
-lena.add(belly);
+belly.scale.set(1, 1, 1.25); shellGroup.add(belly);
+const limbs = new THREE.Group(); lena.add(limbs);
 const head = new THREE.Mesh(new THREE.SphereGeometry(0.1, 12, 10), mat(0x8fb35a));
-head.position.set(0, 0.15, 0.42); head.castShadow = true;
-lena.add(head);
+head.position.set(0, 0.15, 0.42); head.castShadow = true; limbs.add(head);
 for (const sx of [-0.06, 0.06]) {
   const eye = new THREE.Mesh(new THREE.SphereGeometry(0.02, 8, 6), mat(0x111111));
-  eye.position.set(sx, 0.18, 0.5);
-  lena.add(eye);
+  eye.position.set(sx, 0.18, 0.5); limbs.add(eye);
 }
 const legs = [];
 for (const [lx, lz] of [[-0.2, 0.2], [0.2, 0.2], [-0.2, -0.2], [0.2, -0.2]]) {
   const leg = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, 0.12, 8), mat(0x8fb35a));
-  leg.position.set(lx, 0.06, lz); leg.castShadow = true;
-  lena.add(leg); legs.push(leg);
+  leg.position.set(lx, 0.06, lz); leg.castShadow = true; limbs.add(leg); legs.push(leg);
 }
 scene.add(lena);
+const LENA_START = new CANNON.Vec3(0, 0.15, 4.5);
+// Lena glides: her velocity is set directly each frame, so floor friction must not fight it.
+const lenaMat = new CANNON.Material('lena');
+world.addContactMaterial(new CANNON.ContactMaterial(lenaMat, baseMat, { friction: 0, restitution: 0.05 }));
+const lenaBody = new CANNON.Body({ material: lenaMat, mass: 12, shape: new CANNON.Box(new CANNON.Vec3(0.25, 0.14, 0.35)), fixedRotation: true, linearDamping: 0.2 });
+lenaBody.position.copy(LENA_START);
+world.addBody(lenaBody);
 
-// Input: virtual joystick (touch/mouse) plus WASD/arrows for desktop testing.
+// ---------- Uncle Adam ----------
+const adam = new THREE.Group();
+const skin = mat(0xe8b98a);
+const torso = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.7, 0.3), mat(0x2f6db5)); torso.position.y = 1.15; adam.add(torso);
+const ahead = new THREE.Mesh(new THREE.SphereGeometry(0.2, 14, 12), skin); ahead.position.y = 1.78; adam.add(ahead);
+const hair = new THREE.Mesh(new THREE.SphereGeometry(0.205, 14, 8, 0, Math.PI * 2, 0, Math.PI / 2), mat(0x3a2a1a)); hair.position.y = 1.8; adam.add(hair);
+for (const sx of [-0.08, 0.08]) {
+  const lens = new THREE.Mesh(new THREE.TorusGeometry(0.05, 0.012, 6, 12), mat(0x111111));
+  lens.position.set(sx, 1.8, 0.19); adam.add(lens);
+}
+const alegs = [], aarms = [];
+for (const sx of [-0.13, 0.13]) {
+  const l = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.8, 0.22), mat(0x3d3d52)); l.position.set(sx, 0.4, 0); adam.add(l); alegs.push(l);
+  const a = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.62, 0.16), mat(0x2f6db5)); a.position.set(sx * 2.2, 1.12, 0); adam.add(a); aarms.push(a);
+}
+adam.traverse((o) => { if (o.isMesh) o.castShadow = true; });
+const stars = new THREE.Group();
+for (let i = 0; i < 4; i++) {
+  const s = new THREE.Mesh(new THREE.OctahedronGeometry(0.07), new THREE.MeshBasicMaterial({ color: 0xffe14d }));
+  s.userData.a = (i / 4) * Math.PI * 2; stars.add(s);
+}
+stars.position.y = 2.2; stars.visible = false; adam.add(stars);
+scene.add(adam);
+const WAYPOINTS = [[-4, 3], [4, 3.5], [4, -1], [-4, -1]].map(([x, z]) => new THREE.Vector3(x, 0, z));
+let wp = 0;
+adam.position.copy(WAYPOINTS[0]);
+const A = { state: 'patrol', t: 0, grace: 0, bonks: 0 };
+
+// ---------- input ----------
 const stick = document.getElementById('stick');
 const knob = document.getElementById('knob');
 const input = { x: 0, y: 0 };
@@ -98,18 +237,135 @@ function setStick(e) {
   input.x = dx / R; input.y = dy / R;
 }
 function resetStick() { stickId = null; knob.style.transform = ''; input.x = input.y = 0; }
-stick.addEventListener('pointerdown', (e) => { stickId = e.pointerId; stick.setPointerCapture(e.pointerId); setStick(e); document.getElementById('hint').style.opacity = 0; });
+stick.addEventListener('pointerdown', (e) => { stickId = e.pointerId; stick.setPointerCapture(e.pointerId); setStick(e); });
 stick.addEventListener('pointermove', (e) => { if (e.pointerId === stickId) setStick(e); });
 stick.addEventListener('pointerup', resetStick);
 stick.addEventListener('pointercancel', resetStick);
 const keys = new Set();
-addEventListener('keydown', (e) => keys.add(e.key.toLowerCase()));
+addEventListener('keydown', (e) => { keys.add(e.key.toLowerCase()); if (e.key === ' ') tuckIn(); });
 addEventListener('keyup', (e) => keys.delete(e.key.toLowerCase()));
+const shellBtn = document.getElementById('shell');
+shellBtn.addEventListener('pointerdown', (e) => { e.preventDefault(); tuckIn(); });
 
-// Tortoise speed is the joke: slow but steady.
-const SPEED = 1.6;
-let yaw = 0, walk = 0;
+// ---------- shell mode: Lena tucks in and becomes an unstoppable bowling ball ----------
+const SHELL_TIME = 3, SHELL_COOL = 2.5;
+const S = { on: false, t: 0, cool: 0 };
+function setLenaMass(m) { lenaBody.mass = m; lenaBody.updateMassProperties(); }
+function tuckIn() {
+  if (S.on || S.cool > 0) return;
+  S.on = true; S.t = SHELL_TIME;
+  setLenaMass(140);
+  limbs.visible = false;
+  document.getElementById('hint').style.opacity = 0;
+}
+function popOut() {
+  S.on = false; S.cool = SHELL_COOL;
+  setLenaMass(12);
+  limbs.visible = true;
+  shellGroup.rotation.set(0, 0, 0);
+}
+
+// ---------- quests and HUD ----------
+const Q = { vases: 0, bonks: 0, tables: 0 };
+const hud = document.getElementById('hud');
+const toastEl = document.getElementById('toast');
+let toastTimer = 0;
+function toast(msg) { toastEl.textContent = msg; toastEl.style.opacity = 1; toastTimer = 1.6; }
+function renderHud() {
+  const q = (done, text) => `<div class="${done ? 'done' : ''}">${done ? '✓' : '○'} ${text}</div>`;
+  hud.innerHTML = `<div>🪙 ${coins}</div>`
+    + q(Q.vases >= 5, `Break 5 vases (${Math.min(Q.vases, 5)}/5)`)
+    + q(Q.bonks >= 3, `Bonk Uncle Adam 3 times (${Math.min(Q.bonks, 3)}/3)`)
+    + q(Q.tables >= 2, `Topple both side tables (${Math.min(Q.tables, 2)}/2)`);
+}
+let won = false;
+function checkWin() {
+  if (!won && Q.vases >= 5 && Q.bonks >= 3 && Q.tables >= 2) { won = true; toast('LENA WINS! CHAOS MAXED!'); }
+}
+renderHud();
+
+function breakProp(p) {
+  p.alive = false;
+  world.removeBody(p.body);
+  scene.remove(p.mesh);
+  burst(new THREE.Vector3().copy(p.body.position), p.kind === 'vase' ? 0x3aa6c9 : 0xffe27a, 12);
+  if (p.kind === 'vase') { coins += 5; Q.vases++; toast('CRASH! +5'); }
+  else { coins += 3; toast('CLANG! +3'); }
+  renderHud(); checkWin();
+}
+
+// ---------- Uncle Adam behaviour ----------
+// Slapstick, never violent: a bonk launches him up spinning, he lands dizzy with stars, then shakes it off.
+function bonkAdam() {
+  if (A.state !== 'patrol') return;
+  A.state = 'flying'; A.t = 0; A.bonks++; Q.bonks++; coins += 10;
+  toast('BONK! Uncle Adam! +10');
+  renderHud(); checkWin();
+}
+function updateAdam(dt) {
+  const lp = lenaBody.position;
+  const dL = Math.hypot(lp.x - adam.position.x, lp.z - adam.position.z);
+  A.grace = Math.max(0, A.grace - dt);
+
+  if (A.state === 'flying') {
+    A.t += dt;
+    const T = 1.8, k = Math.min(1, A.t / T);
+    adam.position.y = 2.4 * Math.sin(Math.PI * k);
+    adam.rotation.x = k * Math.PI * 2;
+    adam.rotation.y += dt * 10;
+    if (k >= 1) {
+      A.state = 'dizzy'; A.t = 0;
+      adam.rotation.x = 0; adam.position.y = 0; stars.visible = true;
+      adam.position.x = Math.max(-5.3, Math.min(5.3, adam.position.x));
+      adam.position.z = Math.max(-5.3, Math.min(5.3, adam.position.z));
+    }
+    return;
+  }
+  if (A.state === 'dizzy') {
+    A.t += dt;
+    stars.children.forEach((s, i) => { const a = s.userData.a + A.t * 5; s.position.set(Math.cos(a) * 0.3, Math.sin(A.t * 8 + i) * 0.04, Math.sin(a) * 0.3); });
+    adam.rotation.z = Math.sin(A.t * 6) * 0.15;
+    if (A.t > 2.2) { A.state = 'patrol'; stars.visible = false; adam.rotation.z = 0; A.grace = 1.5; }
+    return;
+  }
+
+  // hit by rolling shell or a flying prop
+  if (S.on && dL < 0.85 && lenaBody.velocity.length() > 1.5) { bonkAdam(); return; }
+  for (const p of props) {
+    if (!p.alive || p.kind === 'table') continue;
+    const bp = p.body.position;
+    if (bp.y < 2.2 && Math.hypot(bp.x - adam.position.x, bp.z - adam.position.z) < 0.6 && p.body.velocity.length() > 3) { bonkAdam(); return; }
+  }
+
+  let target = WAYPOINTS[wp], speed = 1.0;
+  if (!S.on && A.grace <= 0 && dL < 3.2) { target = new THREE.Vector3(lp.x, 0, lp.z); speed = 1.3; } // Lena (1.6) can outrun him
+  const dx = target.x - adam.position.x, dz = target.z - adam.position.z;
+  const d = Math.hypot(dx, dz);
+  if (d < 0.2) wp = (wp + 1) % WAYPOINTS.length;
+  else {
+    adam.position.x += (dx / d) * speed * dt;
+    adam.position.z += (dz / d) * speed * dt;
+    const want = Math.atan2(dx, dz);
+    const diff = Math.atan2(Math.sin(want - adam.rotation.y), Math.cos(want - adam.rotation.y));
+    adam.rotation.y += diff * Math.min(1, dt * 6);
+    const sw = Math.sin(performance.now() / 180 * speed);
+    alegs[0].rotation.x = sw * 0.5; alegs[1].rotation.x = -sw * 0.5;
+    aarms[0].rotation.x = -sw * 0.4; aarms[1].rotation.x = sw * 0.4;
+  }
+  // a tortoise out of her shell gets carried back to the start
+  if (!S.on && A.grace <= 0 && dL < 0.7) {
+    lenaBody.position.copy(LENA_START); lenaBody.velocity.set(0, 0, 0);
+    A.grace = 3;
+    toast('Gotcha, Lena! Back to the start!');
+  }
+}
+
+// ---------- game loop ----------
+const SPEED = 1.6, SHELL_SPEED = 3.4;
+let yaw = Math.PI, walk = 0;
 const clock = new THREE.Clock();
+camera.position.set(0, 2.8, 7.7);
+const upVec = new CANNON.Vec3(0, 1, 0);
 function frame() {
   const dt = Math.min(clock.getDelta(), 0.05);
   let ix = input.x, iy = input.y;
@@ -118,35 +374,59 @@ function frame() {
   if (keys.has('w') || keys.has('arrowup')) iy -= 1;
   if (keys.has('s') || keys.has('arrowdown')) iy += 1;
   const mag = Math.min(1, Math.hypot(ix, iy));
+
+  if (S.on) { S.t -= dt; if (S.t <= 0) popOut(); }
+  else if (S.cool > 0) S.cool -= dt;
+  shellBtn.className = S.on ? 'on' : S.cool > 0 ? 'cool' : '';
+  shellBtn.textContent = S.on ? Math.ceil(S.t) + '...' : S.cool > 0 ? 'wait' : 'SHELL!';
+
+  const speed = S.on ? SHELL_SPEED : SPEED;
   if (mag > 0.08) {
-    // Camera sits at +Z looking along -Z, so screen-up is -Z and screen-right is +X.
+    // camera sits at +Z looking along -Z: screen-up is -Z, screen-right is +X
     const target = Math.atan2(ix, iy);
-    let d = target - yaw;
-    d = Math.atan2(Math.sin(d), Math.cos(d));
+    const d = Math.atan2(Math.sin(target - yaw), Math.cos(target - yaw));
     yaw += d * Math.min(1, dt * 8);
-    lena.position.x += Math.sin(yaw) * SPEED * mag * dt;
-    lena.position.z += Math.cos(yaw) * SPEED * mag * dt;
+    lenaBody.velocity.x = Math.sin(yaw) * speed * mag;
+    lenaBody.velocity.z = Math.cos(yaw) * speed * mag;
     walk += dt * 9 * mag;
+  } else {
+    lenaBody.velocity.x *= 0.8; lenaBody.velocity.z *= 0.8;
   }
-  const lim = ROOM - 0.5;
-  lena.position.x = Math.max(-lim, Math.min(lim, lena.position.x));
-  lena.position.z = Math.max(-lim, Math.min(lim, lena.position.z));
+  lenaBody.wakeUp();
+
+  world.step(1 / 60, dt, 3);
+
+  for (const p of pendingBreaks) if (p.alive) breakProp(p);
+  pendingBreaks.clear();
+  for (const p of props) {
+    if (!p.alive) continue;
+    p.mesh.position.copy(p.body.position);
+    p.mesh.quaternion.copy(p.body.quaternion);
+    if (p.kind === 'table' && !p.toppled && p.body.quaternion.vmult(upVec).y < 0.75) {
+      p.toppled = true; Q.tables++; coins += 8; toast('TIMBER! +8'); renderHud(); checkWin();
+    }
+  }
+
+  lena.position.set(lenaBody.position.x, lenaBody.position.y - 0.14, lenaBody.position.z);
   lena.rotation.y = yaw;
+  if (S.on) shellGroup.rotation.x += dt * 14;
   legs.forEach((l, i) => { l.position.y = 0.06 + Math.max(0, Math.sin(walk + (i % 3 ? 0 : Math.PI))) * 0.03; });
 
-  // Follow camera, fixed behind-and-above, smoothed.
+  updateAdam(dt);
+  updateShards(dt);
+  if (toastTimer > 0) { toastTimer -= dt; if (toastTimer <= 0) toastEl.style.opacity = 0; }
+
   const cx = lena.position.x, cz = lena.position.z + 3.2;
   camera.position.x += (cx - camera.position.x) * Math.min(1, dt * 4);
   camera.position.z += (cz - camera.position.z) * Math.min(1, dt * 4);
-  camera.position.y = 2.6;
-  camera.lookAt(lena.position.x, 0.2, lena.position.z - 0.4);
+  camera.position.y = 2.8;
+  camera.lookAt(lena.position.x, 0.4, lena.position.z - 0.4);
   renderer.render(scene, camera);
   requestAnimationFrame(frame);
 }
-camera.position.set(0, 2.6, 3.2);
 frame();
 addEventListener('resize', () => { renderer.setSize(innerWidth, innerHeight); camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); });
-window.__lena = lena; // for automated checks
+window.__game = { lenaBody, adam, props, Q, S, A, tuckIn, get yaw() { return yaw; }, keys, input, world };
 </script>
 </body>
 </html>
