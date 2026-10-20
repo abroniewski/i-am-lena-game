@@ -4,13 +4,13 @@ A tortoise chaos game for Adam's niece and nephew. Three.js and cannon-es, no bu
 
 You are Lena, a tortoise loose in the living room.
 
-- Left thumb: walk. Right thumb: SHELL, tuck in and roll like an unstoppable bowling ball for 3 seconds.
+- Left thumb: walk. Right side: JUMP, GRAB/THROW and SHELL (tuck in and roll like a bowling ball for 3 seconds). Drag the world to look around.
 - Knock over side tables, break vases and lamps for coins, bonk Uncle Adam (cartoon slapstick: he spins into the air and lands dizzy).
-- Uncle Adam patrols and chases. If he catches Lena out of her shell, she gets carried back to the start. In shell mode he can't touch her.
-- Step on the green launch pad to fly up to the rafters along the left wall. Push crates, balls and vases off the edge onto Uncle Adam.
-- Coin shop (Shop button): shell skins including Dino Lena and Jedi Lena. Coins and skins are saved on the device.
-- 12 missions (Missions button), three open at a time, finishing one opens the next, inspired by I Am Cat's task list: vases, bonking Uncle Adam, toppling tables, the rafters, dropping things on Uncle Adam, disco radio, domino books, fridge top (blue pad), paintings, a 30 second bug hunt (orange pad), balloons, hiding in the box.
-- View button (or V): third person or first person.
+- Uncle Adam wanders around calmly. Bonk him and he turns red and chases Lena for 25 seconds. If he catches Lena out of her shell, she is carried back to the start. In shell mode he cannot touch her.
+- Hop up the wooden steps (JUMP) to the rafters. Pick up small things with GRAB and THROW them. The garden is through the east door: lettuce, a T-rex and a droid.
+- Coin shop (Shop button): shell colours (brown by default) and shell patterns. Coins and unlocks are saved on the device.
+- 16 missions (Missions button), three open at a time, finishing one opens the next, inspired by I Am Cat: vases, disco radio, rafters, pick and throw, bonking Uncle Adam, lettuce feast, domino books, balloons, dino friend, paintings, droid bump, tables, fridge top, bug hunt, hiding in the box, dropping things on Uncle Adam.
+- View button (or V): third person, first person, from above, from the side, from the front.
 
 Run locally: `python3 -m http.server` in this folder, open http://localhost:8000 (WASD or arrows, space for shell).
 Live: https://abroniewski.github.io/i-am-lena-game/
