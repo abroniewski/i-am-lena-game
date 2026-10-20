@@ -18,6 +18,7 @@
   #hud { position: fixed; top: max(10px, env(safe-area-inset-top)); left: max(14px, env(safe-area-inset-left)); color: #fff; font-size: 19px; font-weight: 700; text-shadow: 0 2px 4px rgba(0,0,0,.6); pointer-events: none; line-height: 1.5; }
   #hud .done { color: #b6ff8a; }
   #toast { position: fixed; top: 22%; left: 0; right: 0; text-align: center; color: #fff; font-size: 54px; font-weight: 900; text-shadow: 0 4px 8px rgba(0,0,0,.6); pointer-events: none; opacity: 0; transition: opacity .25s; }
+  #view { position: fixed; top: max(10px, env(safe-area-inset-top)); right: max(14px, env(safe-area-inset-right)); padding: 10px 16px; border-radius: 22px; border: 3px solid #fff; background: rgba(0,0,0,.35); color: #fff; font-size: 18px; font-weight: 800; touch-action: none; }
   #hint { position: fixed; bottom: 18px; left: 0; right: 0; text-align: center; color: #fff; font-size: 20px; font-weight: 700; text-shadow: 0 2px 4px rgba(0,0,0,.6); pointer-events: none; }
 </style>
 </head>
@@ -27,6 +28,7 @@
 <div id="hint">Drag the circle to walk. Tap SHELL to roll like a bowling ball!</div>
 <div id="stick"><div id="knob"></div></div>
 <button id="shell">SHELL!</button>
+<button id="view">👁 View</button>
 <script type="importmap">{ "imports": { "three": "./vendor/three.module.min.js", "cannon-es": "./vendor/cannon-es.js" } }</script>
 <script type="module">
 import * as THREE from 'three';
@@ -185,7 +187,7 @@ for (const [lx, lz] of [[-0.2, 0.2], [0.2, 0.2], [-0.2, -0.2], [0.2, -0.2]]) {
   leg.position.set(lx, 0.06, lz); leg.castShadow = true; limbs.add(leg); legs.push(leg);
 }
 scene.add(lena);
-const LENA_START = new CANNON.Vec3(0, 0.15, 4.5);
+const LENA_START = new CANNON.Vec3(0, 0.15, 3.5);
 // Lena glides: her velocity is set directly each frame, so floor friction must not fight it.
 const lenaMat = new CANNON.Material('lena');
 world.addContactMaterial(new CANNON.ContactMaterial(lenaMat, baseMat, { friction: 0, restitution: 0.05 }));
@@ -246,6 +248,12 @@ addEventListener('keydown', (e) => { keys.add(e.key.toLowerCase()); if (e.key ==
 addEventListener('keyup', (e) => keys.delete(e.key.toLowerCase()));
 const shellBtn = document.getElementById('shell');
 shellBtn.addEventListener('pointerdown', (e) => { e.preventDefault(); tuckIn(); });
+// camera: third person (default) or first person through Lena's eyes
+let firstPerson = false;
+function toggleView() { firstPerson = !firstPerson; lena.visible = !firstPerson; camera.fov = firstPerson ? 75 : 55; camera.updateProjectionMatrix(); document.getElementById('view').textContent = firstPerson ? '👁 First person' : '👁 Third person'; }
+document.getElementById('view').addEventListener('pointerdown', (e) => { e.preventDefault(); toggleView(); });
+document.getElementById('view').textContent = '👁 Third person';
+addEventListener('keydown', (e) => { if (e.key.toLowerCase() === 'v') toggleView(); });
 
 // ---------- shell mode: Lena tucks in and becomes an unstoppable bowling ball ----------
 const SHELL_TIME = 3, SHELL_COOL = 2.5;
@@ -364,7 +372,7 @@ function updateAdam(dt) {
 const SPEED = 1.6, SHELL_SPEED = 3.4;
 let yaw = Math.PI, walk = 0;
 const clock = new THREE.Clock();
-camera.position.set(0, 2.8, 7.7);
+camera.position.set(0, 2.8, 5.5);
 const upVec = new CANNON.Vec3(0, 1, 0);
 function frame() {
   const dt = Math.min(clock.getDelta(), 0.05);
@@ -381,7 +389,14 @@ function frame() {
   shellBtn.textContent = S.on ? Math.ceil(S.t) + '...' : S.cool > 0 ? 'wait' : 'SHELL!';
 
   const speed = S.on ? SHELL_SPEED : SPEED;
-  if (mag > 0.08) {
+  if (firstPerson) {
+    // first person: stick left/right turns, up/down walks forward/back along where she is facing
+    yaw -= ix * 2.2 * dt;
+    const fwd = -iy * speed;
+    lenaBody.velocity.x = Math.sin(yaw) * fwd;
+    lenaBody.velocity.z = Math.cos(yaw) * fwd;
+    walk += dt * 9 * Math.abs(iy);
+  } else if (mag > 0.08) {
     // camera sits at +Z looking along -Z: screen-up is -Z, screen-right is +X
     const target = Math.atan2(ix, iy);
     const d = Math.atan2(Math.sin(target - yaw), Math.cos(target - yaw));
@@ -416,17 +431,26 @@ function frame() {
   updateShards(dt);
   if (toastTimer > 0) { toastTimer -= dt; if (toastTimer <= 0) toastEl.style.opacity = 0; }
 
-  const cx = lena.position.x, cz = lena.position.z + 3.2;
-  camera.position.x += (cx - camera.position.x) * Math.min(1, dt * 4);
-  camera.position.z += (cz - camera.position.z) * Math.min(1, dt * 4);
-  camera.position.y = 2.8;
-  camera.lookAt(lena.position.x, 0.4, lena.position.z - 0.4);
+  if (firstPerson) {
+    const fx = Math.sin(yaw), fz = Math.cos(yaw);
+    camera.position.set(lena.position.x + fx * 0.3, 0.45, lena.position.z + fz * 0.3);
+    camera.lookAt(lena.position.x + fx * 3, 0.35, lena.position.z + fz * 3);
+  } else {
+    // keep the camera inside the walls so they never block the view
+    const lim = ROOM - 0.5;
+    const cx = Math.max(-lim, Math.min(lim, lena.position.x));
+    const cz = Math.min(lim, lena.position.z + 3.2);
+    camera.position.x += (cx - camera.position.x) * Math.min(1, dt * 4);
+    camera.position.z += (cz - camera.position.z) * Math.min(1, dt * 4);
+    camera.position.y = 2.8;
+    camera.lookAt(lena.position.x, 0.4, lena.position.z - 0.4);
+  }
   renderer.render(scene, camera);
   requestAnimationFrame(frame);
 }
 frame();
 addEventListener('resize', () => { renderer.setSize(innerWidth, innerHeight); camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); });
-window.__game = { lenaBody, adam, props, Q, S, A, tuckIn, get yaw() { return yaw; }, keys, input, world };
+window.__game = { lenaBody, adam, props, Q, S, A, tuckIn, toggleView, get yaw() { return yaw; }, keys, input, world };
 </script>
 </body>
 </html>
