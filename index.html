@@ -156,7 +156,7 @@ const props = []; // { mesh, body, kind, alive }
 const pendingBreaks = new Set();
 // progress (coins, skins) is saved on this device so the kids keep what they bought
 const SAVE_KEY = 'i-am-lena-save';
-let save = { coins: 0, owned: ['green'], skin: 'green' };
+let save = { coins: 0, owned: ['green'], skin: 'green', done: [] };
 try { Object.assign(save, JSON.parse(localStorage.getItem(SAVE_KEY) || '{}')); } catch (e) {}
 function persist() { try { localStorage.setItem(SAVE_KEY, JSON.stringify(save)); } catch (e) {} }
 let coins = save.coins;
@@ -192,7 +192,7 @@ function addProp(kind, x, y, z, ry = 0) {
   body.position.set(x, y, z);
   body.quaternion.setFromEuler(0, ry, 0);
   world.addBody(body);
-  const p = { mesh, body, kind, alive: true, breakable: kind === 'vase' || kind === 'lamp' };
+  const p = { mesh, body, kind, alive: true, breakable: kind === 'vase' || kind === 'lamp', home: { kind, x, y, z, ry } };
   body.addEventListener('collide', (e) => {
     if (p.breakable && p.alive && Math.abs(e.contact.getImpactVelocityAlongNormal()) > 1.0) pendingBreaks.add(p);
   });
@@ -237,7 +237,7 @@ for (const pd of PADS) {
   arrow.rotation.x = Math.PI / 2; g.add(arrow); scene.add(g);
 }
 const drift = { t: 0, x: 0, z: 0 };
-let padCool = 0;
+let padCool = 0, wasOnLoft = false, wasOnFridge = false;
 
 // ---------- mission pack: Lena flavoured versions of I Am Cat's tasks ----------
 // fridge (king of the fridge)
@@ -290,8 +290,9 @@ addBalloon(-3.5, 1.8, -0.4, 0xff8844); addBalloon(-4.55, 2.8, -0.4, 0xcc66ff);
 addBalloon(-5.2, 2.55, -2.6, 0xff5577); addBalloon(-5.2, 2.55, 1.6, 0x55aaff);
 // bug hunt: step on the orange pad, catch 5 bugs in 30 seconds
 const HUNT = { x: 4.4, z: -1.0, r: 0.5, t: 0, active: false, cool: 0, caught: 0, goal: 5, time: 30 };
+const huntPadMat = new THREE.MeshLambertMaterial({ color: 0xff9933, emissive: 0x663300 });
 {
-  const m = new THREE.Mesh(new THREE.CylinderGeometry(HUNT.r, HUNT.r, 0.05, 24), new THREE.MeshLambertMaterial({ color: 0xff9933, emissive: 0x663300 }));
+  const m = new THREE.Mesh(new THREE.CylinderGeometry(HUNT.r, HUNT.r, 0.05, 24), huntPadMat);
   m.position.set(HUNT.x, 0.025, HUNT.z); scene.add(m);
   const bug = new THREE.Mesh(new THREE.SphereGeometry(0.12, 10, 8), mat(0x222222)); bug.scale.set(1, 0.6, 1.4); bug.position.set(HUNT.x, 0.1, HUNT.z); scene.add(bug);
 }
@@ -312,7 +313,7 @@ function updateHunt(dt) {
   const lp = lenaBody.position;
   HUNT.cool = Math.max(0, HUNT.cool - dt);
   if (!HUNT.active) {
-    if (HUNT.cool <= 0 && lp.y < 0.4 && Math.hypot(lp.x - HUNT.x, lp.z - HUNT.z) < HUNT.r) startHunt();
+    if (isActive('bugs') && HUNT.cool <= 0 && lp.y < 0.4 && Math.hypot(lp.x - HUNT.x, lp.z - HUNT.z) < HUNT.r) startHunt();
     return;
   }
   HUNT.t -= dt;
@@ -332,7 +333,7 @@ function updateHunt(dt) {
     }
   }
   timerEl.textContent = `🪲 ${HUNT.caught}/${HUNT.goal}   ${Math.ceil(HUNT.t)}s`;
-  if (HUNT.caught >= HUNT.goal) { HUNT.active = false; HUNT.cool = 3; Q.bugs = 1; timerEl.textContent = ''; clearBugs(); renderHud(); }
+  if (HUNT.caught >= HUNT.goal) { HUNT.active = false; HUNT.cool = 3; credit('bugs'); timerEl.textContent = ''; clearBugs(); renderHud(); }
   else if (HUNT.t <= 0) { HUNT.active = false; HUNT.cool = 3; timerEl.textContent = ''; clearBugs(); toast('Too slow! Step on the orange pad to retry'); }
 }
 // cardboard box: hide in it for 3 seconds and Uncle Adam can't see you
@@ -526,21 +527,56 @@ document.getElementById('shopBtn').addEventListener('pointerdown', (e) => { e.pr
 
 // ---------- quests and HUD ----------
 const Q = { vases: 0, bonks: 0, tables: 0, loft: 0, drops: 0, disco: 0, books: 0, fridge: 0, paintings: 0, bugs: 0, balloons: 0, box: 0 };
+// Only three missions are open at a time; finishing one opens the next.
 const MISSIONS = [
   { key: 'vases', goal: 5, name: 'Vase Smasher', desc: 'Break 5 vases', reward: 7 },
-  { key: 'bonks', goal: 3, name: 'Uncle Adam Bonker', desc: 'Bonk Uncle Adam 3 times', reward: 8 },
-  { key: 'tables', goal: 2, name: 'Timber!', desc: 'Topple both side tables', reward: 6 },
-  { key: 'loft', goal: 1, name: 'Curiosity', desc: 'Use the green pad to launch up to the rafters', reward: 4 },
-  { key: 'drops', goal: 1, name: 'From Above', desc: 'Drop something on Uncle Adam from the rafters', reward: 8 },
-  { key: 'disco', goal: 1, name: 'Disco Lena', desc: 'Bump the radio and make Uncle Adam dance', reward: 3 },
-  { key: 'books', goal: 8, name: 'Domino Library', desc: 'Knock over 8 books (try the first one)', reward: 7 },
-  { key: 'fridge', goal: 1, name: 'King of the Fridge', desc: 'Use the blue pad to land on top of the fridge', reward: 8 },
-  { key: 'paintings', goal: 6, name: 'Art Lover', desc: 'Say hi to all 6 paintings', reward: 6 },
-  { key: 'bugs', goal: 1, name: 'Bug Hunter', desc: 'Step on the orange pad, catch 5 bugs in 30 seconds', reward: 8 },
+  { key: 'disco', goal: 1, name: 'Disco Lena', desc: 'Bump the red radio and make Uncle Adam dance', reward: 3 },
+  { key: 'loft', goal: 1, name: 'Curiosity', desc: 'Step on the green pad to launch up to the rafters', reward: 4 },
+  { key: 'bonks', goal: 3, name: 'Uncle Adam Bonker', desc: 'Bonk Uncle Adam 3 times (SHELL roll into him)', reward: 8 },
+  { key: 'books', goal: 8, name: 'Domino Library', desc: 'Knock over 8 books (try pushing the first one)', reward: 7 },
   { key: 'balloons', goal: 8, name: 'Balloon Pop', desc: 'Pop 8 balloons, some are very high up', reward: 7 },
+  { key: 'paintings', goal: 6, name: 'Art Lover', desc: 'Say hi to all 6 paintings', reward: 6 },
+  { key: 'tables', goal: 2, name: 'Timber!', desc: 'Topple both side tables', reward: 6 },
+  { key: 'fridge', goal: 1, name: 'King of the Fridge', desc: 'Step on the blue pad to land on top of the fridge', reward: 8 },
+  { key: 'bugs', goal: 1, name: 'Bug Hunter', desc: 'Step on the orange pad, catch 5 bugs in 30 seconds', reward: 8 },
   { key: 'box', goal: 1, name: 'Hide in the Box', desc: 'Hide in the cardboard box for 3 seconds', reward: 5 },
+  { key: 'drops', goal: 1, name: 'From Above', desc: 'Push something off the rafters onto Uncle Adam', reward: 8 },
 ];
-const missionDone = new Set();
+const missionDone = new Set(save.done || []);
+let active = [];
+function isActive(k) { return active.includes(k); }
+function credit(k, n = 1) { if (!isActive(k)) return false; Q[k] += n; return true; }
+// put things back where they started so a newly opened mission is always doable
+function restoreProps(filter) {
+  for (const p of [...props]) {
+    if (!filter(p)) continue;
+    const h = p.home;
+    if (!p.alive) { props.splice(props.indexOf(p), 1); addProp(h.kind, h.x, h.y, h.z, h.ry); continue; }
+    const moved = p.toppled || Math.hypot(p.body.position.x - h.x, p.body.position.z - h.z) > 0.3 || Math.abs(p.body.position.y - h.y) > 0.3;
+    if (moved) {
+      p.body.position.set(h.x, h.y, h.z); p.body.quaternion.setFromEuler(0, h.ry, 0);
+      p.body.velocity.set(0, 0, 0); p.body.angularVelocity.set(0, 0, 0); p.body.wakeUp();
+      p.toppled = false; p.high = h.y > 1.6;
+    }
+  }
+}
+function openMission(k) {
+  Q[k] = 0;
+  if (k === 'vases') restoreProps((p) => p.kind === 'vase');
+  if (k === 'tables') restoreProps((p) => p.kind === 'table');
+  if (k === 'drops') restoreProps((p) => p.home.y > 1.6);
+  if (k === 'books') restoreProps((p) => p.kind === 'book');
+  if (k === 'paintings') for (const pt of paintings) { pt.touched = false; pt.frame.material.color.setHex(0x5e3f23); }
+  if (k === 'balloons') for (const b of balloons) b.alive = true;
+}
+function refreshActive() {
+  const before = active;
+  active = MISSIONS.filter((m) => !missionDone.has(m.key)).slice(0, 3).map((m) => m.key);
+  for (const k of active) if (!before.includes(k)) openMission(k);
+  for (const b of balloons) b.g.visible = b.alive && isActive('balloons');
+  const huntOn = isActive('bugs');
+  huntPadMat.color.setHex(huntOn ? 0xff9933 : 0x777777); huntPadMat.emissive.setHex(huntOn ? 0x663300 : 0x222222);
+}
 const hud = document.getElementById('hud');
 const toastEl = document.getElementById('toast');
 const timerEl = document.getElementById('timer');
@@ -548,32 +584,39 @@ let toastTimer = 0;
 function toast(msg) { toastEl.textContent = msg; toastEl.style.opacity = 1; toastTimer = 1.6; }
 function checkMissions() {
   for (const m of MISSIONS) {
-    if (!missionDone.has(m.key) && Q[m.key] >= m.goal) {
-      missionDone.add(m.key); addCoins(m.reward);
-      toast(`MISSION DONE: ${m.name}! +${m.reward}`);
-      if (missionDone.size === MISSIONS.length) setTimeout(() => { toast('LENA WINS! ALL MISSIONS DONE!'); sfx('win'); }, 1800);
-    }
+    if (!isActive(m.key) || Q[m.key] < m.goal) continue;
+    missionDone.add(m.key); save.done = [...missionDone]; persist(); addCoins(m.reward);
+    const before = active.slice();
+    refreshActive();
+    const fresh = active.filter((k) => !before.includes(k)).map((k) => MISSIONS.find((x) => x.key === k).name);
+    toast(`DONE: ${m.name}! +${m.reward}`);
+    if (missionDone.size === MISSIONS.length) setTimeout(() => { toast('LENA WINS! ALL MISSIONS DONE!'); sfx('win'); }, 1700);
+    else if (fresh.length) setTimeout(() => toast(`NEW MISSION: ${fresh[0]}`), 1700);
   }
 }
 function renderHud() {
   checkMissions();
-  const next = MISSIONS.filter((m) => !missionDone.has(m.key)).slice(0, 3);
   hud.innerHTML = `<div>🥬 ${coins} &nbsp; 📜 ${missionDone.size}/${MISSIONS.length}</div>`
-    + next.map((m) => `<div>○ ${m.name}${m.goal > 1 ? ` (${Math.min(Q[m.key], m.goal)}/${m.goal})` : ''}</div>`).join('');
+    + active.map((k) => { const m = MISSIONS.find((x) => x.key === k); return `<div>○ ${m.name}${m.goal > 1 ? ` (${Math.min(Q[k], m.goal)}/${m.goal})` : ''}</div>`; }).join('');
 }
 function checkWin() { renderHud(); }
-// full mission board
+// mission board: the three open missions, then what is done
 const missionsEl = document.getElementById('missions');
 function openMissions() {
   paused = true; resetStick();
-  missionsEl.innerHTML = `<h2>Missions (${missionDone.size}/${MISSIONS.length})</h2>` + MISSIONS.map((m) => {
-    const d = missionDone.has(m.key);
-    return `<div class="row ${d ? 'done' : ''}"><div><b>${d ? '✓' : '○'} ${m.name}</b><span>${m.desc}${m.goal > 1 && !d ? ` (${Math.min(Q[m.key], m.goal)}/${m.goal})` : ''}</span></div><div>🥬 ${m.reward}</div></div>`;
-  }).join('') + '<button class="close" id="missionsClose">Back to the game</button>';
+  const row = (m, open) => `<div class="row ${open ? '' : 'done'}"><div><b>${open ? '○' : '✓'} ${m.name}</b><span>${m.desc}${open && m.goal > 1 ? ` (${Math.min(Q[m.key], m.goal)}/${m.goal})` : ''}</span></div><div>🥬 ${m.reward}</div></div>`;
+  const doneList = MISSIONS.filter((m) => missionDone.has(m.key));
+  const locked = MISSIONS.length - missionDone.size - active.length;
+  missionsEl.innerHTML = `<h2>Missions (${missionDone.size}/${MISSIONS.length} done)</h2>`
+    + active.map((k) => row(MISSIONS.find((m) => m.key === k), true)).join('')
+    + (locked > 0 ? `<div class="row" style="opacity:.6"><div><b>🔒 ${locked} more missions</b><span>Finish one to open the next</span></div></div>` : '')
+    + doneList.map((m) => row(m, false)).join('')
+    + '<button class="close" id="missionsClose">Back to the game</button>';
   missionsEl.classList.add('open');
 }
 missionsEl.addEventListener('click', (e) => { if (e.target.id === 'missionsClose') { missionsEl.classList.remove('open'); paused = false; } });
 document.getElementById('missionsBtn').addEventListener('pointerdown', (e) => { e.preventDefault(); openMissions(); });
+refreshActive();
 renderHud();
 
 function breakProp(p) {
@@ -582,7 +625,7 @@ function breakProp(p) {
   scene.remove(p.mesh);
   sfx('crash');
   burst(new THREE.Vector3().copy(p.body.position), p.kind === 'vase' ? 0x3aa6c9 : 0xffe27a, 12);
-  if (p.kind === 'vase') { addCoins(5); Q.vases++; toast('CRASH! +5'); }
+  if (p.kind === 'vase') { addCoins(5); credit('vases'); toast('CRASH! +5'); }
   else { addCoins(3); toast('CLANG! +3'); }
   renderHud(); checkWin();
 }
@@ -592,8 +635,8 @@ function breakProp(p) {
 function bonkAdam(prop) {
   if (A.state !== 'patrol') return;
   disco.t = 0;
-  if (prop && prop.high) { Q.drops++; addCoins(15); toast('FROM THE RAFTERS! +15'); sfx('bonk'); }
-  A.state = 'flying'; A.t = 0; A.bonks++; Q.bonks++; addCoins(10);
+  if (prop && prop.high && credit('drops')) { addCoins(15); toast('FROM THE RAFTERS! +15'); sfx('bonk'); }
+  A.state = 'flying'; A.t = 0; A.bonks++; credit('bonks'); addCoins(10);
   toast('BONK! Uncle Adam! +10'); sfx('bonk');
   renderHud(); checkWin();
 }
@@ -717,8 +760,12 @@ function frame() {
     }
   }
   if (drift.t > 0) { lenaBody.velocity.x += drift.x; lenaBody.velocity.z += drift.z; drift.t -= dt; }
-  if (!Q.loft && lenaBody.position.y > 2.0 && lenaBody.position.x < -4.2) { Q.loft = 1; addCoins(15); toast('RAFTERS! +15'); renderHud(); checkWin(); }
-  if (!Q.fridge && lenaBody.position.y > 1.8 && Math.abs(lenaBody.position.x - FRIDGE.x) < 0.5 && Math.abs(lenaBody.position.z - FRIDGE.z) < 0.45) { Q.fridge = 1; renderHud(); }
+  const onLoft = lenaBody.position.y > 2.0 && lenaBody.position.x < -4.2;
+  if (onLoft && !wasOnLoft && credit('loft')) { addCoins(15); toast('RAFTERS! +15'); renderHud(); }
+  wasOnLoft = onLoft;
+  const onFridge = lenaBody.position.y > 1.8 && Math.abs(lenaBody.position.x - FRIDGE.x) < 0.5 && Math.abs(lenaBody.position.z - FRIDGE.z) < 0.45;
+  if (onFridge && !wasOnFridge && credit('fridge')) renderHud();
+  wasOnFridge = onFridge;
   lenaBody.wakeUp();
 
   world.step(1 / 60, dt, 3);
@@ -730,9 +777,9 @@ function frame() {
     p.mesh.position.copy(p.body.position);
     p.mesh.quaternion.copy(p.body.quaternion);
     if (p.body.position.y > 1.6) p.high = true;
-    if (p.kind === 'book' && !p.toppled && p.body.quaternion.vmult(upVec).y < 0.7) { p.toppled = true; Q.books++; sfx('coin'); renderHud(); }
+    if (p.kind === 'book' && !p.toppled && p.body.quaternion.vmult(upVec).y < 0.7) { p.toppled = true; if (credit('books')) { sfx('coin'); renderHud(); } }
     if (p.kind === 'table' && !p.toppled && p.body.quaternion.vmult(upVec).y < 0.75) {
-      p.toppled = true; Q.tables++; addCoins(8); toast('TIMBER! +8'); sfx('timber'); renderHud(); checkWin();
+      p.toppled = true; if (credit('tables')) { addCoins(8); toast('TIMBER! +8'); sfx('timber'); renderHud(); }
     }
   }
 
@@ -745,28 +792,28 @@ function frame() {
     const lp = lenaBody.position;
     disco.cool = Math.max(0, disco.cool - dt);
     if (disco.t <= 0 && disco.cool <= 0 && lp.y < 0.6 && Math.hypot(lp.x - RADIO.x, lp.z - RADIO.z) < 0.8) {
-      disco.t = 6; disco.cool = 9; Q.disco = 1; toast('DISCO TIME!'); renderHud();
+      disco.t = 6; disco.cool = 9; credit('disco'); toast('DISCO TIME!'); renderHud();
     }
     if (disco.t > 0) {
       disco.t -= dt; disco.beat -= dt;
       if (disco.beat <= 0) { disco.beat = 0.22; { const f = [262, 330, 392, 523, 392, 330][disco.i++ % 6]; tone(f, f, 0.18, 'square', 0.06); } }
     }
     for (const pt of paintings) {
-      if (!pt.touched && lp.y < 0.8 && Math.hypot(lp.x - pt.x, lp.z - pt.z) < 0.7) {
-        pt.touched = true; pt.frame.material.color.setHex(0x55dd66); Q.paintings++; sfx('coin'); toast(`Hi ${pt.emoji}!`); renderHud();
+      if (!pt.touched && isActive('paintings') && lp.y < 0.8 && Math.hypot(lp.x - pt.x, lp.z - pt.z) < 0.7) {
+        pt.touched = true; pt.frame.material.color.setHex(0x55dd66); credit('paintings'); sfx('coin'); toast(`Hi ${pt.emoji}!`); renderHud();
       }
     }
     for (const b of balloons) {
-      if (!b.alive) continue;
+      if (!b.alive || !isActive('balloons')) continue;
       b.ph += dt * 2; b.g.position.y = b.y + Math.sin(b.ph) * 0.04;
       if (Math.hypot(lp.x - b.x, lp.z - b.z, lp.y - b.y) < 0.5) {
-        b.alive = false; scene.remove(b.g); burst(new THREE.Vector3(b.x, b.y, b.z), b.color, 8);
-        Q.balloons++; tone(900, 200, 0.12, 'square', 0.12); toast(`POP! ${Q.balloons}/8`); renderHud();
+        b.alive = false; b.g.visible = false; burst(new THREE.Vector3(b.x, b.y, b.z), b.color, 8);
+        credit('balloons'); tone(900, 200, 0.12, 'square', 0.12); toast(`POP! ${Q.balloons}/8`); renderHud();
       }
     }
     updateHunt(dt);
     BOX.inside = Math.abs(lp.x - BOX.x) < 0.3 && Math.abs(lp.z - BOX.z) < 0.45 && lp.y < 0.5;
-    if (BOX.inside) { BOX.t += dt; if (!Q.box) timerEl.textContent = `Hiding... ${Math.max(0, Math.ceil(3 - BOX.t))}`; if (BOX.t >= 3 && !Q.box) { Q.box = 1; timerEl.textContent = ''; toast('HIDDEN! Uncle Adam cannot find you'); renderHud(); } }
+    if (BOX.inside) { BOX.t += dt; if (isActive('box')) { timerEl.textContent = `Hiding... ${Math.max(0, Math.ceil(3 - BOX.t))}`; if (BOX.t >= 3) { credit('box'); timerEl.textContent = ''; toast('HIDDEN! Uncle Adam cannot find you'); renderHud(); } } }
     else { BOX.t = 0; if (!HUNT.active) timerEl.textContent = ''; }
   }
   updateAdam(dt);
@@ -792,7 +839,7 @@ function frame() {
 }
 frame();
 addEventListener('resize', () => { renderer.setSize(innerWidth, innerHeight); camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); });
-window.__game = { lenaBody, adam, props, Q, S, A, tuckIn, toggleView, bugs, HUNT, missionDone, balloons, paintings, BOX, disco, get yaw() { return yaw; }, keys, input, world };
+window.__game = { lenaBody, adam, props, Q, S, A, tuckIn, toggleView, get active() { return active; }, isActive, credit, bugs, HUNT, missionDone, balloons, paintings, BOX, disco, get yaw() { return yaw; }, keys, input, world };
 </script>
 </body>
 </html>
