@@ -16,4 +16,4 @@ Run locally: `python3 -m http.server` in this folder, open http://localhost:8000
 Live: https://abroniewski.github.io/i-am-lena-game/
 
 ## Scale
-1 game unit = 1 metre. Lina is a Greek tortoise that fits in a palm (about 15 cm long). The open kitchen/dining/living area is 7.4 m x 9 m, the island is 2.9 m x 1.47 m, the entry ceiling is 5.5 m. Lina jumps about 0.85 m, so steps are 0.4 to 0.5 m high.
+1 game unit = 1 metre. Lina is a Greek tortoise that fits in a palm (about 15 cm long). The open kitchen/dining/living area is about 10.4 m wide x 8.7 m deep, the island is 2.9 m x 1.47 m, the entry ceiling is 5.5 m. Lina jumps about 0.85 m, so steps are 0.4 to 0.5 m high.
