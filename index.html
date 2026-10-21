@@ -54,6 +54,7 @@
 <div id="hud"></div>
 <div id="toast"></div>
 <div id="hint">Left circle walks. Drag the world to look around. JUMP, GRAB and SHELL are on the right!</div>
+<script>if (matchMedia('(pointer:fine)').matches) document.getElementById('hint').textContent = 'WASD walks. Arrow keys turn the camera. Space jumps, G grabs, E hides in the shell, V changes view!';</script>
 <div id="stick"><div id="knob"></div></div>
 <button id="shell">SHELL!</button>
 <button id="jump">JUMP</button>
@@ -835,6 +836,7 @@ stick.addEventListener('pointercancel', resetStick);
 const keys = new Set();
 addEventListener('keydown', (e) => {
   const k = e.key.toLowerCase(); keys.add(k);
+  if (k.startsWith('arrow')) e.preventDefault();
   if (k === ' ') { e.preventDefault(); jumpReq = true; }
   if (k === 'e' || k === 'x') tuckIn();
   if (k === 'g') grabOrThrow();
@@ -1174,10 +1176,17 @@ function frame() {
   const dt = Math.min(clock.getDelta(), 0.05);
   if (paused) { renderer.render(scene, camera); requestAnimationFrame(frame); return; }
   let ix = input.x, iy = input.y;
-  if (keys.has('a') || keys.has('arrowleft')) ix -= 1;
-  if (keys.has('d') || keys.has('arrowright')) ix += 1;
-  if (keys.has('w') || keys.has('arrowup')) iy -= 1;
-  if (keys.has('s') || keys.has('arrowdown')) iy += 1;
+  if (keys.has('a')) ix -= 1;
+  if (keys.has('d')) ix += 1;
+  if (keys.has('w')) iy -= 1;
+  if (keys.has('s')) iy += 1;
+  // arrow keys turn and tilt the camera
+  const turn = (keys.has('arrowleft') ? 1 : 0) - (keys.has('arrowright') ? 1 : 0), tilt = (keys.has('arrowdown') ? 1 : 0) - (keys.has('arrowup') ? 1 : 0);
+  if (turn || tilt) {
+    hideHint();
+    if (firstPerson) { yaw += turn * 2.0 * dt; fpPitch = Math.max(-0.9, Math.min(0.9, fpPitch - tilt * 1.2 * dt)); }
+    else { camAz += turn * 2.0 * dt; camEl = Math.max(0.12, Math.min(1.45, camEl + tilt * 1.2 * dt)); }
+  }
   const mag = Math.min(1, Math.hypot(ix, iy));
 
   if (S.on) { S.t -= dt; if (S.t <= 0) popOut(); }
