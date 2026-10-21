@@ -139,7 +139,7 @@ staticBox(1.4, 0.1, 4.25, -5.8, YARD - 0.1, 4.25);     // the side yard west of 
 staticBox(4.545, 0.3, 1.725, 4.545, -0.3, -1.725);     // the elevated deck
 
 // ---------- the house ----------
-const wallMat = mat(0xf6ecd6);
+const wallMat = mat(0xeeeae0);
 const WALL_H = 2.7, DOOR_H = 2.1;
 // a wall along x (alongX) or along z at position c, from a to b, with doorway gaps [[g0, g1], ...]
 function wallSeg(alongX, c, a, b, gaps = [], header = true, h = WALL_H) {
@@ -162,15 +162,15 @@ function floorRect(x0, x1, z0, z1, color, planks = false) {
   const f = new THREE.Mesh(new THREE.BoxGeometry(x1 - x0, 0.2, z1 - z0), mat(color));
   f.position.set((x0 + x1) / 2, -0.1, (z0 + z1) / 2); f.receiveShadow = true; scene.add(f);
   if (planks) for (let x = Math.ceil(x0 * 5) / 5; x < x1; x += 0.2) {
-    const line = new THREE.Mesh(new THREE.BoxGeometry(0.01, 0.005, z1 - z0), mat(0x9a7344));
+    const line = new THREE.Mesh(new THREE.BoxGeometry(0.01, 0.005, z1 - z0), mat(0xcbb898));
     line.position.set(x, 0.003, (z0 + z1) / 2); scene.add(line);
   }
 }
-floorRect(0, 10.36, 0, 8.73, 0xc89a62, true);          // kitchen, dining, living, entry
+floorRect(0, 10.36, 0, 8.73, 0xe4d5bb, true);          // kitchen, dining, living, entry
 floorRect(-4.36, 0, 0, 4.18, 0x9aa0a8);                // playroom (grey carpet)
 floorRect(-4.36, -2, 4.18, 5.64, 0xeeeeee);            // powder room
 floorRect(-2, 0, 4.18, 5.64, 0xd8b98a);                // hall
-floorRect(-4.36, 0, 5.64, 8.73, 0xc89a62, true);       // office
+floorRect(-4.36, 0, 5.64, 8.73, 0xe4d5bb, true);       // office
 // open area walls
 wallSeg(true, 0, 0, 10.36, [[2.36, 4.73]], false);     // north: sliding glass door to the deck
 wallSeg(false, 10.36, 0, 8.73);
@@ -210,28 +210,46 @@ staticFurniture(0.7, 2.2, 0.6, 5.55, 0.3, 0xe8e8e8);
 for (const y of [1.2, 1.65]) deco(0.5, 0.3, 0.03, 5.55, y, 0.62, 0x222222);
 staticFurniture(2.1, 0.9, 0.6, 6.95, 0.3, 0xf2f2f2); deco(2.1, 0.04, 0.65, 6.95, 0.92, 0.3, 0x555b63);
 windowPane(7.0, 1.5, 0.04, 0, 1.2, 0.8);
+deco(1.0, 0.55, 0.5, 7.0, 2.2, 0.28, 0xffffff); deco(0.5, 0.35, 0.4, 7.0, 1.9, 0.3, 0xf6f6f6);   // arched range hood
+for (const x of [6.15, 7.85]) deco(0.5, 0.9, 0.35, x, 2.15, 0.2, 0xffffff);                       // upper cabinets
+for (const x of [5.9, 6.4, 7.6, 8.0]) deco(0.02, 0.1, 0.02, x, 0.75, 0.62, 0x222222);           // black handles
+deco(0.3, 0.1, 0.3, 6.4, 0.97, 0.3, 0x2c5aa0);                                                  // blue pot on the counter
 staticFurniture(1.47, 0.95, 2.9, 8.13, 2.8, 0x6b7078); deco(1.57, 0.04, 3.0, 8.13, 0.97, 2.8, 0xe9e9e9);
-for (const z of [1.9, 2.5, 3.1, 3.7]) staticFurniture(0.34, 0.65, 0.34, 7.1, z, 0x5a3f2a);
-for (const z of [1.9, 2.8, 3.7]) { deco(0.02, 0.8, 0.02, 8.13, 2.3, z, 0x333333); deco(0.25, 0.2, 0.25, 8.13, 1.8, z, 0xffe27a); }
+for (const z of [1.9, 2.5, 3.1, 3.7]) staticFurniture(0.34, 0.65, 0.34, 7.1, z, 0x4a4d52);
+for (const z of [1.9, 2.8, 3.7]) { deco(0.02, 0.8, 0.02, 8.13, 2.3, z, 0x333333); deco(0.28, 0.22, 0.28, 8.13, 1.8, z, 0xd8f0f5, 0, true); deco(0.1, 0.06, 0.1, 8.13, 1.93, z, 0x222222); }
+deco(0.02, 0.6, 0.6, 7.39, 0.5, 3.2, 0x44474c); deco(0.03, 0.5, 0.5, 7.37, 0.5, 3.2, 0x1e2024);   // wine rack on the island
 // dining: a live-edge table (3 m) you can run under, ten chairs, chandelier, glass hutch, mat at the sliding door
-deco(3.0, 0.06, 1.0, 3.8, 0.76, 2.45, 0x7a4a26); staticBox(1.5, 0.03, 0.5, 3.8, 0.76, 2.45);
-for (const [x, z] of [[2.4, 2.0], [5.2, 2.0], [2.4, 2.9], [5.2, 2.9]]) { deco(0.07, 0.73, 0.07, x, 0.365, z, 0x5a3818); staticBox(0.035, 0.365, 0.035, x, 0.365, z); }
-for (const x of [2.7, 3.4, 4.1, 4.8]) for (const z of [1.75, 3.15]) staticFurniture(0.4, 0.45, 0.4, x, z, 0x6a5a4a);
-staticFurniture(0.4, 0.45, 0.4, 2.1, 2.45, 0x6a5a4a); staticFurniture(0.4, 0.45, 0.4, 5.5, 2.45, 0x6a5a4a);
-deco(1.4, 0.04, 0.04, 3.8, 2.2, 2.45, 0x333333);
+deco(3.0, 0.06, 1.0, 3.8, 0.76, 2.45, 0x3a2216); staticBox(1.5, 0.03, 0.5, 3.8, 0.76, 2.45);
+for (const [x, z] of [[2.4, 2.0], [5.2, 2.0], [2.4, 2.9], [5.2, 2.9]]) { deco(0.07, 0.73, 0.07, x, 0.365, z, 0x1c1c1c); staticBox(0.035, 0.365, 0.035, x, 0.365, z); }
+for (const x of [2.7, 3.4, 4.1, 4.8]) for (const z of [1.75, 3.15]) staticFurniture(0.4, 0.45, 0.4, x, z, 0x9a4f2b);
+staticFurniture(0.4, 0.45, 0.4, 2.1, 2.45, 0x9a4f2b); staticFurniture(0.4, 0.45, 0.4, 5.5, 2.45, 0x9a4f2b);
+for (const x of [2.7, 3.4, 4.1, 4.8]) for (const z of [1.75, 3.15]) deco(0.4, 0.4, 0.04, x, 0.7, z + (z < 2.4 ? -0.2 : 0.2), 0x9a4f2b);   // chair backs
+deco(1.4, 0.04, 0.5, 3.8, 2.2, 2.45, 0xc9a24a); deco(0.02, 0.5, 0.02, 3.8, 2.5, 2.45, 0xc9a24a);   // brass chandelier
 for (const x of [3.3, 3.8, 4.3]) deco(0.18, 0.18, 0.18, x, 2.05, 2.45, 0xfff0b0);
 staticFurniture(0.5, 1.8, 0.9, 0.27, 3.65, 0xdcd2c0); deco(0.03, 1.2, 0.7, 0.54, 1.0, 3.65, 0xaadcf5, 0, true);
 deco(2.0, 0.012, 0.8, 3.55, 0.007, 0.55, 0x3d3d44);
-// living (south-east): L-shaped sofa facing the fireplace and TV wall, blue rug, round coffee table, piano, armchair, plant
-deco(2.8, 0.012, 2.6, 8.4, 0.007, 6.55, 0x4a6fa5);
-staticFurniture(2.2, 0.45, 0.9, 8.0, 5.5, 0x7a7f8c); staticFurniture(0.9, 0.45, 1.4, 7.35, 6.55, 0x7a7f8c); staticFurniture(2.2, 0.45, 0.9, 8.0, 7.6, 0x7a7f8c);
-staticFurniture(0.8, 0.35, 0.8, 9.0, 6.55, 0x8a5a33);
-staticFurniture(0.5, 0.9, 1.8, 10.1, 6.55, 0x2b2b2b); deco(0.05, 0.9, 1.3, 9.82, 1.55, 6.55, 0x111111);
-staticFurniture(0.5, 2.2, 0.8, 10.1, 5.0, 0x2b2b2b); staticFurniture(0.5, 2.2, 0.8, 10.1, 8.1, 0x2b2b2b);
-staticFurniture(1.6, 1.0, 0.6, 6.3, 8.35, 0x1c1c1c); deco(1.5, 0.02, 0.2, 6.3, 1.01, 8.1, 0xf4f4f4); staticFurniture(0.4, 0.4, 0.4, 6.3, 7.8, 0x5a3f2a);
-staticFurniture(0.8, 0.45, 0.8, 5.9, 5.8, 0xa5483a);
-{ staticFurniture(0.3, 0.3, 0.3, 9.9, 8.4, 0x8a5a33); const leaf = new THREE.Mesh(new THREE.SphereGeometry(0.35, 12, 10), mat(0x3f8f3a)); leaf.position.set(9.9, 0.7, 8.4); scene.add(leaf); }
-for (const x of [6.8, 8.8]) windowPane(x, 1.5, 8.67, 0, 1.4, 1.2);
+// sliding glass doors to the deck: white frames
+for (const x of [2.36, 3.55, 4.73]) deco(0.07, 2.1, 0.1, x, 1.05, 0.04, 0xf4f1ea);
+deco(2.4, 0.06, 0.1, 3.55, 2.1, 0.04, 0xf4f1ea); windowPane(3.55, 1.05, 0.02, 0, 2.3, 2.0);
+// living (south-east): cream L-sectional (back to the dining side) facing the fireplace, console table behind it, blue rug, round coffee table, navy armchairs, piano
+deco(3.4, 0.012, 2.8, 8.7, 0.007, 6.5, 0xa9bbd6);
+staticFurniture(0.95, 0.45, 3.0, 7.6, 6.6, 0xe6e0d2); deco(0.25, 0.4, 3.0, 7.2, 0.65, 6.6, 0xe6e0d2);   // sofa and its back
+staticFurniture(1.3, 0.45, 0.95, 8.7, 5.6, 0xe6e0d2); deco(1.3, 0.4, 0.25, 8.7, 0.65, 5.2, 0xe6e0d2);   // chaise towards the kitchen
+for (const [x, z] of [[7.55, 5.6], [7.6, 6.7]]) deco(0.4, 0.3, 0.4, x, 0.6, z, 0x2f3b55, 0.3);          // cushions
+staticFurniture(0.85, 0.35, 0.85, 8.8, 6.95, 0xf1efe9); deco(0.2, 0.3, 0.2, 8.8, 0.5, 6.95, 0xe9e5da);     // marble coffee table
+staticFurniture(0.4, 0.8, 2.7, 6.6, 6.55, 0x8a7a68);                                                     // console table behind the sofa
+for (const z of [5.5, 7.6]) { deco(0.2, 0.35, 0.2, 6.6, 1.0, z, 0xf3efe6); deco(0.3, 0.2, 0.3, 6.6, 1.25, z, 0xfff0c8); }  // table lamps
+for (const z of [6.0, 7.1]) staticFurniture(0.45, 0.4, 0.5, 6.15, z, 0x4a5568);                           // ottomans
+deco(0.4, 0.45, 0.4, 6.75, 0.225, 4.95, 0xf3efe6);                                                    // white basket
+// fireplace with built-in shelves and the TV
+staticFurniture(0.4, 1.2, 2.0, 10.16, 6.55, 0x9a9a92); deco(0.05, 0.75, 1.3, 9.96, 1.7, 6.55, 0x111111); deco(0.03, 0.45, 0.9, 9.95, 0.5, 6.55, 0x222222);
+staticFurniture(0.4, 2.2, 1.0, 10.16, 5.0, 0x4b4e55); staticFurniture(0.4, 2.2, 0.95, 10.16, 8.15, 0x4b4e55);
+for (const y of [0.9, 1.4, 1.9]) for (const z of [5.0, 8.15]) deco(0.02, 0.04, 0.8, 9.95, y, z, 0x2e3036);
+staticFurniture(1.6, 1.0, 0.6, 6.3, 8.35, 0x1c1c1c); deco(1.5, 0.02, 0.2, 6.3, 1.01, 8.1, 0xf4f4f4); staticFurniture(0.4, 0.4, 0.4, 6.3, 7.8, 0x1c1c1c);
+staticFurniture(0.8, 0.45, 0.8, 9.5, 4.75, 0x3a4252); deco(0.8, 0.4, 0.15, 9.5, 0.65, 5.12, 0x3a4252);       // armchair
+staticFurniture(0.8, 0.45, 0.8, 9.6, 8.2, 0x2f3b55);                                                        // navy chair by the window
+{ staticFurniture(0.3, 0.3, 0.3, 5.3, 8.35, 0x8a5a33); const leaf = new THREE.Mesh(new THREE.SphereGeometry(0.4, 12, 10), mat(0x2f7a3a)); leaf.position.set(5.3, 0.75, 8.35); scene.add(leaf); }
+for (const x of [6.8, 8.8]) { windowPane(x, 1.5, 8.67, 0, 1.4, 1.2); for (const d of [-0.9, 0.9]) deco(0.45, 2.4, 0.1, x + d, 1.3, 8.62, 0xefe6cf); }   // curtains
 // entry (two storeys, 5.5 m): front door, runner, white pillar, stairs up with a locked gate, locked basement stairs
 deco(1.44, 2.2, 0.08, 1.08, 1.1, 8.69, 0x7a5232);
 deco(1.2, 0.012, 3.6, 1.35, 0.007, 6.6, 0x8a4a4a);
