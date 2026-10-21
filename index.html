@@ -47,7 +47,7 @@
   #missions.open { display: flex; }
   #missions h2 { margin: 6px 0 12px; font-size: 42px; }
   #missions .row { width: min(700px, 94vw); padding: 12px 16px; margin-bottom: 10px; border-radius: 14px; background: rgba(255,255,255,.12); display: flex; justify-content: space-between; gap: 12px; font-size: 34px; }
-  #missions .row button.pick { margin-top: 6px; padding: 8px 14px; border-radius: 12px; border: none; font-size: 22px; font-weight: 800; background: #6fd36f; color: #123; }
+  #missions .row.locked { opacity: .45; }
   #missions .row.done { background: rgba(110,210,110,.3); }
   #missions .row b { display: block; font-size: 36px; }
   #missions .row span { opacity: .85; font-size: 28px; }
@@ -1059,9 +1059,7 @@ const MISSIONS = [
 ];
 const missionDone = new Set(save.done || []);
 let active = [];
-let focus = null;   // the one mission Lina is working on; only it counts progress
-function isActive(k) { return k === focus; }
-function setFocus(k) { if (focus === k) return; focus = k; if (k) openMission(k); rebuildMarkers(); }
+function isActive(k) { return active.includes(k); }
 function credit(k, n = 1) { if (!isActive(k)) return false; Q[k] += n; return true; }
 // put things back where they started so a newly opened mission is always doable
 function restoreProps(filter) {
@@ -1106,10 +1104,12 @@ function addMarker(emoji, get) { const s = makeMarkerSprite(emoji); s.visible = 
 function rebuildMarkers() {
   for (const m of markers) scene.remove(m.s);
   markers.length = 0;
-  const k = focus; if (!k) return;
+  let doorDone = false;
+  for (const k of active) addMarkersFor(k);
+  function addMarkersFor(k) {
   const onProps = (emoji, pred, every = 1) => { let i = 0; for (const p of props) if (pred(p) && i++ % every === every - 1) addMarker(emoji, () => (p.alive && !(p.toppled && ['table', 'book', 'brick'].includes(p.kind)) ? [p.body.position.x, p.body.position.y + 0.42, p.body.position.z] : null)); };
   const at = (emoji, x, y, z) => addMarker(emoji, () => [x, y, z]);
-  const door = () => at('🚪', 3.55, 1.5, 0.3);   // the way out to the garden
+  const door = () => { if (!doorDone) { doorDone = true; at('🚪', 3.55, 1.5, 0.3); } };   // the way out to the garden
   if (k === 'vases') onProps('🏺', (p) => p.kind === 'vase');
   else if (k === 'tables') onProps('🪑', (p) => p.kind === 'table');
   else if (k === 'books') onProps('📚', (p) => p.kind === 'book', 12);
@@ -1128,18 +1128,26 @@ function rebuildMarkers() {
   else if (k === 'lettuce') { door(); for (const l of lettuces) addMarker('🥬', () => (l.alive ? [l.x, YARD + 0.5, l.z] : null)); }
   else if (k === 'dino') { door(); at('🦖', TREX.x, YARD + 1.4, TREX.z); }
   else if (k === 'droid') { door(); addMarker('🤖', () => [droid.g.position.x, YARD + 0.6, droid.g.position.z]); }
+  }
 }
+// markers in the room Lina is in are fully visible, and ones behind walls fade, so it is clear they are in another room
+function roomOf(x, z) { const i = CAM_ROOMS.findIndex((r) => x >= r[0] && x <= r[1] && z >= r[2] && z <= r[3]); return i; }
 function updateMarkers(t) {
   for (const m of markers) {
     const p = m.get();
     m.s.visible = !!p;
-    if (p) m.s.position.set(p[0], p[1] + Math.sin(t * 3 + p[0]) * 0.04, p[2]);
+    if (p) {
+      m.s.position.set(p[0], p[1] + Math.sin(t * 3 + p[0]) * 0.04, p[2]);
+      const same = roomOf(p[0], p[2]) === roomOf(lenaBody.position.x, lenaBody.position.z);
+      m.s.material.opacity = same ? 1 : 0.3;
+    }
   }
 }
 function refreshActive() {
   const before = active;
   active = MISSIONS.filter((m) => !missionDone.has(m.key)).slice(0, 3).map((m) => m.key);
-  if (!active.includes(focus)) { focus = null; setFocus(active[0] || null); }
+  for (const k of active) if (!before.includes(k)) openMission(k);
+  rebuildMarkers();
   for (const b of balloons) b.g.visible = b.alive && isActive('balloons');
   const huntOn = isActive('bugs');
   huntPadMat.color.setHex(huntOn ? 0xff9933 : 0x777777); huntPadMat.emissive.setHex(huntOn ? 0x663300 : 0x222222);
@@ -1158,25 +1166,25 @@ function checkMissions() {
     const fresh = active.filter((k) => !before.includes(k)).map((k) => MISSIONS.find((x) => x.key === k).name);
     toast(`DONE: ${m.name}! +${m.reward}`);
     if (missionDone.size === MISSIONS.length) setTimeout(() => { toast('LINA WINS! ALL MISSIONS DONE!'); sfx('win'); }, 1700);
-    else if (focus) setTimeout(() => toast(`NEXT UP: ${MISSIONS.find((x) => x.key === focus).name}`), 1700);
+    else if (fresh.length) setTimeout(() => toast(`NEW MISSION: ${fresh[0]}`), 1700);
   }
 }
 function renderHud() {
   checkMissions();
   hud.innerHTML = `<div>🥬 ${coins} &nbsp; 📜 ${missionDone.size}/${MISSIONS.length}</div>`
-    + active.map((k) => { const m = MISSIONS.find((x) => x.key === k); if (k !== focus) return `<div style="opacity:.5">○ ${m.name}</div>`; return `<div>👉 ${m.name}${m.goal > 1 ? ` (${Math.min(Q[k], m.goal)}/${m.goal})` : ''}${k === 'pizza' ? ' ' + PIZZA.items.map((i) => (i.got ? i.e : '▫️')).join('') : ''}</div>`; }).join('');
+    + active.map((k) => { const m = MISSIONS.find((x) => x.key === k); return `<div>○ ${m.name}${m.goal > 1 ? ` (${Math.min(Q[k], m.goal)}/${m.goal})` : ''}${k === 'pizza' ? ' ' + PIZZA.items.map((i) => (i.got ? i.e : '▫️')).join('') : ''}</div>`; }).join('');
 }
 function checkWin() { renderHud(); }
 // mission board: the three open missions, then what is done
 const missionsEl = document.getElementById('missions');
 function openMissions() {
   paused = true; resetStick();
-  const row = (m, open) => `<div class="row ${open ? '' : 'done'}"><div><b>${open ? (m.key === focus ? '👉' : '○') : '✓'} ${m.name}</b><span>${m.desc}${open && m.key === focus && m.goal > 1 ? ` (${Math.min(Q[m.key], m.goal)}/${m.goal})` : ''}</span></div><div>🥬 ${m.reward}${open && m.key !== focus ? `<br><button class="pick" data-focus="${m.key}">Do this one</button>` : ''}</div></div>`;
+  const row = (m, open) => `<div class="row ${open ? '' : 'done'}"><div><b>${open ? '○' : '✓'} ${m.name}</b><span>${m.desc}${open && m.goal > 1 ? ` (${Math.min(Q[m.key], m.goal)}/${m.goal})` : ''}</span></div><div>🥬 ${m.reward}</div></div>`;
   const doneList = MISSIONS.filter((m) => missionDone.has(m.key));
   const locked = MISSIONS.length - missionDone.size - active.length;
   missionsEl.innerHTML = `<h2>Missions (${missionDone.size}/${MISSIONS.length} done)</h2>`
     + active.map((k) => row(MISSIONS.find((m) => m.key === k), true)).join('')
-    + (locked > 0 ? `<div class="row" style="opacity:.6"><div><b>🔒 ${locked} more missions</b><span>Finish one to open the next</span></div></div>` : '')
+    + MISSIONS.filter((m) => !missionDone.has(m.key) && !active.includes(m.key)).map((m) => `<div class="row locked"><div><b>🔒 ${m.name}</b><span>Finish a mission to unlock this one</span></div><div>🥬 ${m.reward}</div></div>`).join('')
     + doneList.map((m) => row(m, false)).join('')
     + '<button class="close" id="missionsClose">Back to the game</button>';
   missionsEl.classList.add('open');
@@ -1204,10 +1212,7 @@ feedbackEl.addEventListener('click', async (e) => {
   }
 });
 document.getElementById('feedbackBtn').addEventListener('pointerdown', (e) => { e.preventDefault(); openFeedback(); });
-missionsEl.addEventListener('click', (e) => {
-  const f = e.target.dataset && e.target.dataset.focus;
-  if (f) { setFocus(f); openMissions(); renderHud(); toast(`Now working on: ${MISSIONS.find((x) => x.key === f).name}`); return; }
-  if (e.target.id === 'missionsClose') { missionsEl.classList.remove('open'); paused = false; } });
+missionsEl.addEventListener('click', (e) => { if (e.target.id === 'missionsClose') { missionsEl.classList.remove('open'); paused = false; } });
 document.getElementById('missionsBtn').addEventListener('pointerdown', (e) => { e.preventDefault(); openMissions(); });
 refreshActive();
 renderHud();
