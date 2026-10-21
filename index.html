@@ -4,8 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="I Am Lena">
-<title>I Am Lena</title>
+<meta name="apple-mobile-web-app-title" content="I Am Lina">
+<title>I Am Lina</title>
 <link rel="icon" href="data:,">
 <style>
   html, body { margin: 0; height: 100%; overflow: hidden; background: #87ceeb; touch-action: none; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; font-family: system-ui, sans-serif; }
@@ -121,7 +121,7 @@ const world = new CANNON.World({ gravity: new CANNON.Vec3(0, -9.8, 0) });
 world.allowSleep = true;
 world.defaultContactMaterial.friction = 0.35;
 world.defaultContactMaterial.restitution = 0.25;
-const baseMat = new CANNON.Material('base'); // everything except Lena
+const baseMat = new CANNON.Material('base'); // everything except Lina
 const ROOM = 6;
 function staticBox(hx, hy, hz, x, y, z) {
   const b = new CANNON.Body({ mass: 0, material: baseMat, shape: new CANNON.Box(new CANNON.Vec3(hx, hy, hz)) });
@@ -167,7 +167,7 @@ const SAVE_KEY = 'i-am-lena-save';
 let save = { coins: 0, owned: ['brown'], skin: 'brown', done: [], patterns: ['hex', 'none'], pattern: 'hex' };
 try { Object.assign(save, JSON.parse(localStorage.getItem(SAVE_KEY) || '{}')); } catch (e) {}
 if (!save.owned.includes('brown')) save.owned.push('brown');
-if (!save.migrated) { save.migrated = 1; if (save.skin === 'green') save.skin = 'brown'; } // Lena is brown now
+if (!save.migrated) { save.migrated = 1; if (save.skin === 'green') save.skin = 'brown'; } // Lina is brown now
 function persist() { try { localStorage.setItem(SAVE_KEY, JSON.stringify(save)); } catch (e) {} }
 let coins = save.coins;
 function addCoins(n) { coins += n; save.coins = coins; persist(); sfx('coin'); }
@@ -234,7 +234,7 @@ const TOP = LOFT_Y + 0.08;
 for (const [kind, z] of [['crate', -3.0], ['ball', -2.2], ['vase', -1.5], ['crate', -0.6], ['ball', 0.2], ['vase', 1.0], ['crate', 1.9]]) {
   addProp(kind, -5.4, TOP + (kind === 'crate' ? 0.25 : kind === 'ball' ? 0.2 : 0.18) + 0.02, z);
 }
-// launch pads are gone: Lena jumps now. Wooden steps lead up to the rafters and the fridge.
+// launch pads are gone: Lina jumps now. Wooden steps lead up to the rafters and the fridge.
 const PADS = [];
 function addStep(cx, cz, w, h, d, color = 0xd9a867) {
   const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat(color));
@@ -246,7 +246,7 @@ for (const [i, cx] of [0.3, 0.9, 1.475].entries()) addStep(cx, -5.5, i === 2 ? 0
 const drift = { t: 0, x: 0, z: 0 };
 let padCool = 0, wasOnLoft = false, wasOnFridge = false;
 
-// ---------- mission pack: Lena flavoured versions of I Am Cat's tasks ----------
+// ---------- mission pack: Lina flavoured versions of I Am Cat's tasks ----------
 // fridge (king of the fridge)
 const FRIDGE = { x: 2.2, z: -5.5, top: 1.9 };
 {
@@ -329,7 +329,7 @@ function updateHunt(dt) {
     b.ht -= dt; if (b.ht <= 0) { b.h += (Math.random() - 0.5) * 2.5; b.ht = 0.7; }
     const dx = m.position.x - lp.x, dz = m.position.z - lp.z, d = Math.hypot(dx, dz);
     let sp = 0.8;
-    if (d < 1.8) { b.h = Math.atan2(dx, dz); sp = 1.2; }   // they run, but Lena is faster
+    if (d < 1.8) { b.h = Math.atan2(dx, dz); sp = 1.2; }   // they run, but Lina is faster
     m.position.x = Math.max(-3.6, Math.min(5.5, m.position.x + Math.sin(b.h) * sp * dt));
     m.position.z = Math.max(-5.5, Math.min(5.5, m.position.z + Math.cos(b.h) * sp * dt));
     m.rotation.y = b.h;
@@ -351,7 +351,7 @@ for (const [x, z, hx, hz] of [[-1.65, -1.6, 0.02, 0.5], [-0.75, -1.6, 0.02, 0.5]
   staticBox(hx, 0.15, hz, x, 0.15, z);
 }
 
-// ---------- the garden: Lena's home, through the door in the east wall ----------
+// ---------- the garden: Lina's home, through the door in the east wall ----------
 const GARDEN_X0 = 6, GARDEN_X1 = 18;
 {
   const grass = new THREE.Mesh(new THREE.BoxGeometry(12, 0.2, 12), mat(0x6db04a));
@@ -427,7 +427,7 @@ const DROID_WP = [[9, 1.5], [12.5, 0.5], [12, -2.5], [9, 0.5]];
 const gardenState = { visited: false };
 function updateGarden(dt) {
   const lp = lenaBody.position;
-  if (!gardenState.visited && lp.x > 7) { gardenState.visited = true; toast('The garden! Lena is home'); }
+  if (!gardenState.visited && lp.x > 7) { gardenState.visited = true; toast('The garden! Lina is home'); }
   for (const l of lettuces) {
     if (l.alive) {
       if (Math.hypot(lp.x - l.x, lp.z - l.z) < 0.45 && lp.y < 0.6) {
@@ -450,6 +450,57 @@ function updateGarden(dt) {
     droid.cool = 1.5; droid.spin = 0.8; tone(1200, 1800, 0.08, 'square', 0.1); setTimeout(() => tone(1800, 900, 0.12, 'square', 0.1), 120);
     toast('BEEP BOOP!'); if (credit('droid')) renderHud();
   }
+}
+
+// ---------- Oscar's pizza: collect 5 ingredients, then bake it in the oven ----------
+const PIZZA = {
+  oven: { x: 4.6, z: -4.4 }, baking: 0, nag: 0,
+  items: [
+    { id: 'squash', e: '🎃', name: 'butternut squash', x: 12.5, y: 0.45, z: -4.3 },
+    { id: 'bacon', e: '🥓', name: 'bacon', x: -3.5, y: 0.45, z: 3.8 },
+    { id: 'maple', e: '🍁', name: 'maple syrup', x: FRIDGE.x, y: FRIDGE.top + 0.35, z: FRIDGE.z },
+    { id: 'jam', e: '🧅', name: 'onion jam', x: 16.3, y: 0.45, z: 0.8 },
+    { id: 'cheese', e: '🧀', name: 'mozzarella', x: -5.1, y: LOFT_Y + 0.5, z: -1.5 },
+  ],
+};
+for (const it of PIZZA.items) {
+  const c = document.createElement('canvas'); c.width = c.height = 128;
+  const x = c.getContext('2d'); x.font = '96px serif'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText(it.e, 64, 70);
+  it.sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(c), transparent: true }));
+  it.sprite.scale.set(0.6, 0.6, 0.6); it.sprite.position.set(it.x, it.y, it.z); it.sprite.visible = false; scene.add(it.sprite);
+  it.got = false;
+}
+{
+  const oven = new THREE.Group();
+  const brick = mat(0xb5532f);
+  const base = new THREE.Mesh(new THREE.BoxGeometry(1.1, 0.7, 0.9), brick); base.position.y = 0.35;
+  const dome = new THREE.Mesh(new THREE.SphereGeometry(0.5, 14, 10, 0, Math.PI * 2, 0, Math.PI / 2), brick); dome.position.y = 0.7; dome.scale.set(1.1, 1, 0.9);
+  const mouth = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.3, 0.05), mat(0x222222)); mouth.position.set(0, 0.55, 0.46);
+  const chim = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.5, 0.2), brick); chim.position.set(0, 1.25, -0.1);
+  oven.add(base, dome, mouth, chim); oven.position.set(PIZZA.oven.x, 0, PIZZA.oven.z); oven.rotation.y = -0.3;
+  oven.traverse((o) => { if (o.isMesh) o.castShadow = true; }); scene.add(oven);
+  staticBox(0.55, 0.5, 0.45, PIZZA.oven.x, 0.5, PIZZA.oven.z);
+}
+function pizzaOpen() { for (const it of PIZZA.items) it.got = false; PIZZA.baking = 0; }
+function pizzaLeft() { return PIZZA.items.filter((i) => !i.got).length; }
+function updatePizza(dt) {
+  const on = isActive('pizza'), lp = lenaBody.position;
+  PIZZA.nag = Math.max(0, PIZZA.nag - dt);
+  for (const it of PIZZA.items) {
+    it.sprite.visible = on && !it.got;
+    if (!it.sprite.visible) continue;
+    it.sprite.position.y = it.y + Math.sin(performance.now() / 300 + it.x) * 0.06;
+    if (Math.hypot(lp.x - it.x, lp.z - it.z) < 0.7 && Math.abs(lp.y + 0.2 - it.y) < 0.75) {
+      it.got = true; sfx('coin'); credit('pizza'); toast(`Got ${it.name}! ${it.e}`); renderHud();
+    }
+  }
+  if (!on) return;
+  const near = Math.hypot(lp.x - PIZZA.oven.x, lp.z - PIZZA.oven.z) < 1.5;
+  if (PIZZA.baking > 0) {
+    PIZZA.baking -= dt;
+    if (PIZZA.baking <= 0) { sfx('win'); toast("OSCAR'S PIZZA IS READY! 🍕"); credit('pizza'); renderHud(); }
+  } else if (near && pizzaLeft() === 0 && Q.pizza < 6) { PIZZA.baking = 2.5; toast('Baking the pizza... 🔥'); }
+  else if (near && pizzaLeft() > 0 && PIZZA.nag <= 0) { PIZZA.nag = 3; toast(`The oven needs ${pizzaLeft()} more ingredients!`); }
 }
 
 // ---------- shards ----------
@@ -475,7 +526,7 @@ function updateShards(dt) {
   }
 }
 
-// ---------- Lena ----------
+// ---------- Lina ----------
 const lena = new THREE.Group();
 const shellGroup = new THREE.Group(); shellGroup.position.y = 0.1; lena.add(shellGroup);
 // shell pattern is drawn on a canvas and projected from above, then tinted by the skin colour
@@ -530,13 +581,13 @@ for (const [lx, lz] of [[-0.2, 0.2], [0.2, 0.2], [-0.2, -0.2], [0.2, -0.2]]) {
 scene.add(lena);
 // skins: colour plus optional dino spikes or a Jedi lightsaber
 const SKINS = [
-  { id: 'brown', name: 'Classic Lena', price: 0, color: 0x8b5a2b },
-  { id: 'green', name: 'Leafy Lena', price: 20, color: 0x5b8c3a },
-  { id: 'gold', name: 'Golden Lena', price: 30, color: 0xe6b422 },
+  { id: 'brown', name: 'Classic Lina', price: 0, color: 0x8b5a2b },
+  { id: 'green', name: 'Leafy Lina', price: 20, color: 0x5b8c3a },
+  { id: 'gold', name: 'Golden Lina', price: 30, color: 0xe6b422 },
   { id: 'pink', name: 'Bubblegum', price: 30, color: 0xe56bb0 },
   { id: 'blue', name: 'Blueberry', price: 40, color: 0x3b6fd1 },
-  { id: 'dino', name: 'Dino Lena', price: 60, color: 0x6b8f2a, spikes: true },
-  { id: 'jedi', name: 'Jedi Lena', price: 80, color: 0x6b4a2b, saber: true },
+  { id: 'dino', name: 'Dino Lina', price: 60, color: 0x6b8f2a, spikes: true },
+  { id: 'jedi', name: 'Jedi Lina', price: 80, color: 0x6b4a2b, saber: true },
 ];
 const shellAcc = new THREE.Group(); shellGroup.add(shellAcc);
 function applySkin(id) {
@@ -565,7 +616,7 @@ const PATTERNS = [
 ];
 applyPattern(save.pattern);
 const LENA_START = new CANNON.Vec3(0, 0.15, 3.5);
-// Lena glides: her velocity is set directly each frame, so floor friction must not fight it.
+// Lina glides: her velocity is set directly each frame, so floor friction must not fight it.
 const lenaMat = new CANNON.Material('lena');
 world.addContactMaterial(new CANNON.ContactMaterial(lenaMat, baseMat, { friction: 0, restitution: 0.05 }));
 const lenaBody = new CANNON.Body({ material: lenaMat, mass: 12, shape: new CANNON.Box(new CANNON.Vec3(0.25, 0.14, 0.35)), fixedRotation: true, linearDamping: 0.2 });
@@ -698,7 +749,7 @@ function grabOrThrow() {
   else toast('Nothing to grab here');
 }
 
-// ---------- shell mode: Lena tucks in and becomes an unstoppable bowling ball ----------
+// ---------- shell mode: Lina tucks in and becomes an unstoppable bowling ball ----------
 const SHELL_TIME = 3, SHELL_COOL = 2.5;
 const S = { on: false, t: 0, cool: 0 };
 function setLenaMass(m) { lenaBody.mass = m; lenaBody.updateMassProperties(); }
@@ -755,15 +806,16 @@ shopEl.addEventListener('click', (e) => {
 document.getElementById('shopBtn').addEventListener('pointerdown', (e) => { e.preventDefault(); openShop(); });
 
 // ---------- quests and HUD ----------
-const Q = { lettuce: 0, dino: 0, droid: 0, throws: 0, vases: 0, bonks: 0, tables: 0, loft: 0, drops: 0, disco: 0, books: 0, fridge: 0, paintings: 0, bugs: 0, balloons: 0, box: 0 };
+const Q = { pizza: 0, lettuce: 0, dino: 0, droid: 0, throws: 0, vases: 0, bonks: 0, tables: 0, loft: 0, drops: 0, disco: 0, books: 0, fridge: 0, paintings: 0, bugs: 0, balloons: 0, box: 0 };
 // Only three missions are open at a time; finishing one opens the next.
 const MISSIONS = [
   { key: 'vases', goal: 5, name: 'Vase Smasher', desc: 'Break 5 vases', reward: 7 },
-  { key: 'disco', goal: 1, name: 'Disco Lena', desc: 'Bump the red radio and make Uncle Adam dance', reward: 3 },
+  { key: 'disco', goal: 1, name: 'Disco Lina', desc: 'Bump the red radio and make Uncle Adam dance', reward: 3 },
   { key: 'loft', goal: 1, name: 'Curiosity', desc: 'Hop up the wooden steps (JUMP) to the rafters', reward: 4 },
   { key: 'throws', goal: 3, name: 'Pick and Throw', desc: 'GRAB 3 things and THROW them', reward: 5 },
   { key: 'bonks', goal: 3, name: 'Uncle Adam Bonker', desc: 'Bonk Uncle Adam 3 times (SHELL roll into him)', reward: 8 },
   { key: 'lettuce', goal: 8, name: 'Lettuce Feast', desc: 'Go out the door to the garden and eat 8 lettuces', reward: 8 },
+  { key: 'pizza', goal: 6, name: "Oscar's Pizza", desc: 'Find 5 ingredients (🎃 🥓 🍁 🧅 🧀), then bring them to the brick oven in the room', reward: 15 },
   { key: 'books', goal: 8, name: 'Domino Library', desc: 'Knock over 8 books (try pushing the first one)', reward: 7 },
   { key: 'balloons', goal: 8, name: 'Balloon Pop', desc: 'Pop 8 balloons, some are very high up', reward: 7 },
   { key: 'dino', goal: 1, name: 'Dino Friend', desc: 'Walk up to the big T-rex in the garden and say hi', reward: 4 },
@@ -801,6 +853,7 @@ function openMission(k) {
   if (k === 'books') restoreProps((p) => p.kind === 'book');
   if (k === 'paintings') for (const pt of paintings) { pt.touched = false; pt.frame.material.color.setHex(0x5e3f23); }
   if (k === 'balloons') for (const b of balloons) b.alive = true;
+  if (k === 'pizza') pizzaOpen();
   if (k === 'lettuce') for (const l of lettuces) { l.alive = true; l.g.visible = true; }
 }
 function refreshActive() {
@@ -831,7 +884,7 @@ function checkMissions() {
 function renderHud() {
   checkMissions();
   hud.innerHTML = `<div>🥬 ${coins} &nbsp; 📜 ${missionDone.size}/${MISSIONS.length}</div>`
-    + active.map((k) => { const m = MISSIONS.find((x) => x.key === k); return `<div>○ ${m.name}${m.goal > 1 ? ` (${Math.min(Q[k], m.goal)}/${m.goal})` : ''}</div>`; }).join('');
+    + active.map((k) => { const m = MISSIONS.find((x) => x.key === k); return `<div>○ ${m.name}${m.goal > 1 ? ` (${Math.min(Q[k], m.goal)}/${m.goal})` : ''}${k === 'pizza' ? ' ' + PIZZA.items.map((i) => (i.got ? i.e : '▫️')).join('') : ''}</div>`; }).join('');
 }
 function checkWin() { renderHud(); }
 // mission board: the three open missions, then what is done
@@ -923,7 +976,7 @@ function updateAdam(dt) {
   if (A.mad && A.angry <= 0) { setAdamMood(false); toast('Uncle Adam calmed down'); }
   const hidden = BOX.inside;
   let target = WAYPOINTS[wp], speed = 1.0;
-  if (A.angry > 0 && !S.on && !lenaUp && !hidden && A.grace <= 0 && dL < 3.2) { target = new THREE.Vector3(lp.x, 0, lp.z); speed = 1.3; } // Lena (1.6) can outrun him
+  if (A.angry > 0 && !S.on && !lenaUp && !hidden && A.grace <= 0 && dL < 3.2) { target = new THREE.Vector3(lp.x, 0, lp.z); speed = 1.3; } // Lina (1.6) can outrun him
   const dx = target.x - adam.position.x, dz = target.z - adam.position.z;
   const d = Math.hypot(dx, dz);
   if (d < 0.2) wp = (wp + 1) % WAYPOINTS.length;
@@ -941,7 +994,7 @@ function updateAdam(dt) {
   if (A.angry > 0 && !S.on && !lenaUp && !hidden && A.grace <= 0 && dL < 0.7) {
     lenaBody.position.copy(LENA_START); lenaBody.velocity.set(0, 0, 0);
     A.grace = 3;
-    toast('Gotcha, Lena! Back to the start!');
+    toast('Gotcha, Lina! Back to the start!');
   }
 }
 
@@ -951,7 +1004,7 @@ let yaw = Math.PI, walk = 0;
 const clock = new THREE.Clock();
 camera.position.set(0, 3, 5.5);
 const upVec = new CANNON.Vec3(0, 1, 0);
-// the camera stays on the same side of the wall as Lena
+// the camera stays on the same side of the wall as Lina
 function camBounds(lx) { return lx < 6 ? { x0: -5.6, x1: 5.6, z0: -5.6, z1: 5.6 } : { x0: 6.4, x1: 17.6, z0: -5.6, z1: 5.6 }; }
 function frame() {
   const dt = Math.min(clock.getDelta(), 0.05);
@@ -1056,7 +1109,7 @@ function frame() {
       }
     }
     updateHunt(dt);
-    updateGarden(dt);
+    updateGarden(dt); updatePizza(dt);
     BOX.inside = Math.abs(lp.x - BOX.x) < 0.3 && Math.abs(lp.z - BOX.z) < 0.45 && lp.y < 0.5;
     if (BOX.inside) { BOX.t += dt; if (isActive('box')) { timerEl.textContent = `Hiding... ${Math.max(0, Math.ceil(3 - BOX.t))}`; if (BOX.t >= 3) { credit('box'); timerEl.textContent = ''; toast('HIDDEN! Uncle Adam cannot find you'); renderHud(); } } }
     else { BOX.t = 0; if (!HUNT.active) timerEl.textContent = ''; }
@@ -1073,7 +1126,7 @@ function frame() {
     camera.position.set(lp2.x + fx * 0.3, lp2.y + 0.45, lp2.z + fz * 0.3);
     camera.lookAt(lp2.x + fx * 3, lp2.y + 0.35 + Math.tan(fpPitch) * 3, lp2.z + fz * 3);
   } else {
-    // orbit around Lena, but keep the camera inside the walls so they never block the view
+    // orbit around Lina, but keep the camera inside the walls so they never block the view
     const rh = camD * Math.cos(camEl), hh = 0.4 + camD * Math.sin(camEl);
     let cx = lp2.x + Math.sin(camAz) * rh, cz = lp2.z + Math.cos(camAz) * rh;
     const b = camBounds(lp2.x);
@@ -1089,7 +1142,7 @@ function frame() {
 }
 frame();
 addEventListener('resize', () => { renderer.setSize(innerWidth, innerHeight); camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); });
-window.__game = { droid, lettuces, TREX, hold, grabOrThrow, setView, cycleView, get camAz() { return camAz; }, lenaBody, adam, props, Q, S, A, tuckIn, toggleView, get active() { return active; }, isActive, credit, bugs, HUNT, missionDone, balloons, paintings, BOX, disco, get yaw() { return yaw; }, keys, input, world };
+window.__game = { PIZZA, droid, lettuces, TREX, hold, grabOrThrow, setView, cycleView, get camAz() { return camAz; }, lenaBody, adam, props, Q, S, A, tuckIn, toggleView, get active() { return active; }, isActive, credit, bugs, HUNT, missionDone, balloons, paintings, BOX, disco, get yaw() { return yaw; }, keys, input, world };
 </script>
 </body>
 </html>
