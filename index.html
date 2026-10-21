@@ -7,7 +7,12 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="I Am Lina">
 <title>I Am Lina</title>
-<link rel="icon" href="data:,">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#87ceeb">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <style>
   html, body { margin: 0; height: 100%; overflow: hidden; background: #87ceeb; touch-action: none; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; font-family: system-ui, sans-serif; }
   canvas { display: block; width: 100%; height: 100%; }
@@ -45,6 +50,17 @@
   #missions .row.done { background: rgba(110,210,110,.3); }
   #missions .row b { display: block; font-size: 36px; }
   #missions .row span { opacity: .85; font-size: 28px; }
+  #feedbackBtn { position: fixed; top: calc(max(10px, env(safe-area-inset-top)) + 168px); right: max(14px, env(safe-area-inset-right)); padding: 10px 16px; border-radius: 22px; border: 3px solid #fff; background: rgba(0,0,0,.35); color: #fff; font-size: 31px; font-weight: 800; touch-action: none; }
+  #feedback { position: fixed; inset: 0; background: rgba(20,30,40,.92); display: none; flex-direction: column; align-items: center; padding: 18px; overflow: auto; color: #fff; z-index: 10; touch-action: pan-y; -webkit-user-select: text; user-select: text; }
+  #feedback.open { display: flex; }
+  #feedback h2 { font-size: 44px; margin: 6px 0 12px; }
+  #feedback .moods { display: flex; gap: 12px; margin-bottom: 12px; }
+  #feedback .moods button { font-size: 30px; padding: 12px 18px; border-radius: 16px; border: 3px solid transparent; background: rgba(255,255,255,.15); color: #fff; }
+  #feedback .moods button.sel { border-color: #6fd36f; background: rgba(111,211,111,.25); }
+  #feedback textarea { width: min(700px, 94vw); height: 140px; font-size: 28px; border-radius: 14px; border: none; padding: 12px; box-sizing: border-box; }
+  #feedback .acts { display: flex; gap: 14px; margin-top: 14px; }
+  #feedback .acts button { padding: 12px 28px; border-radius: 14px; border: none; font-size: 28px; font-weight: 800; background: #6fd36f; color: #123; }
+  #feedback .acts button.close { background: #fff; }
   #missions .close { margin-top: 14px; padding: 12px 28px; border-radius: 14px; border: none; font-size: 28px; font-weight: 800; background: #fff; color: #123; }
   #timer { position: fixed; top: max(12px, env(safe-area-inset-top)); left: 0; right: 0; text-align: center; color: #fff; font-size: 42px; font-weight: 900; text-shadow: 0 3px 6px rgba(0,0,0,.7); pointer-events: none; }
   #hint { position: fixed; bottom: 18px; left: 190px; right: 330px; line-height: 1.15; text-align: center; color: #fff; font-size: 31px; font-weight: 700; text-shadow: 0 2px 4px rgba(0,0,0,.6); pointer-events: none; }
@@ -62,6 +78,8 @@
 <button id="view">👁 View</button>
 <button id="shopBtn">🛍 Shop</button>
 <button id="missionsBtn">📜 Missions</button>
+<button id="feedbackBtn">💬 Tell us</button>
+<div id="feedback"></div>
 <div id="missions"></div>
 <div id="timer"></div>
 <div id="shop"></div>
@@ -249,7 +267,7 @@ for (const y of [0.9, 1.4, 1.9]) for (const z of [5.0, 8.15]) deco(0.02, 0.04, 0
 staticFurniture(1.6, 1.0, 0.6, 6.3, 8.35, 0x1c1c1c); deco(1.5, 0.02, 0.2, 6.3, 1.01, 8.1, 0xf4f4f4); staticFurniture(0.4, 0.4, 0.4, 6.3, 7.8, 0x1c1c1c);
 staticFurniture(0.8, 0.45, 0.8, 9.5, 4.75, 0x3a4252); deco(0.8, 0.4, 0.15, 9.5, 0.65, 5.12, 0x3a4252);       // armchair
 staticFurniture(0.8, 0.45, 0.8, 9.6, 8.2, 0x2f3b55);                                                        // navy chair by the window
-{ staticFurniture(0.3, 0.3, 0.3, 5.3, 8.35, 0x8a5a33); const leaf = new THREE.Mesh(new THREE.SphereGeometry(0.4, 12, 10), mat(0x2f7a3a)); leaf.position.set(5.3, 0.75, 8.35); scene.add(leaf); }
+{ staticFurniture(0.3, 0.3, 0.3, 5.0, 8.3, 0x8a5a33); const leaf = new THREE.Mesh(new THREE.SphereGeometry(0.4, 12, 10), mat(0x2f7a3a)); leaf.position.set(5.0, 0.75, 8.3); scene.add(leaf); }
 for (const x of [6.8, 8.8]) { windowPane(x, 1.5, 8.67, 0, 1.4, 1.2); for (const d of [-0.9, 0.9]) deco(0.45, 2.4, 0.1, x + d, 1.3, 8.62, 0xefe6cf); }   // curtains
 // entry (two storeys, 5.5 m): front door, runner, white pillar, stairs up with a locked gate, locked basement stairs
 deco(1.44, 2.2, 0.08, 1.08, 1.1, 8.69, 0x7a5232);
@@ -314,8 +332,9 @@ const props = []; // { mesh, body, kind, alive }
 const pendingBreaks = new Set();
 // progress (coins, skins) is saved on this device so the kids keep what they bought
 const SAVE_KEY = 'i-am-lena-save';
-let save = { coins: 0, owned: ['brown'], skin: 'brown', done: [], patterns: ['hex', 'none'], pattern: 'hex' };
+let save = { coins: 0, owned: ['brown'], skin: 'brown', done: [], patterns: ['greek', 'hex', 'none'], pattern: 'greek' };
 try { Object.assign(save, JSON.parse(localStorage.getItem(SAVE_KEY) || '{}')); } catch (e) {}
+if (!save.patterns.includes('greek')) { save.patterns.unshift('greek'); if (save.pattern === 'hex' && save.skin === 'brown') save.pattern = 'greek'; }
 if (!save.owned.includes('brown')) save.owned.push('brown');
 if (!save.migrated) { save.migrated = 1; if (save.skin === 'green') save.skin = 'brown'; } // Lina is brown now
 function persist() { try { localStorage.setItem(SAVE_KEY, JSON.stringify(save)); } catch (e) {} }
@@ -717,7 +736,17 @@ function drawPattern(id, g, S) {
   const k = S / 256;
   g.fillStyle = '#f6f6f6'; g.fillRect(0, 0, S, S);
   g.strokeStyle = '#4a4a4a'; g.fillStyle = '#5a5a5a'; g.lineJoin = 'round';
-  if (id === 'hex') {
+  if (id === 'greek') {
+    // Greek tortoise: pale scutes, each with a dark blotch in the middle
+    const r = 40 * k;
+    for (let row = -4; row <= 4; row++) for (let col = -4; col <= 4; col++) {
+      const cx = S / 2 + col * r * 1.732 + (row & 1 ? r * 0.866 : 0), cy = S / 2 + row * r * 1.5;
+      if (Math.hypot(cx - S / 2, cy - S / 2) > 145 * k) continue;
+      const hexPath = (rr) => { g.beginPath(); for (let i = 0; i < 6; i++) { const a = Math.PI / 6 + i * Math.PI / 3; g.lineTo(cx + Math.cos(a) * rr, cy + Math.sin(a) * rr); } g.closePath(); };
+      g.fillStyle = '#22190f'; hexPath(r * 0.52); g.fill();
+      g.strokeStyle = '#2d2316'; g.lineWidth = 6 * k; hexPath(r * 0.95); g.stroke();
+    }
+  } else if (id === 'hex') {
     g.lineWidth = 7 * k; const r = 38 * k;
     for (let row = -4; row <= 4; row++) for (let col = -4; col <= 4; col++) {
       const cx = S / 2 + col * r * 1.732 + (row & 1 ? r * 0.866 : 0), cy = S / 2 + row * r * 1.5;
@@ -737,11 +766,11 @@ function drawPattern(id, g, S) {
 }
 function applyPattern(id) { drawPattern(id, shellCanvas.getContext('2d'), 256); shellTex.needsUpdate = true; save.pattern = id; persist(); }
 const shellMesh = new THREE.Mesh(shellGeo, new THREE.MeshLambertMaterial({ color: 0x8b5a2b, map: shellTex }));
-shellMesh.scale.set(1, 0.8, 1.25); shellMesh.castShadow = true; shellGroup.add(shellMesh);
+shellMesh.scale.set(1, 1.12, 1.2); shellMesh.castShadow = true; shellGroup.add(shellMesh);   // a tall Greek-tortoise dome
 const belly = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.28, 0.06, 20), mat(0xe8d9a0));
 belly.scale.set(1, 1, 1.25); shellGroup.add(belly);
 const limbs = new THREE.Group(); lena.add(limbs);
-const head = new THREE.Mesh(new THREE.SphereGeometry(0.1, 12, 10), mat(0xb89968));
+const head = new THREE.Mesh(new THREE.SphereGeometry(0.1, 12, 10), mat(0xc9a864));
 head.position.set(0, 0.15, 0.42); head.castShadow = true; limbs.add(head);
 for (const sx of [-0.06, 0.06]) {
   const eye = new THREE.Mesh(new THREE.SphereGeometry(0.02, 8, 6), mat(0x111111));
@@ -749,14 +778,14 @@ for (const sx of [-0.06, 0.06]) {
 }
 const legs = [];
 for (const [lx, lz] of [[-0.2, 0.2], [0.2, 0.2], [-0.2, -0.2], [0.2, -0.2]]) {
-  const leg = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, 0.12, 8), mat(0xb89968));
+  const leg = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, 0.12, 8), mat(0xc9a864));
   leg.position.set(lx, 0.06, lz); leg.castShadow = true; limbs.add(leg); legs.push(leg);
 }
 lena.scale.setScalar(LINA_K);
 scene.add(lena);
 // skins: colour plus optional dino spikes or a Jedi lightsaber
 const SKINS = [
-  { id: 'brown', name: 'Classic Lina', price: 0, color: 0x8b5a2b },
+  { id: 'brown', name: 'Classic Lina', price: 0, color: 0xe3b640 },
   { id: 'green', name: 'Leafy Lina', price: 20, color: 0x5b8c3a },
   { id: 'gold', name: 'Golden Lina', price: 30, color: 0xe6b422 },
   { id: 'pink', name: 'Bubblegum', price: 30, color: 0xe56bb0 },
@@ -782,6 +811,7 @@ function applySkin(id) {
 }
 applySkin(save.skin);
 const PATTERNS = [
+  { id: 'greek', name: 'Greek tortoise', price: 0 },
   { id: 'hex', name: 'Tortoise scutes', price: 0 },
   { id: 'none', name: 'Plain', price: 0 },
   { id: 'spots', name: 'Spots', price: 15 },
@@ -855,6 +885,7 @@ stick.addEventListener('pointerup', resetStick);
 stick.addEventListener('pointercancel', resetStick);
 const keys = new Set();
 addEventListener('keydown', (e) => {
+  if (e.target && e.target.tagName === 'TEXTAREA') return;   // typing a note, not playing
   const k = e.key.toLowerCase(); keys.add(k);
   if (k.startsWith('arrow')) e.preventDefault();
   if (k === ' ') { e.preventDefault(); jumpReq = true; }
@@ -1082,6 +1113,29 @@ function openMissions() {
     + '<button class="close" id="missionsClose">Back to the game</button>';
   missionsEl.classList.add('open');
 }
+// feedback: pick a mood, write a note, then share it (the iPad share sheet) or copy it, so the kids can send it to Uncle Adam
+const feedbackEl = document.getElementById('feedback');
+let fbMood = '';
+function openFeedback() {
+  paused = true; resetStick();
+  feedbackEl.innerHTML = '<h2>What did you think?</h2><div class="moods">' + [['😍', 'Loved it'], ['😕', 'Confusing'], ['🐞', 'Something broke']].map(([e, t]) => `<button data-mood="${e} ${t}">${e} ${t}</button>`).join('')
+    + '</div><textarea id="fbText" placeholder="Tell Uncle Adam what was fun, what was hard, what you want next..."></textarea>'
+    + '<div class="acts"><button id="fbSend">Send to Uncle Adam</button><button class="close" id="fbClose">Back to the game</button></div>';
+  feedbackEl.classList.add('open');
+}
+feedbackEl.addEventListener('click', async (e) => {
+  const m = e.target.dataset && e.target.dataset.mood;
+  if (m) { fbMood = m; feedbackEl.querySelectorAll('.moods button').forEach((b) => b.classList.toggle('sel', b === e.target)); return; }
+  if (e.target.id === 'fbClose') { feedbackEl.classList.remove('open'); paused = false; return; }
+  if (e.target.id === 'fbSend') {
+    const note = document.getElementById('fbText').value.trim();
+    const text = `I Am Lina feedback (${missionDone.size}/${MISSIONS.length} missions done)\n${fbMood}\n${note}`.trim();
+    try { localStorage.setItem('i-am-lena-feedback', text); } catch (err) {}
+    try { if (navigator.share) { await navigator.share({ title: 'I Am Lina feedback', text }); return; } } catch (err) { return; }
+    try { await navigator.clipboard.writeText(text); e.target.textContent = 'Copied! Paste it in a message'; } catch (err) { e.target.textContent = 'Please tell Uncle Adam!'; }
+  }
+});
+document.getElementById('feedbackBtn').addEventListener('pointerdown', (e) => { e.preventDefault(); openFeedback(); });
 missionsEl.addEventListener('click', (e) => { if (e.target.id === 'missionsClose') { missionsEl.classList.remove('open'); paused = false; } });
 document.getElementById('missionsBtn').addEventListener('pointerdown', (e) => { e.preventDefault(); openMissions(); });
 refreshActive();
@@ -1295,7 +1349,7 @@ function frame() {
       if (disco.beat <= 0) { disco.beat = 0.22; { const f = [262, 330, 392, 523, 392, 330][disco.i++ % 6]; tone(f, f, 0.18, 'square', 0.06); } }
     }
     for (const pt of paintings) {
-      if (!pt.touched && isActive('paintings') && lp.y < 0.5 && Math.hypot(lp.x - pt.x, lp.z - pt.z) < 0.3) {
+      if (!pt.touched && isActive('paintings') && lp.y < 0.5 && Math.hypot(lp.x - pt.x, lp.z - pt.z) < 0.5) {
         pt.touched = true; pt.frame.material.color.setHex(0x55dd66); credit('paintings'); sfx('coin'); toast(`Hi ${pt.emoji}!`); renderHud();
       }
     }
@@ -1349,7 +1403,7 @@ function frame() {
 }
 frame();
 addEventListener('resize', () => { renderer.setSize(innerWidth, innerHeight); camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); });
-window.__game = { HOME, LENA_START, PIZZA, droid, lettuces, TREX, hold, grabOrThrow, setView, cycleView, get camAz() { return camAz; }, lenaBody, adam, props, Q, S, A, tuckIn, toggleView, get active() { return active; }, isActive, credit, bugs, HUNT, missionDone, balloons, paintings, BOX, disco, get yaw() { return yaw; }, keys, input, world };
+window.__game = { shellCanvas, HOME, LENA_START, PIZZA, droid, lettuces, TREX, hold, grabOrThrow, setView, cycleView, get camAz() { return camAz; }, lenaBody, adam, props, Q, S, A, tuckIn, toggleView, get active() { return active; }, isActive, credit, bugs, HUNT, missionDone, balloons, paintings, BOX, disco, get yaw() { return yaw; }, keys, input, world };
 </script>
 </body>
 </html>
