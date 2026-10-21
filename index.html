@@ -47,6 +47,7 @@
   #missions.open { display: flex; }
   #missions h2 { margin: 6px 0 12px; font-size: 42px; }
   #missions .row { width: min(700px, 94vw); padding: 12px 16px; margin-bottom: 10px; border-radius: 14px; background: rgba(255,255,255,.12); display: flex; justify-content: space-between; gap: 12px; font-size: 34px; }
+  #missions .row button.pick { margin-top: 6px; padding: 8px 14px; border-radius: 12px; border: none; font-size: 22px; font-weight: 800; background: #6fd36f; color: #123; }
   #missions .row.done { background: rgba(110,210,110,.3); }
   #missions .row b { display: block; font-size: 36px; }
   #missions .row span { opacity: .85; font-size: 28px; }
@@ -343,10 +344,22 @@ function addCoins(n) { coins += n; save.coins = coins; persist(); sfx('coin'); }
 function addProp(kind, x, y, z, ry = 0) {
   let mesh, shape, mass;
   if (kind === 'vase') {
-    mesh = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.08, 0.36, 12), mat([0x3aa6c9, 0xd9534f, 0xe9b949][props.length % 3]));
+    // an amphora vase: round belly, narrow neck, flared rim, two handles, a white band and a few flowers, so it reads as "vase" at a glance
+    const col = [0x2f8fd8, 0xd9423d, 0xe0a82e][props.length % 3];
+    mesh = new THREE.Group();
+    const prof = [[0.001, 0], [0.07, 0.01], [0.12, 0.09], [0.13, 0.17], [0.1, 0.25], [0.05, 0.3], [0.045, 0.34], [0.085, 0.38]].map(([r, y]) => new THREE.Vector2(r, y - 0.18));
+    const body = new THREE.Mesh(new THREE.LatheGeometry(prof, 14), new THREE.MeshLambertMaterial({ color: col, side: THREE.DoubleSide }));
+    const band = new THREE.Mesh(new THREE.CylinderGeometry(0.133, 0.133, 0.035, 14, 1, true), new THREE.MeshLambertMaterial({ color: 0xffffff, side: THREE.DoubleSide })); band.position.y = -0.01;
+    mesh.add(body, band);
+    for (const sx of [-1, 1]) { const h = new THREE.Mesh(new THREE.TorusGeometry(0.07, 0.014, 6, 10, Math.PI), mat(col)); h.position.set(sx * 0.07, 0.14, 0); h.rotation.z = sx > 0 ? -Math.PI / 2 : Math.PI / 2; mesh.add(h); }
+    for (const [fx, fz, fc] of [[0, 0, 0xff5fa2], [0.04, 0.02, 0xffd23f], [-0.04, -0.01, 0xffffff]]) {
+      const st = new THREE.Mesh(new THREE.CylinderGeometry(0.006, 0.006, 0.22, 4), mat(0x2f7a3a)); st.position.set(fx, 0.3, fz); mesh.add(st);
+      const fl = new THREE.Mesh(new THREE.SphereGeometry(0.035, 8, 6), mat(fc)); fl.position.set(fx * 1.4, 0.42 + fx, fz); mesh.add(fl);
+    }
     shape = new CANNON.Box(new CANNON.Vec3(0.1, 0.18, 0.1)); mass = 0.6;
   } else if (kind === 'crate') {
     mesh = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.3, 0.3), mat(0xb8803c));
+    for (const y of [-0.08, 0.08]) { const sl = new THREE.Mesh(new THREE.BoxGeometry(0.31, 0.03, 0.31), mat(0x7a5226)); sl.position.y = y; mesh.add(sl); }   // wooden slats
     shape = new CANNON.Box(new CANNON.Vec3(0.15, 0.15, 0.15)); mass = 1;
   } else if (kind === 'ball') {
     mesh = new THREE.Mesh(new THREE.SphereGeometry(0.12, 16, 12), mat(0xe04a8a));
@@ -358,7 +371,8 @@ function addProp(kind, x, y, z, ry = 0) {
     mesh = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.32, 0.22), mat([0xc0392b, 0x2980b9, 0x27ae60, 0xf39c12, 0x8e44ad][props.length % 5]));
     shape = new CANNON.Box(new CANNON.Vec3(0.025, 0.16, 0.11)); mass = 0.15;
   } else if (kind === 'brick') {
-    mesh = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.12, 0.12), mat([0xe74c3c, 0x3498db, 0xf1c40f, 0x2ecc71][props.length % 4]));
+    { const bc = [0xe74c3c, 0x3498db, 0xf1c40f, 0x2ecc71][props.length % 4]; mesh = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.12, 0.12), mat(bc));
+      for (const [sx, sz] of [[-0.03, -0.03], [0.03, -0.03], [-0.03, 0.03], [0.03, 0.03]]) { const st = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, 0.02, 8), mat(bc)); st.position.set(sx, 0.07, sz); mesh.add(st); } }   // Lego studs
     shape = new CANNON.Box(new CANNON.Vec3(0.06, 0.06, 0.06)); mass = 0.05;
   } else if (kind === 'lamp') {
     mesh = new THREE.Group();
@@ -983,12 +997,17 @@ const shopEl = document.getElementById('shop');
 function hex(c) { return '#' + c.toString(16).padStart(6, '0'); }
 const thumbs = {};
 function patternThumb(id) {
-  if (!thumbs[id]) { const c = document.createElement('canvas'); c.width = c.height = 96; drawPattern(id, c.getContext('2d'), 96); thumbs[id] = c.toDataURL(); }
-  return thumbs[id];
+  const key = id + save.skin;
+  if (!thumbs[key]) {
+    const c = document.createElement('canvas'); c.width = c.height = 96; const g = c.getContext('2d'); drawPattern(id, g, 96);
+    g.globalCompositeOperation = 'multiply'; g.fillStyle = hex((SKINS.find((k) => k.id === save.skin) || SKINS[0]).color); g.fillRect(0, 0, 96, 96);   // the same tint as Lina's shell
+    thumbs[key] = c.toDataURL();
+  }
+  return thumbs[key];
 }
 function renderShop() {
   const btn = (owned, eq, price, attr) => `<button class="${eq ? 'eq' : owned || coins >= price ? '' : 'off'}" ${attr}>${eq ? 'Wearing' : owned ? 'Wear' : `Buy 🥬${price}`}</button>`;
-  shopEl.innerHTML = `<h2>Shell shop</h2><div class="bal">🥬 ${coins}</div><h3>Colours</h3><div class="cards">` + SKINS.map((k) =>
+  shopEl.innerHTML = `<h2>Shell shop</h2><div class="bal">🥬 ${coins}</div><div class="cards"><div class="card"><img class="sw" style="object-fit:cover;border-radius:50%" src="${patternThumb(save.pattern)}"><div class="name">Lina right now</div></div></div><h3>Colours</h3><div class="cards">` + SKINS.map((k) =>
     `<div class="card"><div class="sw" style="background:${hex(k.color)}"></div><div class="name">${k.name}</div>${btn(save.owned.includes(k.id), save.skin === k.id, k.price, `data-id="${k.id}"`)}</div>`).join('')
     + `</div><h3>Patterns</h3><div class="cards">` + PATTERNS.map((k) =>
     `<div class="card"><img class="sw" style="object-fit:cover" src="${patternThumb(k.id)}"><div class="name">${k.name}</div>${btn(save.patterns.includes(k.id), save.pattern === k.id, k.price, `data-pat="${k.id}"`)}</div>`).join('')
@@ -1002,7 +1021,7 @@ shopEl.addEventListener('click', (e) => {
   if (pat) {
     const k = PATTERNS.find((x) => x.id === pat);
     if (!save.patterns.includes(pat)) { if (coins < k.price) return; coins -= k.price; save.coins = coins; save.patterns.push(pat); sfx('coin'); }
-    applyPattern(pat); renderShop(); renderHud(); return;
+    applyPattern(pat); if (pat === 'greek') applySkin('brown'); renderShop(); renderHud(); return;
   }
   const id = e.target.dataset && e.target.dataset.id; if (!id) return;
   const k = SKINS.find((x) => x.id === id);
@@ -1040,7 +1059,9 @@ const MISSIONS = [
 ];
 const missionDone = new Set(save.done || []);
 let active = [];
-function isActive(k) { return active.includes(k); }
+let focus = null;   // the one mission Lina is working on; only it counts progress
+function isActive(k) { return k === focus; }
+function setFocus(k) { if (focus === k) return; focus = k; if (k) openMission(k); rebuildMarkers(); }
 function credit(k, n = 1) { if (!isActive(k)) return false; Q[k] += n; return true; }
 // put things back where they started so a newly opened mission is always doable
 function restoreProps(filter) {
@@ -1068,10 +1089,57 @@ function openMission(k) {
   if (k === 'pizza') pizzaOpen();
   if (k === 'lettuce') for (const l of lettuces) { l.alive = true; l.g.visible = true; }
 }
+
+// ---------- mission markers: a bobbing icon over everything that counts for the mission Lina is working on ----------
+const markers = [];
+function makeMarkerSprite(emoji) {
+  const c = document.createElement('canvas'); c.width = c.height = 128;
+  const g = c.getContext('2d');
+  g.fillStyle = 'rgba(255,255,255,0.92)'; g.beginPath(); g.arc(64, 60, 52, 0, 7); g.fill();
+  g.strokeStyle = '#2e9e44'; g.lineWidth = 8; g.stroke();
+  g.fillStyle = '#2e9e44'; g.beginPath(); g.moveTo(44, 104); g.lineTo(84, 104); g.lineTo(64, 126); g.closePath(); g.fill();
+  g.font = '64px serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(emoji, 64, 64);
+  const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(c), transparent: true, depthTest: false }));
+  sp.scale.set(0.3, 0.3, 0.3); sp.renderOrder = 10; return sp;
+}
+function addMarker(emoji, get) { const s = makeMarkerSprite(emoji); s.visible = false; scene.add(s); markers.push({ s, get }); }
+function rebuildMarkers() {
+  for (const m of markers) scene.remove(m.s);
+  markers.length = 0;
+  const k = focus; if (!k) return;
+  const onProps = (emoji, pred, every = 1) => { let i = 0; for (const p of props) if (pred(p) && i++ % every === every - 1) addMarker(emoji, () => (p.alive && !(p.toppled && ['table', 'book', 'brick'].includes(p.kind)) ? [p.body.position.x, p.body.position.y + 0.42, p.body.position.z] : null)); };
+  const at = (emoji, x, y, z) => addMarker(emoji, () => [x, y, z]);
+  const door = () => at('🚪', 3.55, 1.5, 0.3);   // the way out to the garden
+  if (k === 'vases') onProps('🏺', (p) => p.kind === 'vase');
+  else if (k === 'tables') onProps('🪑', (p) => p.kind === 'table');
+  else if (k === 'books') onProps('📚', (p) => p.kind === 'book', 12);
+  else if (k === 'lego') onProps('🧱', (p) => p.kind === 'brick', 3);
+  else if (k === 'throws') onProps('✋', (p) => (p.kind === 'ball' || p.kind === 'crate') && p.home.y < 0.5);
+  else if (k === 'drops') onProps('🎯', (p) => p.home.y > 1.1, 7);
+  else if (k === 'disco') at('📻', RADIO.x, 0.55, RADIO.z);
+  else if (k === 'loft') at('⭐', 1.2, LOFT_Y + 0.6, 0.35);
+  else if (k === 'fridge') at('👑', FRIDGE.x, FRIDGE.top + 0.5, FRIDGE.z);
+  else if (k === 'home') at('🐢', HOME.x, 0.9, HOME.z);
+  else if (k === 'bugs') at('🪲', HUNT.x, 0.6, HUNT.z);
+  else if (k === 'box') at('📦', BOX.x, 0.55, BOX.z);
+  else if (k === 'pizza') at('🍕', PIZZA.oven.x, 1.1, PIZZA.oven.z);
+  else if (k === 'bonks') addMarker('😄', () => [adam.position.x, 2.3, adam.position.z]);
+  else if (k === 'paintings') for (const pt of paintings) addMarker('🖼️', () => (pt.touched ? null : [pt.x, 0.6, pt.z]));
+  else if (k === 'lettuce') { door(); for (const l of lettuces) addMarker('🥬', () => (l.alive ? [l.x, YARD + 0.5, l.z] : null)); }
+  else if (k === 'dino') { door(); at('🦖', TREX.x, YARD + 1.4, TREX.z); }
+  else if (k === 'droid') { door(); addMarker('🤖', () => [droid.g.position.x, YARD + 0.6, droid.g.position.z]); }
+}
+function updateMarkers(t) {
+  for (const m of markers) {
+    const p = m.get();
+    m.s.visible = !!p;
+    if (p) m.s.position.set(p[0], p[1] + Math.sin(t * 3 + p[0]) * 0.04, p[2]);
+  }
+}
 function refreshActive() {
   const before = active;
   active = MISSIONS.filter((m) => !missionDone.has(m.key)).slice(0, 3).map((m) => m.key);
-  for (const k of active) if (!before.includes(k)) openMission(k);
+  if (!active.includes(focus)) { focus = null; setFocus(active[0] || null); }
   for (const b of balloons) b.g.visible = b.alive && isActive('balloons');
   const huntOn = isActive('bugs');
   huntPadMat.color.setHex(huntOn ? 0xff9933 : 0x777777); huntPadMat.emissive.setHex(huntOn ? 0x663300 : 0x222222);
@@ -1090,20 +1158,20 @@ function checkMissions() {
     const fresh = active.filter((k) => !before.includes(k)).map((k) => MISSIONS.find((x) => x.key === k).name);
     toast(`DONE: ${m.name}! +${m.reward}`);
     if (missionDone.size === MISSIONS.length) setTimeout(() => { toast('LINA WINS! ALL MISSIONS DONE!'); sfx('win'); }, 1700);
-    else if (fresh.length) setTimeout(() => toast(`NEW MISSION: ${fresh[0]}`), 1700);
+    else if (focus) setTimeout(() => toast(`NEXT UP: ${MISSIONS.find((x) => x.key === focus).name}`), 1700);
   }
 }
 function renderHud() {
   checkMissions();
   hud.innerHTML = `<div>🥬 ${coins} &nbsp; 📜 ${missionDone.size}/${MISSIONS.length}</div>`
-    + active.map((k) => { const m = MISSIONS.find((x) => x.key === k); return `<div>○ ${m.name}${m.goal > 1 ? ` (${Math.min(Q[k], m.goal)}/${m.goal})` : ''}${k === 'pizza' ? ' ' + PIZZA.items.map((i) => (i.got ? i.e : '▫️')).join('') : ''}</div>`; }).join('');
+    + active.map((k) => { const m = MISSIONS.find((x) => x.key === k); if (k !== focus) return `<div style="opacity:.5">○ ${m.name}</div>`; return `<div>👉 ${m.name}${m.goal > 1 ? ` (${Math.min(Q[k], m.goal)}/${m.goal})` : ''}${k === 'pizza' ? ' ' + PIZZA.items.map((i) => (i.got ? i.e : '▫️')).join('') : ''}</div>`; }).join('');
 }
 function checkWin() { renderHud(); }
 // mission board: the three open missions, then what is done
 const missionsEl = document.getElementById('missions');
 function openMissions() {
   paused = true; resetStick();
-  const row = (m, open) => `<div class="row ${open ? '' : 'done'}"><div><b>${open ? '○' : '✓'} ${m.name}</b><span>${m.desc}${open && m.goal > 1 ? ` (${Math.min(Q[m.key], m.goal)}/${m.goal})` : ''}</span></div><div>🥬 ${m.reward}</div></div>`;
+  const row = (m, open) => `<div class="row ${open ? '' : 'done'}"><div><b>${open ? (m.key === focus ? '👉' : '○') : '✓'} ${m.name}</b><span>${m.desc}${open && m.key === focus && m.goal > 1 ? ` (${Math.min(Q[m.key], m.goal)}/${m.goal})` : ''}</span></div><div>🥬 ${m.reward}${open && m.key !== focus ? `<br><button class="pick" data-focus="${m.key}">Do this one</button>` : ''}</div></div>`;
   const doneList = MISSIONS.filter((m) => missionDone.has(m.key));
   const locked = MISSIONS.length - missionDone.size - active.length;
   missionsEl.innerHTML = `<h2>Missions (${missionDone.size}/${MISSIONS.length} done)</h2>`
@@ -1136,7 +1204,10 @@ feedbackEl.addEventListener('click', async (e) => {
   }
 });
 document.getElementById('feedbackBtn').addEventListener('pointerdown', (e) => { e.preventDefault(); openFeedback(); });
-missionsEl.addEventListener('click', (e) => { if (e.target.id === 'missionsClose') { missionsEl.classList.remove('open'); paused = false; } });
+missionsEl.addEventListener('click', (e) => {
+  const f = e.target.dataset && e.target.dataset.focus;
+  if (f) { setFocus(f); openMissions(); renderHud(); toast(`Now working on: ${MISSIONS.find((x) => x.key === f).name}`); return; }
+  if (e.target.id === 'missionsClose') { missionsEl.classList.remove('open'); paused = false; } });
 document.getElementById('missionsBtn').addEventListener('pointerdown', (e) => { e.preventDefault(); openMissions(); });
 refreshActive();
 renderHud();
@@ -1361,6 +1432,7 @@ function frame() {
         credit('balloons'); tone(900, 200, 0.12, 'square', 0.12); toast(`POP! ${Q.balloons}/8`); renderHud();
       }
     }
+    updateMarkers(performance.now() / 1000);
     updateHunt(dt);
     updateGarden(dt); updatePizza(dt);
     if (Math.abs(lp.x - HOME.x) < 0.45 && Math.abs(lp.z - HOME.z) < 0.7 && lp.y < 0.4) {
