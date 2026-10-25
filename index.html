@@ -19,6 +19,13 @@
 if (!/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) {
   posthog.init('phc_mjMfR2WRBnW6yqPxtKYZGZF4YfiTYB6pM9CPJseuCpXD', { api_host: 'https://eu.i.posthog.com', defaults: '2025-05-24', autocapture: false, disable_session_recording: true, person_profiles: 'identified_only' });
   posthog.register({ site: 'i-am-lena' });
+  // Optional per-device label: open the game once with ?player=oscar and it is remembered on this device.
+  try {
+    var q = new URLSearchParams(location.search).get('player');
+    if (q) localStorage.setItem('i-am-lena-player', q.toLowerCase().replace(/[^a-z0-9_-]/g, '').slice(0, 24));
+    var who = localStorage.getItem('i-am-lena-player');
+    if (who) posthog.register({ player: who });
+  } catch (e) {}
 }
 window.track = function (name, props) { try { if (window.posthog && posthog.capture) posthog.capture(name, props); } catch (e) {} };
 </script>
