@@ -33,11 +33,12 @@ window.track = function (name, props) { try { if (window.posthog && posthog.capt
   #grab.hold { background: #c0392b; }
   #shell.on { background: #e8a33a; }
   #shell.cool { background: #777; opacity: .7; }
-  #hud { position: fixed; top: max(10px, env(safe-area-inset-top)); left: max(14px, env(safe-area-inset-left)); color: #fff; font-size: 36px; font-weight: 800; text-shadow: 0 2px 4px rgba(0,0,0,.7); pointer-events: none; line-height: 1.45; }
+  #hud { position: fixed; top: max(10px, env(safe-area-inset-top)); left: max(14px, env(safe-area-inset-left)); color: #fff; font-size: 36px; font-weight: 800; text-shadow: 0 2px 4px rgba(0,0,0,.7); pointer-events: none; line-height: 1.35; max-width: min(52vw, 560px); }
+  #hud .obj { display: block; font-size: 22px; font-weight: 700; opacity: .95; margin: 0 0 8px; }
   #hud .done { color: #b6ff8a; }
   #toast { position: fixed; top: 22%; left: 0; right: 0; text-align: center; color: #fff; font-size: 54px; font-weight: 900; text-shadow: 0 4px 8px rgba(0,0,0,.6); pointer-events: none; opacity: 0; transition: opacity .25s; }
-  #view { position: fixed; top: max(10px, env(safe-area-inset-top)); right: max(14px, env(safe-area-inset-right)); padding: 10px 16px; border-radius: 22px; border: 3px solid #fff; background: rgba(0,0,0,.35); color: #fff; font-size: 31px; font-weight: 800; touch-action: none; }
-  #shopBtn { position: fixed; top: calc(max(10px, env(safe-area-inset-top)) + 56px); right: max(14px, env(safe-area-inset-right)); padding: 10px 16px; border-radius: 22px; border: 3px solid #fff; background: rgba(0,0,0,.35); color: #fff; font-size: 31px; font-weight: 800; touch-action: none; }
+  #view { position: fixed; top: max(10px, env(safe-area-inset-top)); right: max(14px, env(safe-area-inset-right)); padding: 10px 16px; border-radius: 22px; border: 3px solid #fff; background: rgba(0,0,0,.35); color: #fff; font-size: 31px; font-weight: 800; touch-action: none; white-space: nowrap; }
+  #shopBtn { position: fixed; top: calc(max(10px, env(safe-area-inset-top)) + 78px); right: max(14px, env(safe-area-inset-right)); padding: 10px 16px; border-radius: 22px; border: 3px solid #fff; background: rgba(0,0,0,.35); color: #fff; font-size: 31px; font-weight: 800; touch-action: none; white-space: nowrap; }
   #shop { position: fixed; inset: 0; background: rgba(20,30,40,.88); display: none; flex-direction: column; align-items: center; padding: 18px; overflow: auto; color: #fff; z-index: 10; touch-action: pan-y; }
   #shop.open { display: flex; }
   #shop h2 { margin: 6px 0 2px; font-size: 42px; }
@@ -51,7 +52,7 @@ window.track = function (name, props) { try { if (window.posthog && posthog.capt
   #shop .card button.off { background: #888; color: #eee; }
   #shop .card button.eq { background: #e8a33a; }
   #shop .close { background: #fff; margin-top: 18px; font-size: 28px; padding: 12px 28px; }
-  #missionsBtn { position: fixed; top: calc(max(10px, env(safe-area-inset-top)) + 112px); right: max(14px, env(safe-area-inset-right)); padding: 10px 16px; border-radius: 22px; border: 3px solid #fff; background: rgba(0,0,0,.35); color: #fff; font-size: 31px; font-weight: 800; touch-action: none; }
+  #missionsBtn { position: fixed; top: calc(max(10px, env(safe-area-inset-top)) + 156px); right: max(14px, env(safe-area-inset-right)); padding: 10px 16px; border-radius: 22px; border: 3px solid #fff; background: rgba(0,0,0,.35); color: #fff; font-size: 31px; font-weight: 800; touch-action: none; white-space: nowrap; }
   #missions { position: fixed; inset: 0; background: rgba(20,30,40,.9); display: none; flex-direction: column; align-items: center; padding: 18px; overflow: auto; color: #fff; z-index: 10; touch-action: pan-y; }
   #missions.open { display: flex; }
   #missions h2 { margin: 6px 0 12px; font-size: 42px; }
@@ -60,7 +61,7 @@ window.track = function (name, props) { try { if (window.posthog && posthog.capt
   #missions .row.done { background: rgba(110,210,110,.3); }
   #missions .row b { display: block; font-size: 36px; }
   #missions .row span { opacity: .85; font-size: 28px; }
-  #feedbackBtn { position: fixed; top: calc(max(10px, env(safe-area-inset-top)) + 168px); right: max(14px, env(safe-area-inset-right)); padding: 10px 16px; border-radius: 22px; border: 3px solid #fff; background: rgba(0,0,0,.35); color: #fff; font-size: 31px; font-weight: 800; touch-action: none; }
+  #feedbackBtn { position: fixed; top: calc(max(10px, env(safe-area-inset-top)) + 234px); right: max(14px, env(safe-area-inset-right)); padding: 10px 16px; border-radius: 22px; border: 3px solid #fff; background: rgba(0,0,0,.35); color: #fff; font-size: 31px; font-weight: 800; touch-action: none; white-space: nowrap; }
   #feedback { position: fixed; inset: 0; background: rgba(20,30,40,.92); display: none; flex-direction: column; align-items: center; padding: 18px; overflow: auto; color: #fff; z-index: 10; touch-action: pan-y; -webkit-user-select: text; user-select: text; }
   #feedback.open { display: flex; }
   #feedback h2 { font-size: 44px; margin: 6px 0 12px; }
@@ -141,8 +142,12 @@ scene.add(new THREE.HemisphereLight(0xffffff, 0x998866, 1.1));
 const sun = new THREE.DirectionalLight(0xffffff, 1.0);
 sun.position.set(4, 8, 3);
 sun.castShadow = true;
-sun.shadow.camera.left = -10; sun.shadow.camera.right = 10;
-sun.shadow.camera.top = 10; sun.shadow.camera.bottom = -10;
+sun.shadow.mapSize.set(2048, 2048);
+sun.shadow.camera.left = -6; sun.shadow.camera.right = 6;
+sun.shadow.camera.top = 6; sun.shadow.camera.bottom = -6;
+sun.shadow.bias = -0.0008;
+sun.shadow.normalBias = 0.03;
+sun.shadow.camera.updateProjectionMatrix();
 scene.add(sun, sun.target);
 const mat = (c) => new THREE.MeshLambertMaterial({ color: c });
 
@@ -152,6 +157,9 @@ world.allowSleep = true;
 world.defaultContactMaterial.friction = 0.35;
 world.defaultContactMaterial.restitution = 0.25;
 const baseMat = new CANNON.Material('base'); // everything except Lina
+const bookMat = new CANNON.Material('book');
+world.addContactMaterial(new CANNON.ContactMaterial(bookMat, baseMat, { friction: 1.2, restitution: 0 }));
+world.addContactMaterial(new CANNON.ContactMaterial(bookMat, bookMat, { friction: 0.15, restitution: 0.02 }));
 // 1 game unit = 1 metre. Origin is the north-west corner of the open kitchen/dining/living area; x runs east, z runs south.
 // Layout follows Adam's sketch: open area (10.4 x 8.7 m) with the sliding door on the north wall onto the elevated deck,
 // the playroom, hall, powder room and office to the west, the front door and stairs at the south-west.
@@ -195,11 +203,11 @@ function floorRect(x0, x1, z0, z1, color, planks = false) {
     line.position.set(x, 0.003, (z0 + z1) / 2); scene.add(line);
   }
 }
-floorRect(0, 10.36, 0, 8.73, 0xe4d5bb, true);          // kitchen, dining, living, entry
+floorRect(0, 10.36, 0, 8.73, 0xc9b48a, true);          // kitchen, dining, living, entry
 floorRect(-4.36, 0, 0, 4.18, 0x9aa0a8);                // playroom (grey carpet)
-floorRect(-4.36, -2, 4.18, 5.64, 0xe4d5bb);            // powder room
+floorRect(-4.36, -2, 4.18, 5.64, 0xc9b48a);            // powder room
 floorRect(-2, 0, 4.18, 5.64, 0xd8b98a);                // hall
-floorRect(-4.36, 0, 5.64, 8.73, 0xe4d5bb, true);       // office
+floorRect(-4.36, 0, 5.64, 8.73, 0xc9b48a, true);       // office
 // open area walls
 wallSeg(true, 0, 0, 10.36, [[2.36, 4.73]], false);     // north: sliding glass door to the deck
 wallSeg(false, 10.36, 0, 8.73);
@@ -286,8 +294,8 @@ staticFurniture(0.3, 2.7, 0.3, 2.55, 4.5, 0xffffff);
 // stairs up: 12 steps (0.2 m risers), climbable for 6 of them, then a glass-like locked wall with a padlock
 for (let i = 0; i < 12; i++) staticFurniture(0.9, 0.2 * (i + 1), 0.29, 3.15, 7.9 - 0.29 * i - 0.145, i % 2 ? 0xe9d3b0 : 0xdfc79f);
 for (let i = 0; i < 12; i++) deco(0.7, 0.012, 0.22, 3.15, 0.2 * (i + 1) + 0.007, 7.9 - 0.29 * i - 0.145, 0xc9b99a);   // stair runner
-{ const lock = deco(0.9, 4.0, 0.06, 3.15, 2.0, 6.15, 0xbfe0ff, 0, true); lock.material.opacity = 0.18; staticBox(0.45, 3.0, 0.3, 3.15, 3.0, 5.95); }
-signSprite('Upstairs: coming soon', '🔒', 3.15, 2.1, 6.0, 1.2);
+{ const lock = deco(0.9, 4.0, 0.06, 3.15, 2.0, 6.10, 0xbfe0ff, 0, true); lock.material.opacity = 0.18; staticBox(0.45, 2.0, 0.04, 3.15, 2.0, 6.10); }
+signSprite('Upstairs: coming soon', '🔒', 3.15, 2.1, 5.95, 1.2);
 staticFurniture(1.67, 2.7, 4.37, 4.435, 6.545, 0xf0e6d0);
 deco(0.9, 2.0, 0.04, 4.45, 1.0, 4.34, 0xeeeeee);
 signSprite('Basement: coming soon', '🔒', 4.45, 2.3, 4.1, 1.3);
@@ -374,8 +382,15 @@ function addProp(kind, x, y, z, ry = 0) {
     mesh = new THREE.Mesh(new THREE.SphereGeometry(0.12, 16, 12), mat(0xe04a8a));
     shape = new CANNON.Sphere(0.12); mass = 0.4;
   } else if (kind === 'table') {
-    mesh = new THREE.Mesh(new THREE.BoxGeometry(0.45, 0.55, 0.45), mat(0x8a5a33));
-    shape = new CANNON.Box(new CANNON.Vec3(0.225, 0.275, 0.225)); mass = 3;
+    // mass sits in the top, so a bump at ankle height tips it instead of only sliding the cube
+    mesh = new THREE.Group();
+    const top = new THREE.Mesh(new THREE.BoxGeometry(0.48, 0.06, 0.48), mat(0x8a5a33));
+    mesh.add(top);
+    for (const [lx, lz] of [[-0.18, -0.18], [0.18, -0.18], [-0.18, 0.18], [0.18, 0.18]]) {
+      const leg = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.46, 0.06), mat(0x6a4324));
+      leg.position.set(lx, -0.26, lz); mesh.add(leg);
+    }
+    shape = null; mass = 3;
   } else if (kind === 'book') {
     mesh = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.32, 0.22), mat([0xc0392b, 0x2980b9, 0x27ae60, 0xf39c12, 0x8e44ad][props.length % 5]));
     shape = new CANNON.Box(new CANNON.Vec3(0.025, 0.16, 0.11)); mass = 0.15;
@@ -393,7 +408,12 @@ function addProp(kind, x, y, z, ry = 0) {
   }
   mesh.traverse((o) => { if (o.isMesh) o.castShadow = true; });
   scene.add(mesh);
-  const body = new CANNON.Body({ mass, shape, material: baseMat, sleepSpeedLimit: 0.15, sleepTimeLimit: 0.6 });
+  const body = new CANNON.Body({ mass, material: baseMat, sleepSpeedLimit: 0.15, sleepTimeLimit: 0.6 });
+  if (kind === 'table') {
+    body.addShape(new CANNON.Box(new CANNON.Vec3(0.24, 0.03, 0.24)));
+    for (const [lx, lz] of [[-0.18, -0.18], [0.18, -0.18], [-0.18, 0.18], [0.18, 0.18]]) body.addShape(new CANNON.Box(new CANNON.Vec3(0.03, 0.23, 0.03)), new CANNON.Vec3(lx, -0.26, lz));
+  } else body.addShape(shape);
+  if (kind === 'book') { body.material = bookMat; body.angularDamping = 0.12; body.sleepSpeedLimit = 0.04; }
   body.position.set(x, y, z);
   body.quaternion.setFromEuler(0, ry, 0);
   world.addBody(body);
@@ -407,13 +427,13 @@ function addProp(kind, x, y, z, ry = 0) {
 // vases on the floor
 for (const [x, z] of [[1.0, 3.5], [6.2, 2.2], [7.0, 4.8], [5.9, 7.0], [1.3, 6.6], [-2.2, 3.0], [-1.0, 3.6], [-2.0, 7.0], [-3.4, 6.6], [-0.8, 7.9]]) addProp('vase', x, 0.18, z);
 // side tables with vases on top
-addProp('table', 0.4, 0.275, 7.7); addProp('table', 6.0, 0.275, 4.3);
+addProp('table', 0.4, 0.49, 7.7); addProp('table', 6.0, 0.49, 4.3);
 addProp('vase', 0.4, 0.75, 7.7); addProp('vase', 6.0, 0.75, 4.3);
 // crate pyramid
 for (const [x, y, z] of [[9.9, 0.15, 3.5], [9.9, 0.15, 3.8], [9.9, 0.15, 4.1], [9.9, 0.45, 3.65], [9.9, 0.45, 3.95], [9.9, 0.75, 3.8]]) addProp('crate', x, y, z);
 // balls and lamps
 for (const [x, z] of [[4.0, 3.9], [6.5, 5.6], [-1.2, 2.6]]) addProp('ball', x, 0.12, z);
-addProp('lamp', 5.7, 0.6, 6.6); addProp('lamp', -2.0, 0.98, 0.3); addProp('lamp', 9.2, 0.6, 8.4);
+addProp('lamp', 5.7, 0.6, 6.6); addProp('lamp', -2.0, 1.32, 0.3); addProp('lamp', 9.2, 0.6, 8.4);
 // Lego city on the playroom table: topple the towers
 for (const [x, z] of [[-2.9, 1.7], [-2.6, 2.1], [-2.3, 1.65], [-2.0, 2.1], [-2.8, 2.15], [-2.1, 1.75]]) for (let k = 0; k < 3; k++) addProp('brick', x, 0.42 + 0.06 + k * 0.12, z);
 for (const [x, z] of [[-3.4, 3.3], [-1.0, 1.6]]) addProp('ball', x, 0.12, z);
@@ -463,7 +483,7 @@ const RADIO = { x: 6.1, z: 4.8 };
 }
 const disco = { t: 0, beat: 0, cool: 0, i: 0 };
 // domino library: 12 books standing in a row, push the first
-for (let i = 0; i < 12; i++) addProp('book', 0.6 + i * 0.16, 0.16, 3.8);
+for (let i = 0; i < 12; i++) addProp('book', 0.6 + i * 0.06, 0.16, 3.8);
 // paintings to say hi to
 const paintings = [];
 function addPainting(x, z, ry, emoji, bg) {
@@ -474,7 +494,7 @@ function addPainting(x, z, ry, emoji, bg) {
   const frame = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.25, 0.03), new THREE.MeshLambertMaterial({ color: 0x5e3f23 }));
   const pic = new THREE.Mesh(new THREE.PlaneGeometry(0.25, 0.19), new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(c) }));
   pic.position.z = 0.02; grp.add(frame, pic);
-  grp.position.set(x, 0.2, z); grp.rotation.y = ry; scene.add(grp);
+  grp.position.set(x, 1.35, z); grp.rotation.y = ry; scene.add(grp);
   paintings.push({ x, z, frame, touched: false, emoji });
 }
 addPainting(0.07, 6.3, Math.PI / 2, '🦖', '#cfe8c0'); addPainting(0.07, 7.5, Math.PI / 2, '🚀', '#1c2a4a');
@@ -485,32 +505,98 @@ const balloons = [];
 function addBalloon(x, y, z, color, tether) {
   const g = new THREE.Group();
   const b = new THREE.Mesh(new THREE.SphereGeometry(0.12, 14, 12), new THREE.MeshLambertMaterial({ color })); b.scale.y = 1.2; g.add(b);
-  const len = tether ? y : 0.25;
+  const len = tether ? Math.max(0.08, y - 0.08) : 0.25;
   const str = new THREE.Mesh(new THREE.CylinderGeometry(0.004, 0.004, len, 4), mat(0xffffff)); str.position.y = -0.14 - len / 2; g.add(str);
   g.position.set(x, y, z); scene.add(g);
   balloons.push({ g, x, y, z, color, alive: true, ph: Math.random() * 6 });
 }
-for (const [x, z, c] of [[1.2, 3.2, 0xff5577], [6.2, 4.4, 0x55aaff], [5.9, 1.0, 0xffcc33], [1.4, 6.0, 0x66dd77]]) addBalloon(x, 0.4, z, c, true);
+for (const [x, z, c] of [[1.2, 3.2, 0xff5577], [6.2, 4.4, 0x55aaff], [5.9, 1.0, 0xffcc33], [1.4, 6.0, 0x66dd77]]) addBalloon(x, 0.22, z, c, true);
 addBalloon(1.9, 1.0, 1.0, 0xff8844); addBalloon(1.0, 1.5, 1.0, 0xcc66ff);
 addBalloon(0.4, 1.7, 0.35, 0xff5577); addBalloon(2.2, 1.7, 0.35, 0x55aaff);
+// footprints Uncle Adam walks around, and spots a bug hunt will not use
+const BLOCKS = [
+  { x: 6.6, z: 0.3, hx: 1.4, hz: 0.3 },       // kitchen run
+  { x: 8.13, z: 2.8, hx: 0.74, hz: 1.45 },    // island
+  { x: 3.8, z: 2.45, hx: 1.5, hz: 0.55 },     // dining table
+  { x: 4.435, z: 6.545, hx: 0.84, hz: 2.19 }, // stair block
+  { x: 3.15, z: 6.16, hx: 0.5, hz: 1.8 },     // stair flight
+  { x: 7.6, z: 6.6, hx: 0.48, hz: 1.5 },      // sofa
+  { x: 8.7, z: 5.6, hx: 0.65, hz: 0.48 },     // chaise
+  { x: 6.6, z: 6.55, hx: 0.25, hz: 1.35 },    // console
+  { x: 6.3, z: 8.12, hx: 0.85, hz: 0.55 },    // piano
+  { x: 9.85, z: 0.4, hx: 0.5, hz: 0.45 },     // fridge
+];
+function blocked(x, z, pad = 0) {
+  for (const b of BLOCKS) if (Math.abs(x - b.x) < b.hx + pad && Math.abs(z - b.z) < b.hz + pad) return true;
+  return false;
+}
+function slideAdam(x, z) {
+  for (let pass = 0; pass < 3; pass++) {
+    for (const b of BLOCKS) {
+      const hx = b.hx + 0.35, hz = b.hz + 0.35;
+      const dx = x - b.x, dz = z - b.z;
+      if (Math.abs(dx) >= hx || Math.abs(dz) >= hz) continue;
+      const px = hx - Math.abs(dx), pz = hz - Math.abs(dz);
+      if (px < pz) x = b.x + (Math.sign(dx) || 1) * hx;
+      else z = b.z + (Math.sign(dz) || 1) * hz;
+    }
+  }
+  return [x, z];
+}
+// a blocked step slides along the face, then steps sideways so he can walk around
+function stepAdam(x, z, tx, tz, speed, dt) {
+  const dx = tx - x, dz = tz - z;
+  const dist = Math.hypot(dx, dz);
+  if (dist < 1e-4) return [x, z];
+  const step = Math.min(speed * dt, dist);
+  const vx = dx / dist, vz = dz / dist;
+  const free = (px, pz) => !blocked(px, pz, 0.35);
+  if (free(x + vx * step, z + vz * step)) { A.side = 0; return [x + vx * step, z + vz * step]; }
+  // slide along the face he just walked into, and keep that direction until the way is clear
+  const px = x + vx * step, pz = z + vz * step;
+  let face = null, pen = Infinity;
+  for (const b of BLOCKS) {
+    const hx = b.hx + 0.35, hz = b.hz + 0.35;
+    const ox = hx - Math.abs(px - b.x), oz = hz - Math.abs(pz - b.z);
+    if (ox <= 0 || oz <= 0 || Math.min(ox, oz) >= pen) continue;
+    pen = Math.min(ox, oz); face = ox < oz ? 'z' : 'x';
+  }
+  if (!face) return [x, z];
+  if (!A.side) {
+    const plus = face === 'z' ? [x, z + step] : [x + step, z];
+    const minus = face === 'z' ? [x, z - step] : [x - step, z];
+    const dp = Math.hypot(tx - plus[0], tz - plus[1]), dm = Math.hypot(tx - minus[0], tz - minus[1]);
+    A.side = (dp < dist - 1e-3 || dm < dist - 1e-3) ? (dp <= dm ? 1 : -1) : 1;
+  }
+  const go = (s) => face === 'z' ? [x, z + step * s] : [x + step * s, z];
+  if (free(...go(A.side))) return go(A.side);
+  A.side = -A.side;
+  if (free(...go(A.side))) return go(A.side);
+  A.side = 0;
+  return [x, z];
+}
 // bug hunt: step on the orange pad, catch 5 bugs in 30 seconds
 const HUNT = { x: 6.2, z: 3.4, r: 0.25, t: 0, active: false, cool: 0, caught: 0, goal: 5, time: 30 };
 const huntPadMat = new THREE.MeshLambertMaterial({ color: 0xff9933, emissive: 0x663300 });
 {
   const m = new THREE.Mesh(new THREE.CylinderGeometry(HUNT.r, HUNT.r, 0.05, 24), huntPadMat);
   m.position.set(HUNT.x, 0.025, HUNT.z); scene.add(m);
-  const bug = new THREE.Mesh(new THREE.SphereGeometry(0.07, 10, 8), mat(0x222222)); bug.scale.set(1, 0.6, 1.4); bug.position.set(HUNT.x, 0.06, HUNT.z); scene.add(bug);
+  const bug = new THREE.Mesh(new THREE.SphereGeometry(0.09, 10, 8), mat(0xff8800)); bug.scale.set(1, 0.6, 1.4); bug.position.set(HUNT.x, 0.07, HUNT.z); scene.add(bug);
 }
 const bugs = [];
-function clearBugs() { for (const b of bugs) scene.remove(b.m); bugs.length = 0; }
+function clearBugs() { for (const b of bugs) { scene.remove(b.m); if (b.pin) scene.remove(b.pin); } bugs.length = 0; }
 function startHunt() {
   clearBugs(); HUNT.active = true; HUNT.t = HUNT.time; HUNT.caught = 0;
   for (let i = 0; i < HUNT.goal; i++) {
-    const m = new THREE.Mesh(new THREE.SphereGeometry(0.06, 10, 8), mat(0x222222)); m.scale.set(1, 0.6, 1.4);
-    const dot = new THREE.Mesh(new THREE.SphereGeometry(0.02, 6, 6), mat(0xdd2222)); dot.position.set(0, 0.04, 0); m.add(dot);
-    let x, z; do { x = 0.5 + Math.random() * 9; z = 0.5 + Math.random() * 7.5; } while (Math.hypot(x - lenaBody.position.x, z - lenaBody.position.z) < 1.5);
-    m.position.set(x, 0.05, z); scene.add(m);
-    bugs.push({ m, h: Math.random() * 6.28, ht: 0 });
+    const m = new THREE.Mesh(new THREE.SphereGeometry(0.1, 12, 10), mat(0xff8800)); m.scale.set(1, 0.55, 1.35);
+    const dot = new THREE.Mesh(new THREE.SphereGeometry(0.035, 8, 6), mat(0x222222)); dot.position.set(0, 0.06, 0.06); m.add(dot);
+    const pin = makeMarkerSprite('🪲'); pin.scale.set(0.24, 0.24, 0.24);
+    let x = 2.2, z = 5.2, guard = 0;
+    do { x = 0.6 + Math.random() * 8.6; z = 0.6 + Math.random() * 7.2; guard++; }
+    while (guard < 30 && (Math.hypot(x - lenaBody.position.x, z - lenaBody.position.z) < 1.5 || blocked(x, z, 0.2)));
+    if (blocked(x, z, 0.05)) { x = 2.2; z = 5.2; }
+    m.position.set(x, 0.08, z); scene.add(m); scene.add(pin);
+    bugs.push({ m, pin, h: Math.random() * 6.28, ht: 0 });
   }
   toast('CATCH 5 BUGS! 30s');
 }
@@ -528,11 +614,13 @@ function updateHunt(dt) {
     const dx = m.position.x - lp.x, dz = m.position.z - lp.z, d = Math.hypot(dx, dz);
     let sp = 0.8;
     if (d < 1.0) { b.h = Math.atan2(dx, dz); sp = 1.2; }   // they run, but Lina is faster
-    m.position.x = Math.max(0.4, Math.min(10.0, m.position.x + Math.sin(b.h) * sp * dt));
-    m.position.z = Math.max(0.4, Math.min(8.3, m.position.z + Math.cos(b.h) * sp * dt));
+    let nx = Math.max(0.4, Math.min(10.0, m.position.x + Math.sin(b.h) * sp * dt));
+    let nz = Math.max(0.4, Math.min(8.3, m.position.z + Math.cos(b.h) * sp * dt));
+    if (blocked(nx, nz, 0.05)) b.h += Math.PI; else { m.position.x = nx; m.position.z = nz; }
     m.rotation.y = b.h;
-    if (d < 0.22 && lp.y < 0.4) {
-      scene.remove(m); bugs.splice(i, 1); HUNT.caught++; sfx('coin');
+    if (b.pin) b.pin.position.set(m.position.x, m.position.y + 0.32, m.position.z);
+    if (d < 0.28 && lp.y < 0.4) {
+      scene.remove(m); if (b.pin) scene.remove(b.pin); bugs.splice(i, 1); HUNT.caught++; sfx('coin');
       burst(new THREE.Vector3(m.position.x, 0.06, m.position.z), 0x222222, 5);
       toast(`Got one! ${HUNT.caught}/${HUNT.goal}`);
     }
@@ -563,8 +651,13 @@ const GARDEN_X0 = -7.1, GARDEN_X1 = 12.5;
   // the elevated deck: boards, railing posts, and steps down to the lower patio (west) and the garden (east)
   deco(9.09, 0.6, 3.45, 4.545, -0.3, -1.725, 0xb08a5a);
   for (let x = 0.3; x < 9.09; x += 0.3) deco(0.01, 0.004, 3.45, x, 0.002, -1.725, 0x8a6a3e);
-  for (const [x, z] of [[0.1, -3.4], [3, -3.4], [6, -3.4], [9, -3.4], [9, -2.4], [9, -1.0], [0.1, -2.9], [0.1, -1.0]]) deco(0.08, 0.9, 0.08, x, 0.45, z, 0x7a5232);
+  for (const [x, z] of [[0.1, -3.4], [3, -3.4], [6, -3.4], [9, -3.4], [9, -2.4], [9, -1.0], [0.1, -2.9], [0.1, -1.0]]) {
+    deco(0.08, 0.9, 0.08, x, 0.45, z, 0x7a5232);
+    staticBox(0.05, 0.45, 0.05, x, 0.45, z);
+  }
   deco(9.0, 0.06, 0.05, 4.5, 0.9, -3.4, 0x7a5232);
+  deco(8.9, 0.06, 0.05, 4.55, 0.42, -3.4, 0x7a5232);
+  staticBox(4.45, 0.48, 0.04, 4.55, 0.48, -3.4);
   const stepAt = (cx, cz, w, d, top, color) => {
     const h = top - YARD;
     const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat(color)); m.position.set(cx, YARD + h / 2, cz); m.castShadow = m.receiveShadow = true; scene.add(m);
@@ -572,7 +665,7 @@ const GARDEN_X0 = -7.1, GARDEN_X1 = 12.5;
   };
   stepAt(9.3, -1.675, 0.42, 1.25, -0.2, 0xd9a867); stepAt(9.71, -1.675, 0.42, 1.25, -0.4, 0xcf9a58);
   stepAt(-0.21, -2.0, 0.42, 1.8, -0.2, 0xd9a867); stepAt(-0.63, -2.0, 0.42, 1.8, -0.4, 0xcf9a58);
-  // wooden fence around the yard (looks low, the invisible wall behind it is taller)
+  // wooden fence around the yard. The collider is the post height plus a short lip, so a full jump does not clear it.
   const fenceMat = mat(0xa5753d);
   const fenceRun = (x0, z0, x1, z1) => {
     const alongX = Math.abs(z1 - z0) < 1e-6, len = Math.abs(alongX ? x1 - x0 : z1 - z0), cx = (x0 + x1) / 2, cz = (z0 + z1) / 2;
@@ -582,7 +675,7 @@ const GARDEN_X0 = -7.1, GARDEN_X1 = 12.5;
     for (let t = -len / 2; t <= len / 2 + 0.01; t += 0.5) {
       const post = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.9, 0.08), fenceMat); post.position.set(alongX ? cx + t : cx, YARD + 0.45, alongX ? cz : cz + t); post.castShadow = true; scene.add(post);
     }
-    staticBox(alongX ? len / 2 : 0.05, 0.75, alongX ? 0.05 : len / 2, cx, YARD + 0.75, cz);
+    staticBox(alongX ? len / 2 : 0.05, 0.525, alongX ? 0.05 : len / 2, cx, YARD + 0.525, cz);
   };
   fenceRun(-7.1, -12.9, 12.5, -12.9); fenceRun(-7.1, -12.9, -7.1, 8.4); fenceRun(12.5, -12.9, 12.5, 0.2);
   fenceRun(10.36, 0.1, 12.5, 0.1); fenceRun(-7.1, 8.4, -4.36, 8.4);
@@ -674,7 +767,7 @@ const PIZZA = {
     { id: 'bacon', e: '🥓', name: 'bacon', x: -3.0, y: 0.25, z: 4.7 },
     { id: 'maple', e: '🍁', name: 'maple syrup', x: FRIDGE.x, y: FRIDGE.top + 0.2, z: FRIDGE.z },
     { id: 'jam', e: '🧅', name: 'onion jam', x: -3.0, y: YARD + 0.25, z: -9.4 },
-    { id: 'cheese', e: '🧀', name: 'mozzarella', x: 1.2, y: LOFT_Y + 0.3, z: 0.35 },
+    { id: 'cheese', e: '🧀', name: 'mozzarella', x: 1.2, y: LOFT_Y + 0.3, z: 0.55 },
   ],
 };
 for (const it of PIZZA.items) {
@@ -728,12 +821,18 @@ function burst(pos, color, n = 10) {
     shards.push({ m, v: new THREE.Vector3((Math.random() - 0.5) * 3, Math.random() * 3 + 1, (Math.random() - 0.5) * 3), life: 1.3 });
   }
 }
+function groundY(x, z) {
+  if (z >= 0 && x >= -4.36 && x <= 10.36 && z <= 8.73) return 0;
+  if (x >= 0 && x <= 9.09 && z <= 0 && z >= -3.45) return 0;
+  return YARD;
+}
 function updateShards(dt) {
   for (let i = shards.length - 1; i >= 0; i--) {
     const s = shards[i];
     s.v.y -= 9.8 * dt;
     s.m.position.addScaledVector(s.v, dt);
-    if (s.m.position.y < 0.03) { s.m.position.y = 0.03; s.v.set(0, 0, 0); }
+    const gy = groundY(s.m.position.x, s.m.position.z) + 0.03;
+    if (s.m.position.y < gy) { s.m.position.y = gy; s.v.set(0, 0, 0); }
     s.m.rotation.x += dt * 6;
     s.life -= dt;
     if (s.life <= 0) { scene.remove(s.m); shards.splice(i, 1); }
@@ -806,6 +905,8 @@ for (const [lx, lz] of [[-0.2, 0.2], [0.2, 0.2], [-0.2, -0.2], [0.2, -0.2]]) {
 }
 lena.scale.setScalar(LINA_K);
 scene.add(lena);
+const footBlob = new THREE.Mesh(new THREE.CircleGeometry(0.16, 20), new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.38, depthWrite: false }));
+footBlob.rotation.x = -Math.PI / 2; footBlob.renderOrder = 2; scene.add(footBlob);
 // skins: colour plus optional dino spikes or a Jedi lightsaber
 const SKINS = [
   { id: 'brown', name: 'Classic Lina', price: 0, color: 0xe3b640 },
@@ -847,7 +948,10 @@ const LENA_START = new CANNON.Vec3(4.0, 0.1, 3.9);
 // Lina glides: her velocity is set directly each frame, so floor friction must not fight it.
 const lenaMat = new CANNON.Material('lena');
 world.addContactMaterial(new CANNON.ContactMaterial(lenaMat, baseMat, { friction: 0, restitution: 0.05 }));
-const lenaBody = new CANNON.Body({ material: lenaMat, mass: 12, shape: new CANNON.Box(new CANNON.Vec3(0.25 * LINA_K, 0.14 * LINA_K, 0.35 * LINA_K)), fixedRotation: true, linearDamping: 0.2 });
+world.addContactMaterial(new CANNON.ContactMaterial(lenaMat, bookMat, { friction: 0, restitution: 0.05 }));
+const lenaBoxShape = new CANNON.Box(new CANNON.Vec3(0.25 * LINA_K, 0.14 * LINA_K, 0.35 * LINA_K));
+const lenaBallShape = new CANNON.Sphere(0.08);
+const lenaBody = new CANNON.Body({ material: lenaMat, mass: 12, shape: lenaBoxShape, fixedRotation: true, linearDamping: 0.2 });
 lenaBody.position.copy(LENA_START);
 world.addBody(lenaBody);
 // she can only jump while standing on something (a surface that faces up), so mashing JUMP can't climb walls or fly
@@ -879,7 +983,7 @@ scene.add(adam);
 const WAYPOINTS = [[1.8, 1.2], [6.8, 1.2], [6.8, 3.6], [1.8, 3.6]].map(([x, z]) => new THREE.Vector3(x, 0, z));
 let wp = 0;
 adam.position.copy(WAYPOINTS[0]);
-const A = { state: 'patrol', t: 0, grace: 0, bonks: 0, angry: 0, mad: false };
+const A = { state: 'patrol', t: 0, grace: 0, bonks: 0, angry: 0, mad: false, doorTold: false, side: 0 };
 // Uncle Adam is calm until he gets bonked, then he goes red and chases for a while
 function setAdamMood(mad) {
   A.mad = mad;
@@ -929,16 +1033,17 @@ function hideHint() { document.getElementById('hint').style.opacity = 0; }
 const VIEWS = [
   { name: 'Third person', az: 0, el: 0.65, d: 1.0, fov: 55 },
   { name: 'First person', fp: true, fov: 75 },
-  { name: 'From above', az: 0, el: 1.35, d: 2.2, fov: 55 },
+  { name: 'From above', overview: true, fov: 55 },
   { name: 'From the side', az: Math.PI / 2, el: 0.3, d: 1.4, fov: 55 },
   { name: 'From the front', az: Math.PI, el: 0.4, d: 1.0, fov: 55 },
 ];
-let viewIdx = 0, firstPerson = false, camAz = 0, camEl = 0.65, camD = 1.0, fpPitch = 0;
+let viewIdx = 0, firstPerson = false, overview = false, camAz = 0, camEl = 0.65, camD = 1.0, fpPitch = 0;
 const viewBtn = document.getElementById('view');
 function setView(i) {
   viewIdx = i; const v = VIEWS[i];
-  firstPerson = !!v.fp; lena.visible = !firstPerson;
-  if (!firstPerson) { camAz = v.az; camEl = v.el; camD = v.d; }
+  firstPerson = !!v.fp; overview = !!v.overview; lena.visible = !firstPerson;
+  if (!firstPerson && !overview) { camAz = v.az; camEl = v.el; camD = v.d; }
+  camera.up.set(0, overview ? 0 : 1, overview ? -1 : 0);
   camera.fov = v.fov; camera.updateProjectionMatrix();
   viewBtn.textContent = '👁 ' + v.name;
   if (i) track('view_changed', { view: v.name });
@@ -954,7 +1059,7 @@ canvasEl.addEventListener('pointermove', (e) => {
   if (e.pointerId !== lookId) return;
   const dx = e.clientX - lastX, dy = e.clientY - lastY; lastX = e.clientX; lastY = e.clientY;
   if (firstPerson) { yaw -= dx * 0.006; fpPitch = Math.max(-0.9, Math.min(0.9, fpPitch - dy * 0.004)); }
-  else { camAz -= dx * 0.006; camEl = Math.max(0.12, Math.min(1.45, camEl + dy * 0.004)); }
+  else if (!overview) { camAz -= dx * 0.006; camEl = Math.max(0.12, Math.min(1.45, camEl + dy * 0.004)); }
 });
 const endLook = (e) => { if (e.pointerId === lookId) lookId = null; };
 canvasEl.addEventListener('pointerup', endLook);
@@ -964,7 +1069,7 @@ canvasEl.addEventListener('pointercancel', endLook);
 const hold = { p: null };
 function dropHeld() { const p = hold.p; if (!p) return null; p.held = false; p.body.collisionResponse = true; p.body.wakeUp(); hold.p = null; return p; }
 function grabOrThrow() {
-  if (paused) return;
+  if (paused || A.state === 'scoop') return;
   if (hold.p) {
     const p = dropHeld();
     p.body.velocity.set(Math.sin(yaw) * 5 + lenaBody.velocity.x, 2, Math.cos(yaw) * 5 + lenaBody.velocity.z);
@@ -986,16 +1091,22 @@ function grabOrThrow() {
 const SHELL_TIME = 3, SHELL_COOL = 2.5;
 const S = { on: false, t: 0, cool: 0 };
 function setLenaMass(m) { lenaBody.mass = m; lenaBody.updateMassProperties(); }
+function setLenaShape(shape) {
+  while (lenaBody.shapes.length) lenaBody.removeShape(lenaBody.shapes[0]);
+  lenaBody.addShape(shape);
+}
 function tuckIn() {
-  if (S.on || S.cool > 0 || paused) return;
+  if (S.on || S.cool > 0 || paused || A.state === 'scoop') return;
   dropHeld();
   S.on = true; S.t = SHELL_TIME;
+  setLenaShape(lenaBallShape);
   setLenaMass(140); sfx('shell');
   limbs.visible = false;
   hideHint();
 }
 function popOut() {
   S.on = false; S.cool = SHELL_COOL;
+  setLenaShape(lenaBoxShape);
   setLenaMass(12);
   limbs.visible = true;
   shellGroup.rotation.set(0, 0, 0);
@@ -1031,7 +1142,7 @@ shopEl.addEventListener('click', (e) => {
   if (pat) {
     const k = PATTERNS.find((x) => x.id === pat);
     if (!save.patterns.includes(pat)) { if (coins < k.price) return; coins -= k.price; save.coins = coins; save.patterns.push(pat); sfx('coin'); track('shop_purchase', { kind: 'pattern', item: pat, price: k.price }); }
-    applyPattern(pat); if (pat === 'greek') applySkin('brown'); renderShop(); renderHud(); return;
+    applyPattern(pat); renderShop(); renderHud(); return;
   }
   const id = e.target.dataset && e.target.dataset.id; if (!id) return;
   const k = SKINS.find((x) => x.id === id);
@@ -1122,7 +1233,11 @@ function rebuildMarkers() {
   const door = () => { if (!doorDone) { doorDone = true; at('🚪', 3.55, 1.5, 0.3); } };   // the way out to the garden
   if (k === 'vases') onProps('🏺', (p) => p.kind === 'vase');
   else if (k === 'tables') onProps('🪑', (p) => p.kind === 'table');
-  else if (k === 'books') onProps('📚', (p) => p.kind === 'book', 12);
+  else if (k === 'books') addMarker('📚', () => {
+    let first = null;
+    for (const p of props) if (p.kind === 'book' && p.alive && !p.toppled && (!first || p.home.x < first.home.x)) first = p;
+    return first ? [first.body.position.x, first.body.position.y + 0.42, first.body.position.z] : null;
+  });
   else if (k === 'lego') onProps('🧱', (p) => p.kind === 'brick', 3);
   else if (k === 'throws') onProps('✋', (p) => (p.kind === 'ball' || p.kind === 'crate') && p.home.y < 0.5);
   else if (k === 'drops') onProps('🎯', (p) => p.home.y > 1.1, 7);
@@ -1132,9 +1247,13 @@ function rebuildMarkers() {
   else if (k === 'home') at('🐢', HOME.x, 0.9, HOME.z);
   else if (k === 'bugs') at('🪲', HUNT.x, 0.6, HUNT.z);
   else if (k === 'box') at('📦', BOX.x, 0.55, BOX.z);
-  else if (k === 'pizza') at('🍕', PIZZA.oven.x, 1.1, PIZZA.oven.z);
+  else if (k === 'pizza') {
+    at('🍕', PIZZA.oven.x, 1.1, PIZZA.oven.z);
+    for (const it of PIZZA.items) addMarker(it.e, () => (it.got ? null : [it.x, it.y + 0.4, it.z]));
+  }
   else if (k === 'bonks') addMarker('😄', () => [adam.position.x, 2.3, adam.position.z]);
-  else if (k === 'paintings') for (const pt of paintings) addMarker('🖼️', () => (pt.touched ? null : [pt.x, 0.6, pt.z]));
+  else if (k === 'balloons') for (const b of balloons) addMarker('🎈', () => (b.alive ? [b.x, b.y + 0.35, b.z] : null));
+  else if (k === 'paintings') for (const pt of paintings) addMarker('🖼️', () => (pt.touched ? null : [pt.x, 1.7, pt.z]));
   else if (k === 'lettuce') { door(); for (const l of lettuces) addMarker('🥬', () => (l.alive ? [l.x, YARD + 0.5, l.z] : null)); }
   else if (k === 'dino') { door(); at('🦖', TREX.x, YARD + 1.4, TREX.z); }
   else if (k === 'droid') { door(); addMarker('🤖', () => [droid.g.position.x, YARD + 0.6, droid.g.position.z]); }
@@ -1183,7 +1302,7 @@ function checkMissions() {
 function renderHud() {
   checkMissions();
   hud.innerHTML = `<div>🥬 ${coins} &nbsp; 📜 ${missionDone.size}/${MISSIONS.length}</div>`
-    + active.map((k) => { const m = MISSIONS.find((x) => x.key === k); return `<div>○ ${m.name}${m.goal > 1 ? ` (${Math.min(Q[k], m.goal)}/${m.goal})` : ''}${k === 'pizza' ? ' ' + PIZZA.items.map((i) => (i.got ? i.e : '▫️')).join('') : ''}</div>`; }).join('');
+    + active.map((k) => { const m = MISSIONS.find((x) => x.key === k); return `<div>○ ${m.name}${m.goal > 1 ? ` (${Math.min(Q[k], m.goal)}/${m.goal})` : ''}${k === 'pizza' ? ' ' + PIZZA.items.map((i) => (i.got ? i.e : '▫️')).join('') : ''}</div><div class="obj">${m.desc}</div>`; }).join('');
 }
 function checkWin() { renderHud(); }
 // mission board: the three open missions, then what is done
@@ -1256,6 +1375,27 @@ function updateAdam(dt) {
   const dL = Math.hypot(lp.x - adam.position.x, lp.z - adam.position.z);
   A.grace = Math.max(0, A.grace - dt);
 
+  if (A.state === 'scoop') {
+    A.t += dt;
+    lenaBody.collisionResponse = false;
+    lenaBody.velocity.set(0, 0, 0);
+    const k = Math.min(1, A.t / 0.7);
+    const tx = adam.position.x + Math.sin(adam.rotation.y) * 0.35;
+    const tz = adam.position.z + Math.cos(adam.rotation.y) * 0.35;
+    lenaBody.position.x += (tx - lenaBody.position.x) * Math.min(1, dt * 10);
+    lenaBody.position.z += (tz - lenaBody.position.z) * Math.min(1, dt * 10);
+    lenaBody.position.y = 0.15 + 0.85 * k;
+    aarms[0].rotation.z = 0.9; aarms[1].rotation.z = -0.9;
+    if (A.t >= 0.7) {
+      lenaBody.collisionResponse = true;
+      lenaBody.position.copy(LENA_START);
+      lenaBody.velocity.set(0, 0, 0);
+      A.state = 'patrol'; A.grace = 3;
+      aarms[0].rotation.z = 0; aarms[1].rotation.z = 0;
+      toast('Gotcha, Lina! Back to the start!');
+    }
+    return;
+  }
   if (A.state === 'flying') {
     A.t += dt;
     const T = 1.8, k = Math.min(1, A.t / T);
@@ -1297,28 +1437,46 @@ function updateAdam(dt) {
   }
   adam.position.y = 0; aarms[0].rotation.z = 0; aarms[1].rotation.z = 0;
   A.angry = Math.max(0, A.angry - dt);
-  if (A.mad && A.angry <= 0) { setAdamMood(false); toast('Uncle Adam calmed down'); }
+  if (A.mad && A.angry <= 0) { setAdamMood(false); A.doorTold = false; toast('Uncle Adam calmed down'); }
   const hidden = BOX.inside;
-  let target = WAYPOINTS[wp], speed = 1.0;
-  if (A.angry > 0 && !S.on && !lenaUp && !hidden && A.grace <= 0 && dL < 3.2) { target = new THREE.Vector3(lp.x, 0, lp.z); speed = 1.3; } // Lina (1.6) can outrun him
+  const outside = roomOf(lp.x, lp.z) > 0;
+  if (!outside) A.doorTold = false;
+  const chasing = A.angry > 0 && !S.on && !lenaUp && !hidden && A.grace <= 0;
+  let target = WAYPOINTS[wp], speed = 1.0, goingDoor = false;
+  if (chasing && outside) {
+    goingDoor = true; speed = 1.2;
+    target = lp.z < 0.15 ? new THREE.Vector3(3.55, 0, 0.45) : new THREE.Vector3(0.45, 0, Math.max(0.9, Math.min(3.0, lp.z)));
+  } else if (chasing && dL < 3.2) { target = new THREE.Vector3(lp.x, 0, lp.z); speed = 1.3; }
   const dx = target.x - adam.position.x, dz = target.z - adam.position.z;
   const d = Math.hypot(dx, dz);
-  if (d < 0.2) wp = (wp + 1) % WAYPOINTS.length;
-  else {
-    adam.position.x += (dx / d) * speed * dt;
-    adam.position.z += (dz / d) * speed * dt;
+  if (goingDoor && d < 0.4) {
+    if (!A.doorTold) { A.doorTold = true; toast("Uncle Adam can't fit!"); }
     const want = Math.atan2(dx, dz);
+    const diff = Math.atan2(Math.sin(want - adam.rotation.y), Math.cos(want - adam.rotation.y));
+    adam.rotation.y += diff * Math.min(1, dt * 6);
+    const wave = Math.sin(performance.now() / 200);
+    aarms[0].rotation.z = wave * 0.5; aarms[1].rotation.z = -wave * 0.5;
+    return;
+  }
+  if (d < 0.2) { if (!chasing) wp = (wp + 1) % WAYPOINTS.length; }
+  else {
+    const stepped = slideAdam(...stepAdam(adam.position.x, adam.position.z, target.x, target.z, speed, dt));
+    const mx = stepped[0] - adam.position.x, mz = stepped[1] - adam.position.z;
+    adam.position.x = stepped[0];
+    adam.position.z = stepped[1];
+    const want = Math.atan2(Math.hypot(mx, mz) > 1e-4 ? mx : dx, Math.hypot(mx, mz) > 1e-4 ? mz : dz);
     const diff = Math.atan2(Math.sin(want - adam.rotation.y), Math.cos(want - adam.rotation.y));
     adam.rotation.y += diff * Math.min(1, dt * 6);
     const sw = Math.sin(performance.now() / 180 * speed);
     alegs[0].rotation.x = sw * 0.5; alegs[1].rotation.x = -sw * 0.5;
     aarms[0].rotation.x = -sw * 0.4; aarms[1].rotation.x = sw * 0.4;
   }
-  // a tortoise out of her shell gets carried back to the start
-  if (A.angry > 0 && !S.on && !lenaUp && !hidden && A.grace <= 0 && dL < 0.45) {
-    lenaBody.position.copy(LENA_START); lenaBody.velocity.set(0, 0, 0);
-    A.grace = 3;
-    toast('Gotcha, Lina! Back to the start!');
+  // a tortoise out of her shell gets scooped up, then carried back to the start
+  if (chasing && !outside && dL < 0.45) {
+    dropHeld();
+    lenaBody.velocity.set(0, 0, 0);
+    lenaBody.collisionResponse = false;
+    A.state = 'scoop'; A.t = 0;
   }
 }
 
@@ -1328,12 +1486,43 @@ let yaw = Math.PI, walk = 0;
 const clock = new THREE.Clock();
 camera.position.set(0.5, 1, 0.5);
 const upVec = new CANNON.Vec3(0, 1, 0);
-// the camera stays on the same side of the wall as Lina
+// the camera stays inside the room, pulled in along the view ray rather than sliding along the walls
 const CAM_ROOMS = [[0, 10.36, 0, 8.73], [-4.36, 0, 0, 4.18], [-4.36, -2, 4.18, 5.64], [-2, 0, 4.18, 5.64], [-4.36, 0, 5.64, 8.73], [0, 9.09, -3.45, -0.1], [-4.36, 0, -6.9, -0.1], [-7.1, 12.5, -12.9, -0.1], [-7.1, -4.36, 0, 8.4]];
 let camRoom = CAM_ROOMS[0];
-function camBounds(lx, lz) {
+function roomBox(lx, lz) {
   for (const r of CAM_ROOMS) if (lx >= r[0] && lx <= r[1] && lz >= r[2] && lz <= r[3]) { camRoom = r; break; }
-  return { x0: camRoom[0] + 0.15, x1: camRoom[1] - 0.15, z0: camRoom[2] + 0.15, z1: camRoom[3] - 0.15 };
+  return camRoom;
+}
+function innerRoom(room) {
+  let x0 = room[0] + 0.25, x1 = room[1] - 0.25, z0 = room[2] + 0.25, z1 = room[3] - 0.25;
+  if (x1 - x0 < 0.4) { const m = (room[0] + room[1]) / 2; x0 = m - 0.2; x1 = m + 0.2; }
+  if (z1 - z0 < 0.4) { const m = (room[2] + room[3]) / 2; z0 = m - 0.2; z1 = m + 0.2; }
+  return { x0, x1, z0, z1 };
+}
+function clipCamera(lx, lz, cx, cz) {
+  const box = innerRoom(roomBox(lx, lz));
+  let t0 = 0, t1 = 1;
+  const dx = cx - lx, dz = cz - lz;
+  const ps = [-dx, dx, -dz, dz];
+  const qs = [lx - box.x0, box.x1 - lx, lz - box.z0, box.z1 - lz];
+  for (let i = 0; i < 4; i++) {
+    if (Math.abs(ps[i]) < 1e-8) { if (qs[i] < 0) { t0 = 1; t1 = 0; break; } }
+    else {
+      const t = qs[i] / ps[i];
+      if (ps[i] < 0) t0 = Math.max(t0, t); else t1 = Math.min(t1, t);
+    }
+  }
+  if (t0 <= t1) {
+    const t = Math.max(t0, Math.min(t1, 1));
+    return { x: lx + dx * t, z: lz + dz * t };
+  }
+  return { x: Math.max(box.x0, Math.min(box.x1, lx)), z: Math.max(box.z0, Math.min(box.z1, lz)) };
+}
+function overviewHeight(room) {
+  const w = room[1] - room[0], d = room[3] - room[2];
+  const vFov = camera.fov * Math.PI / 180;
+  const hFov = 2 * Math.atan(Math.tan(vFov / 2) * Math.max(0.5, camera.aspect));
+  return Math.max(6, (w / 2) / Math.tan(hFov / 2), (d / 2) / Math.tan(vFov / 2)) * 1.12;
 }
 function frame() {
   const dt = Math.min(clock.getDelta(), 0.05);
@@ -1348,7 +1537,7 @@ function frame() {
   if (turn || tilt) {
     hideHint();
     if (firstPerson) { yaw += turn * 2.0 * dt; fpPitch = Math.max(-0.9, Math.min(0.9, fpPitch - tilt * 1.2 * dt)); }
-    else { camAz += turn * 2.0 * dt; camEl = Math.max(0.12, Math.min(1.45, camEl + tilt * 1.2 * dt)); }
+    else if (!overview) { camAz += turn * 2.0 * dt; camEl = Math.max(0.12, Math.min(1.45, camEl + tilt * 1.2 * dt)); }
   }
   const mag = Math.min(1, Math.hypot(ix, iy));
 
@@ -1359,26 +1548,46 @@ function frame() {
 
   const speed = S.on ? SHELL_SPEED : SPEED;
   const n = Math.hypot(ix, iy); if (n > 1) { ix /= n; iy /= n; }
-  if (firstPerson) {
+  const scooped = A.state === 'scoop';
+  if (scooped) { ix = 0; iy = 0; jumpReq = false; }
+  function shellOrSet(wx, wz, moving) {
+    if (S.on) {
+      if (moving) {
+        const k = Math.min(1, dt * 6);
+        lenaBody.velocity.x += (wx - lenaBody.velocity.x) * k;
+        lenaBody.velocity.z += (wz - lenaBody.velocity.z) * k;
+      } else {
+        const decay = Math.exp(-dt * 0.35);
+        lenaBody.velocity.x *= decay; lenaBody.velocity.z *= decay;
+      }
+    } else if (moving) { lenaBody.velocity.x = wx; lenaBody.velocity.z = wz; }
+    else { lenaBody.velocity.x *= 0.8; lenaBody.velocity.z *= 0.8; }
+  }
+  if (scooped) { lenaBody.velocity.x = 0; lenaBody.velocity.z = 0; }
+  else if (firstPerson) {
     // first person: drag to look, stick walks forward/back and sidesteps
     if (mag > 0.08) {
-      lenaBody.velocity.x = (Math.sin(yaw) * -iy - Math.cos(yaw) * ix) * speed;
-      lenaBody.velocity.z = (Math.cos(yaw) * -iy + Math.sin(yaw) * ix) * speed;
+      shellOrSet((Math.sin(yaw) * -iy - Math.cos(yaw) * ix) * speed, (Math.cos(yaw) * -iy + Math.sin(yaw) * ix) * speed, true);
       walk += dt * 9 * mag;
-    } else { lenaBody.velocity.x *= 0.8; lenaBody.velocity.z *= 0.8; }
-  } else if (mag > 0.08) {
-    // movement is relative to the camera: stick-up walks away from it
-    const wx = Math.cos(camAz) * ix + -Math.sin(camAz) * -iy;
-    const wz = -Math.sin(camAz) * ix + -Math.cos(camAz) * -iy;
-    const target = Math.atan2(wx, wz);
-    const d = Math.atan2(Math.sin(target - yaw), Math.cos(target - yaw));
-    yaw += d * Math.min(1, dt * 8);
-    lenaBody.velocity.x = Math.sin(yaw) * speed * mag;
-    lenaBody.velocity.z = Math.cos(yaw) * speed * mag;
-    walk += dt * 9 * mag;
-  } else {
-    lenaBody.velocity.x *= 0.8; lenaBody.velocity.z *= 0.8;
-  }
+    } else shellOrSet(0, 0, false);
+  } else if (mag > 0.08 || S.on) {
+    // third person follows the picture; from above, stick up is north and stick right is east
+    let wx, wz;
+    if (overview) { wx = ix; wz = iy; }
+    else {
+      const cdx = camera.position.x - lenaBody.position.x, cdz = camera.position.z - lenaBody.position.z;
+      const camYaw = Math.hypot(cdx, cdz) > 0.05 ? Math.atan2(cdx, cdz) : camAz;
+      wx = Math.cos(camYaw) * ix + Math.sin(camYaw) * iy;
+      wz = -Math.sin(camYaw) * ix + Math.cos(camYaw) * iy;
+    }
+    if (mag > 0.08) {
+      const target = Math.atan2(wx, wz);
+      const d = Math.atan2(Math.sin(target - yaw), Math.cos(target - yaw));
+      yaw += d * Math.min(1, dt * 8);
+      shellOrSet(Math.sin(yaw) * speed * mag, Math.cos(yaw) * speed * mag, true);
+      walk += dt * 9 * mag;
+    } else shellOrSet(0, 0, false);
+  } else { lenaBody.velocity.x *= 0.8; lenaBody.velocity.z *= 0.8; }
   // jump
   jumpCool = Math.max(0, jumpCool - dt);
   groundT = Math.max(0, groundT - dt);
@@ -1416,19 +1625,27 @@ function frame() {
     p.mesh.quaternion.copy(p.body.quaternion);
     if (p.body.position.y > 1.1) p.high = true;
     if (p.kind === 'brick' && !p.toppled && p.body.quaternion.vmult(upVec).y < 0.7) { p.toppled = true; if (credit('lego')) { sfx('coin'); renderHud(); } }
-    if (p.kind === 'book' && !p.toppled && p.body.quaternion.vmult(upVec).y < 0.7) { p.toppled = true; if (credit('books')) { sfx('coin'); renderHud(); } }
+    if (p.kind === 'book' && !p.toppled) {
+      const upright = p.body.quaternion.vmult(upVec).y;
+      if (!p.tipped && p.body.velocity.length() > 0.25) {
+        p.tipped = true;
+        p.tipDir = Math.sign(p.body.velocity.x) || Math.sign(p.body.position.x - lenaBody.position.x) || 1;
+      }
+      // keep the lean going so a push becomes a domino run instead of a slide
+      if (p.tipped && upright > 0.85) {
+        p.body.wakeUp();
+        p.body.angularVelocity.z = -p.tipDir * 5;
+        p.body.velocity.x = p.tipDir * 0.35;
+        p.body.velocity.z *= 0.2;
+      }
+      if (upright < 0.7) { p.toppled = true; if (credit('books')) { sfx('coin'); renderHud(); } }
+    }
     if (p.kind === 'table' && !p.toppled && p.body.quaternion.vmult(upVec).y < 0.75) {
       p.toppled = true; if (credit('tables')) { addCoins(8); toast('TIMBER! +8'); sfx('timber'); renderHud(); }
     }
   }
 
-  lena.position.set(lenaBody.position.x, lenaBody.position.y - 0.14 * LINA_K, lenaBody.position.z);
-  lena.rotation.y = yaw;
-  if (S.on) shellGroup.rotation.x += dt * 14;
-  legs.forEach((l, i) => { l.position.y = 0.06 + Math.max(0, Math.sin(walk + (i % 3 ? 0 : Math.PI))) * 0.03; });
-
-  { // mission pack checks
-    const lp = lenaBody.position;
+  const lp = lenaBody.position;
     disco.cool = Math.max(0, disco.cool - dt);
     if (disco.t <= 0 && disco.cool <= 0 && lp.y < 0.6 && Math.hypot(lp.x - RADIO.x, lp.z - RADIO.z) < 0.4) {
       disco.t = 6; disco.cool = 9; credit('disco'); toast('DISCO TIME!'); renderHud();
@@ -1445,7 +1662,7 @@ function frame() {
     for (const b of balloons) {
       if (!b.alive || !isActive('balloons')) continue;
       b.ph += dt * 2; b.g.position.y = b.y + Math.sin(b.ph) * 0.04;
-      if (Math.hypot(lp.x - b.x, lp.z - b.z, lp.y - b.y) < 0.3) {
+      if (Math.hypot(lp.x - b.x, lp.z - b.z, lp.y - b.y) < 0.5) {
         b.alive = false; b.g.visible = false; burst(new THREE.Vector3(b.x, b.y, b.z), b.color, 8);
         credit('balloons'); tone(900, 200, 0.12, 'square', 0.12); toast(`POP! ${Q.balloons}/8`); renderHud();
       }
@@ -1463,28 +1680,43 @@ function frame() {
     BOX.inside = Math.abs(lp.x - BOX.x) < 0.17 && Math.abs(lp.z - BOX.z) < 0.22 && lp.y < 0.3;
     if (BOX.inside) { BOX.t += dt; if (isActive('box')) { timerEl.textContent = `Hiding... ${Math.max(0, Math.ceil(3 - BOX.t))}`; if (BOX.t >= 3) { credit('box'); timerEl.textContent = ''; toast('HIDDEN! Uncle Adam cannot find you'); renderHud(); } } }
     else { BOX.t = 0; if (!HUNT.active) timerEl.textContent = ''; }
-  }
   updateAdam(dt);
   adam.position.x = Math.max(0.4, Math.min(10.0, adam.position.x)); // Uncle Adam stays in the open kitchen / dining / living
   adam.position.z = Math.max(0.4, Math.min(8.3, adam.position.z));
+  lena.position.set(lenaBody.position.x, lenaBody.position.y - 0.14 * LINA_K, lenaBody.position.z);
+  lena.rotation.y = yaw;
+  if (S.on) shellGroup.rotation.x += dt * 14;
+  legs.forEach((l, i) => { l.position.y = 0.06 + Math.max(0, Math.sin(walk + (i % 3 ? 0 : Math.PI))) * 0.03; });
+  const gy = groundY(lena.position.x, lena.position.z) + 0.02;
+  const foot = lena.position.y + 0.012;
+  footBlob.position.set(lena.position.x, foot > gy + 0.2 ? foot : gy, lena.position.z);
+  footBlob.visible = !firstPerson;
   sun.position.set(lenaBody.position.x + 4, 8, lenaBody.position.z + 3); sun.target.position.set(lenaBody.position.x, 0, lenaBody.position.z);
   updateShards(dt);
   if (toastTimer > 0) { toastTimer -= dt; if (toastTimer <= 0) toastEl.style.opacity = 0; }
 
   const lp2 = lena.position;
+  camera.up.set(0, overview ? 0 : 1, overview ? -1 : 0);
   if (firstPerson) {
     const fx = Math.sin(yaw), fz = Math.cos(yaw);
     camera.position.set(lp2.x + fx * 0.1, lp2.y + 0.1, lp2.z + fz * 0.1);
     camera.lookAt(lp2.x + fx * 3, lp2.y + 0.08 + Math.tan(fpPitch) * 3, lp2.z + fz * 3);
-  } else {
-    // orbit around Lina, but keep the camera inside the walls so they never block the view
-    const rh = camD * Math.cos(camEl), hh = 0.12 + camD * Math.sin(camEl);
-    let cx = lp2.x + Math.sin(camAz) * rh, cz = lp2.z + Math.cos(camAz) * rh;
-    const b = camBounds(lp2.x, lp2.z);
-    cx = Math.max(b.x0, Math.min(b.x1, cx)); cz = Math.max(b.z0, Math.min(b.z1, cz));
-    const k = Math.min(1, dt * 6);
+  } else if (overview) {
+    const room = roomBox(lp2.x, lp2.z);
+    const cx = (room[0] + room[1]) / 2, cz = (room[2] + room[3]) / 2;
+    const y = overviewHeight(room);
+    const k = Math.min(1, dt * 4);
     camera.position.x += (cx - camera.position.x) * k;
+    camera.position.y += (y - camera.position.y) * k;
     camera.position.z += (cz - camera.position.z) * k;
+    camera.lookAt(cx, 0, cz);
+  } else {
+    // orbit around Lina, shortened along the ray so the camera stays inside the walls
+    const rh = camD * Math.cos(camEl), hh = 0.12 + camD * Math.sin(camEl);
+    const want = clipCamera(lp2.x, lp2.z, lp2.x + Math.sin(camAz) * rh, lp2.z + Math.cos(camAz) * rh);
+    const k = Math.min(1, dt * 6);
+    camera.position.x += (want.x - camera.position.x) * k;
+    camera.position.z += (want.z - camera.position.z) * k;
     camera.position.y += (lp2.y + hh - camera.position.y) * k;
     camera.lookAt(lp2.x, lp2.y + 0.1, lp2.z);
   }
@@ -1493,7 +1725,7 @@ function frame() {
 }
 frame();
 addEventListener('resize', () => { renderer.setSize(innerWidth, innerHeight); camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); });
-window.__game = { shellCanvas, HOME, LENA_START, PIZZA, droid, lettuces, TREX, hold, grabOrThrow, setView, cycleView, get camAz() { return camAz; }, lenaBody, adam, props, Q, S, A, tuckIn, toggleView, get active() { return active; }, isActive, credit, bugs, HUNT, missionDone, balloons, paintings, BOX, disco, get yaw() { return yaw; }, keys, input, world };
+window.__game = { shellCanvas, HOME, LENA_START, PIZZA, droid, lettuces, TREX, hold, grabOrThrow, setView, cycleView, get camAz() { return camAz; }, get overview() { return overview; }, camera, lenaBody, adam, props, Q, S, A, tuckIn, toggleView, get active() { return active; }, isActive, credit, bugs, HUNT, missionDone, balloons, paintings, BOX, disco, get yaw() { return yaw; }, keys, input, world, shards };
 </script>
 </body>
 </html>
