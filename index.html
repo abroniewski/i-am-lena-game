@@ -13,6 +13,15 @@
 <meta name="theme-color" content="#87ceeb">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<script>
+// PostHog analytics (the-lab project). No autocapture, no session replay, no feedback text; only named game events.
+!function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.crossOrigin="anonymous",p.async=!0,p.src=s.api_host.replace(".i.posthog.com","-assets.i.posthog.com")+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+".people (stub)"},o="init capture register register_once unregister opt_out_capturing has_opted_out_capturing opt_in_capturing reset isFeatureEnabled getFeatureFlag onFeatureFlags".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);
+if (!/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) {
+  posthog.init('phc_mjMfR2WRBnW6yqPxtKYZGZF4YfiTYB6pM9CPJseuCpXD', { api_host: 'https://eu.i.posthog.com', defaults: '2025-05-24', autocapture: false, disable_session_recording: true, person_profiles: 'identified_only' });
+  posthog.register({ site: 'i-am-lena' });
+}
+window.track = function (name, props) { try { if (window.posthog && posthog.capture) posthog.capture(name, props); } catch (e) {} };
+</script>
 <style>
   html, body { margin: 0; height: 100%; overflow: hidden; background: #87ceeb; touch-action: none; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; font-family: system-ui, sans-serif; }
   canvas { display: block; width: 100%; height: 100%; }
@@ -932,6 +941,7 @@ function setView(i) {
   if (!firstPerson) { camAz = v.az; camEl = v.el; camD = v.d; }
   camera.fov = v.fov; camera.updateProjectionMatrix();
   viewBtn.textContent = '👁 ' + v.name;
+  if (i) track('view_changed', { view: v.name });
 }
 function cycleView() { setView((viewIdx + 1) % VIEWS.length); }
 const toggleView = cycleView;
@@ -1013,21 +1023,21 @@ function renderShop() {
     `<div class="card"><img class="sw" style="object-fit:cover" src="${patternThumb(k.id)}"><div class="name">${k.name}</div>${btn(save.patterns.includes(k.id), save.pattern === k.id, k.price, `data-pat="${k.id}"`)}</div>`).join('')
     + `</div><button class="close" id="shopClose">Back to the game</button>`;
 }
-function openShop() { paused = true; renderShop(); shopEl.classList.add('open'); resetStick(); }
+function openShop() { track('shop_opened'); paused = true; renderShop(); shopEl.classList.add('open'); resetStick(); }
 function closeShop() { paused = false; shopEl.classList.remove('open'); }
 shopEl.addEventListener('click', (e) => {
   if (e.target.id === 'shopClose') return closeShop();
   const pat = e.target.dataset && e.target.dataset.pat;
   if (pat) {
     const k = PATTERNS.find((x) => x.id === pat);
-    if (!save.patterns.includes(pat)) { if (coins < k.price) return; coins -= k.price; save.coins = coins; save.patterns.push(pat); sfx('coin'); }
+    if (!save.patterns.includes(pat)) { if (coins < k.price) return; coins -= k.price; save.coins = coins; save.patterns.push(pat); sfx('coin'); track('shop_purchase', { kind: 'pattern', item: pat, price: k.price }); }
     applyPattern(pat); if (pat === 'greek') applySkin('brown'); renderShop(); renderHud(); return;
   }
   const id = e.target.dataset && e.target.dataset.id; if (!id) return;
   const k = SKINS.find((x) => x.id === id);
   if (!save.owned.includes(id)) {
     if (coins < k.price) return;
-    coins -= k.price; save.coins = coins; save.owned.push(id); sfx('coin');
+    coins -= k.price; save.coins = coins; save.owned.push(id); sfx('coin'); track('shop_purchase', { kind: 'colour', item: id, price: k.price });
   }
   applySkin(id); renderShop(); renderHud();
 });
@@ -1165,7 +1175,8 @@ function checkMissions() {
     refreshActive();
     const fresh = active.filter((k) => !before.includes(k)).map((k) => MISSIONS.find((x) => x.key === k).name);
     toast(`DONE: ${m.name}! +${m.reward}`);
-    if (missionDone.size === MISSIONS.length) setTimeout(() => { toast('LINA WINS! ALL MISSIONS DONE!'); sfx('win'); }, 1700);
+    track('mission_complete', { mission: m.key, done: missionDone.size, total: MISSIONS.length });
+    if (missionDone.size === MISSIONS.length) setTimeout(() => { toast('LINA WINS! ALL MISSIONS DONE!'); sfx('win'); track('all_missions_done'); }, 1700);
     else if (fresh.length) setTimeout(() => toast(`NEW MISSION: ${fresh[0]}`), 1700);
   }
 }
@@ -1178,6 +1189,7 @@ function checkWin() { renderHud(); }
 // mission board: the three open missions, then what is done
 const missionsEl = document.getElementById('missions');
 function openMissions() {
+  track('missions_opened');
   paused = true; resetStick();
   const row = (m, open) => `<div class="row ${open ? '' : 'done'}"><div><b>${open ? '○' : '✓'} ${m.name}</b><span>${m.desc}${open && m.goal > 1 ? ` (${Math.min(Q[m.key], m.goal)}/${m.goal})` : ''}</span></div><div>🥬 ${m.reward}</div></div>`;
   const doneList = MISSIONS.filter((m) => missionDone.has(m.key));
@@ -1193,7 +1205,7 @@ function openMissions() {
 const feedbackEl = document.getElementById('feedback');
 let fbMood = '';
 function openFeedback() {
-  paused = true; resetStick();
+  track('feedback_opened'); paused = true; resetStick();
   feedbackEl.innerHTML = '<h2>What did you think?</h2><div class="moods">' + [['😍', 'Loved it'], ['😕', 'Confusing'], ['🐞', 'Something broke']].map(([e, t]) => `<button data-mood="${e} ${t}">${e} ${t}</button>`).join('')
     + '</div><textarea id="fbText" placeholder="Tell Uncle Adam what was fun, what was hard, what you want next..."></textarea>'
     + '<div class="acts"><button id="fbSend">Send to Uncle Adam</button><button class="close" id="fbClose">Back to the game</button></div>';
@@ -1205,6 +1217,7 @@ feedbackEl.addEventListener('click', async (e) => {
   if (e.target.id === 'fbClose') { feedbackEl.classList.remove('open'); paused = false; return; }
   if (e.target.id === 'fbSend') {
     const note = document.getElementById('fbText').value.trim();
+    track('feedback_sent', { mood: fbMood, has_note: !!note });
     const text = `I Am Lina feedback (${missionDone.size}/${MISSIONS.length} missions done)\n${fbMood}\n${note}`.trim();
     try { localStorage.setItem('i-am-lena-feedback', text); } catch (err) {}
     try { if (navigator.share) { await navigator.share({ title: 'I Am Lina feedback', text }); return; } } catch (err) { return; }
