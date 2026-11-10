@@ -2,7 +2,10 @@
 
 ## 0.1.0 — 2026-11-10
 
-iPad playable after name entry.
+iPad playable after name entry; mid-mission progress survives refresh.
+
+### Added
+- Mid-mission progress is saved on this device (mission counters, Oskar’s Pizza ingredients, paintings, balloons), so a refresh does not wipe what you already collected
 
 ### Fixed
 - Game no longer dies on older iPad Safari (`canvas.roundRect` missing), which left a blank sky-blue screen after the name gate
