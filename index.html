@@ -255,7 +255,7 @@ window.track = function (name, props) { window.LinaAnalytics.track(name, props);
   html, body { margin: 0; height: 100%; overflow: hidden; background: #87ceeb; touch-action: none; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; font-family: system-ui, sans-serif; }
   /* Keep the WebGL layer under HUD / gates — iPad Safari otherwise paints canvas on top. */
   canvas { display: block; width: 100%; height: 100%; position: fixed; inset: 0; z-index: 0; touch-action: none; }
-  #stick, #shell, #jump, #grab, #view, #shopBtn, #missionsBtn, #feedbackBtn, #playerBtn, #hud, #toast, #timer, #hint { z-index: 5; }
+  #stick, #shell, #jump, #grab, #menuRail, #hud, #toast, #timer, #hint { z-index: 5; }
   #stick { position: fixed; left: max(28px, env(safe-area-inset-left)); bottom: max(28px, env(safe-area-inset-bottom)); width: 150px; height: 150px; border-radius: 50%; background: rgba(255,255,255,.28); border: 3px solid rgba(255,255,255,.6); touch-action: none; }
   #knob { position: absolute; left: 50%; top: 50%; width: 64px; height: 64px; margin: -32px 0 0 -32px; border-radius: 50%; background: rgba(255,255,255,.85); box-shadow: 0 2px 8px rgba(0,0,0,.3); }
   /* iPad Safari adds default button padding that shifts GRAB/JUMP/SHELL off-centre. */
@@ -274,13 +274,21 @@ window.track = function (name, props) { window.LinaAnalytics.track(name, props);
   #shell.on { background: #e8a33a; }
   #shell.cool { background: #777; opacity: .7; }
   #hud { position: fixed; top: max(10px, env(safe-area-inset-top)); left: max(14px, env(safe-area-inset-left)); color: #fff; font-size: 36px; font-weight: 800; text-shadow: 0 2px 4px rgba(0,0,0,.7); pointer-events: none; line-height: 1.35; max-width: min(52vw, 560px); }
+  #hud .hud-top { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; pointer-events: auto; }
+  #hud .hud-toggle { pointer-events: auto; touch-action: manipulation; min-height: 44px; padding: 6px 14px; border-radius: 18px; border: 3px solid #fff; background: rgba(0,0,0,.4); color: #fff; font-size: 22px; font-weight: 800; white-space: nowrap; }
+  #hud .hud-missions[hidden] { display: none !important; }
   #hud .obj { display: block; font-size: 22px; font-weight: 700; opacity: .95; margin: 0 0 8px; }
   #hud .done { color: #b6ff8a; }
-  #toast { position: fixed; top: 22%; left: 0; right: 0; text-align: center; color: #fff; font-size: 54px; font-weight: 900; text-shadow: 0 4px 8px rgba(0,0,0,.6); pointer-events: none; opacity: 0; transition: opacity .25s; }
-  #view { position: fixed; top: max(10px, env(safe-area-inset-top)); right: max(14px, env(safe-area-inset-right)); padding: 10px 16px; border-radius: 22px; border: 3px solid #fff; background: rgba(0,0,0,.35); color: #fff; font-size: 31px; font-weight: 800; touch-action: none; white-space: nowrap; }
-  #shopBtn { position: fixed; top: calc(max(10px, env(safe-area-inset-top)) + 78px); right: max(14px, env(safe-area-inset-right)); padding: 10px 16px; border-radius: 22px; border: 3px solid #fff; background: rgba(0,0,0,.35); color: #fff; font-size: 31px; font-weight: 800; touch-action: none; white-space: nowrap; }
+  #toast { position: fixed; top: 18%; left: 50%; transform: translateX(-50%); width: min(92vw, 720px); text-align: center; color: #fff; font-size: 48px; font-weight: 900; text-shadow: 0 4px 8px rgba(0,0,0,.6); pointer-events: none; opacity: 0; transition: opacity .25s; z-index: 6; padding: 10px 18px; border-radius: 18px; background: rgba(10,20,30,.45); box-sizing: border-box; line-height: 1.15; }
+  #toast.celebrate { font-size: 54px; background: rgba(20,60,30,.55); }
+  #toast.status { font-size: 40px; }
+  #menuRail { position: fixed; top: max(10px, env(safe-area-inset-top)); right: max(14px, env(safe-area-inset-right)); display: flex; flex-direction: column; align-items: flex-end; gap: 10px; touch-action: none; }
+  #menuToggle { min-height: 48px; padding: 10px 16px; border-radius: 22px; border: 3px solid #fff; background: rgba(0,0,0,.35); color: #fff; font-size: 31px; font-weight: 800; touch-action: manipulation; white-space: nowrap; }
+  #menuPanel { display: flex; flex-direction: column; align-items: flex-end; gap: 10px; }
+  #menuPanel[hidden] { display: none !important; }
+  #view, #shopBtn, #missionsBtn, #feedbackBtn, #playerBtn { position: static; padding: 10px 16px; border-radius: 22px; border: 3px solid #fff; background: rgba(0,0,0,.35); color: #fff; font-size: 31px; font-weight: 800; touch-action: none; white-space: nowrap; max-width: min(46vw, 280px); overflow: hidden; text-overflow: ellipsis; }
   @keyframes shopPulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.08); background: #e8a33a; color: #123; } }
-  #shopBtn.pulse { animation: shopPulse 0.9s ease-in-out 6; }
+  #shopBtn.pulse, #menuToggle.pulse { animation: shopPulse 0.9s ease-in-out 6; }
   #shop { position: fixed; inset: 0; background: rgba(20,30,40,.88); display: none; flex-direction: column; align-items: center; padding: 18px; overflow: auto; color: #fff; z-index: 40; touch-action: pan-y; }
   #shop.open { display: flex; }
   #shop h2 { margin: 6px 0 2px; font-size: 42px; }
@@ -294,16 +302,18 @@ window.track = function (name, props) { window.LinaAnalytics.track(name, props);
   #shop .card button.off { background: #888; color: #eee; }
   #shop .card button.eq { background: #e8a33a; }
   #shop .close { background: #fff; margin-top: 18px; font-size: 28px; padding: 12px 28px; }
-  #missionsBtn { position: fixed; top: calc(max(10px, env(safe-area-inset-top)) + 156px); right: max(14px, env(safe-area-inset-right)); padding: 10px 16px; border-radius: 22px; border: 3px solid #fff; background: rgba(0,0,0,.35); color: #fff; font-size: 31px; font-weight: 800; touch-action: none; white-space: nowrap; }
   #missions { position: fixed; inset: 0; background: rgba(20,30,40,.9); display: none; flex-direction: column; align-items: center; padding: 18px; overflow: auto; color: #fff; z-index: 40; touch-action: pan-y; }
   #missions.open { display: flex; }
   #missions h2 { margin: 6px 0 12px; font-size: 42px; }
-  #missions .row { width: min(700px, 94vw); padding: 12px 16px; margin-bottom: 10px; border-radius: 14px; background: rgba(255,255,255,.12); display: flex; justify-content: space-between; gap: 12px; font-size: 34px; }
+  #missions .sec { width: min(700px, 94vw); margin-bottom: 10px; }
+  #missions .sec-toggle { width: 100%; display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 12px 16px; border-radius: 14px; border: 3px solid rgba(255,255,255,.45); background: rgba(0,0,0,.28); color: #fff; font-size: 30px; font-weight: 800; touch-action: manipulation; text-align: left; }
+  #missions .sec-body { margin-top: 8px; }
+  #missions .sec-body[hidden] { display: none !important; }
+  #missions .row { width: 100%; padding: 12px 16px; margin-bottom: 10px; border-radius: 14px; background: rgba(255,255,255,.12); display: flex; justify-content: space-between; gap: 12px; font-size: 34px; box-sizing: border-box; }
   #missions .row.locked { opacity: .45; }
   #missions .row.done { background: rgba(110,210,110,.3); }
   #missions .row b { display: block; font-size: 36px; }
   #missions .row span { opacity: .85; font-size: 28px; }
-  #feedbackBtn { position: fixed; top: calc(max(10px, env(safe-area-inset-top)) + 234px); right: max(14px, env(safe-area-inset-right)); padding: 10px 16px; border-radius: 22px; border: 3px solid #fff; background: rgba(0,0,0,.35); color: #fff; font-size: 31px; font-weight: 800; touch-action: none; white-space: nowrap; }
   #feedback { position: fixed; inset: 0; background: rgba(20,30,40,.92); display: none; flex-direction: column; align-items: center; padding: 18px; overflow: auto; color: #fff; z-index: 40; touch-action: pan-y; -webkit-user-select: text; user-select: text; }
   #feedback.open { display: flex; }
   #feedback h2 { font-size: 44px; margin: 6px 0 12px; }
@@ -317,6 +327,10 @@ window.track = function (name, props) { window.LinaAnalytics.track(name, props);
   #missions .close { margin-top: 14px; padding: 12px 28px; border-radius: 14px; border: none; font-size: 28px; font-weight: 800; background: #fff; color: #123; }
   #timer { position: fixed; top: max(12px, env(safe-area-inset-top)); left: 0; right: 0; text-align: center; color: #fff; font-size: 42px; font-weight: 900; text-shadow: 0 3px 6px rgba(0,0,0,.7); pointer-events: none; }
   #hint { position: fixed; bottom: 18px; left: 190px; right: 330px; line-height: 1.15; text-align: center; color: #fff; font-size: 31px; font-weight: 700; text-shadow: 0 2px 4px rgba(0,0,0,.6); pointer-events: none; }
+  @media (prefers-reduced-motion: reduce) {
+    #toast { transition: none; }
+    #shopBtn.pulse, #menuToggle.pulse { animation: none; }
+  }
   /* Phones (touch screen, short side under 500 px): smaller text and controls so the HUD, buttons and joystick fit. Tablets and laptops keep the big layout. */
   html.phone #stick { width: 108px; height: 108px; left: max(14px, env(safe-area-inset-left)); bottom: max(14px, env(safe-area-inset-bottom)); }
   html.phone #knob { width: 46px; height: 46px; margin: -23px 0 0 -23px; }
@@ -324,20 +338,23 @@ window.track = function (name, props) { window.LinaAnalytics.track(name, props);
   html.phone #jump { width: 74px; height: 74px; font-size: 17px; right: calc(max(14px, env(safe-area-inset-right)) + 88px); bottom: max(14px, env(safe-area-inset-bottom)); border-width: 3px; }
   html.phone #grab { width: 74px; height: 74px; font-size: 16px; right: calc(max(14px, env(safe-area-inset-right)) + 6px); bottom: calc(max(14px, env(safe-area-inset-bottom)) + 88px); border-width: 3px; }
   html.phone #hud { font-size: 20px; max-width: 58vw; left: max(10px, env(safe-area-inset-left)); top: max(8px, env(safe-area-inset-top)); line-height: 1.25; }
-  html.phone #hud .obj { display: none; }
-  html.phone #toast { font-size: 28px; top: 20%; }
+  html.phone #hud .hud-toggle { font-size: 14px; min-height: 40px; padding: 4px 10px; border-width: 2px; border-radius: 14px; }
+  html.phone #hud .obj { font-size: 14px; margin-bottom: 4px; }
+  html.phone #toast { font-size: 24px; top: 16%; padding: 8px 12px; }
+  html.phone #toast.celebrate { font-size: 28px; }
+  html.phone #toast.status { font-size: 22px; }
   html.phone #timer { font-size: 24px; }
   html.phone #hint { display: none; }
-  html.phone #view, html.phone #shopBtn, html.phone #missionsBtn, html.phone #feedbackBtn { font-size: 15px; padding: 5px 10px; border-width: 2px; border-radius: 16px; right: max(8px, env(safe-area-inset-right)); }
-  html.phone #view { top: max(8px, env(safe-area-inset-top)); }
-  html.phone #shopBtn { top: calc(max(8px, env(safe-area-inset-top)) + 36px); }
-  html.phone #missionsBtn { top: calc(max(8px, env(safe-area-inset-top)) + 72px); }
-  html.phone #feedbackBtn { top: calc(max(8px, env(safe-area-inset-top)) + 108px); }
+  html.phone #menuRail { top: max(8px, env(safe-area-inset-top)); right: max(8px, env(safe-area-inset-right)); gap: 6px; }
+  html.phone #menuToggle { font-size: 15px; padding: 5px 10px; border-width: 2px; border-radius: 16px; min-height: 40px; }
+  html.phone #menuPanel { gap: 6px; }
+  html.phone #view, html.phone #shopBtn, html.phone #missionsBtn, html.phone #feedbackBtn, html.phone #playerBtn { font-size: 15px; padding: 5px 10px; border-width: 2px; border-radius: 16px; }
   html.phone #shop h2, html.phone #missions h2, html.phone #feedback h2 { font-size: 26px; }
   html.phone #shop .bal { font-size: 19px; }
   html.phone #shop h3 { font-size: 19px; }
   html.phone #shop .name { font-size: 16px; }
   html.phone #shop .card button, html.phone #shop .close, html.phone #missions .close { font-size: 16px; padding: 8px 18px; }
+  html.phone #missions .sec-toggle { font-size: 17px; padding: 8px 12px; border-width: 2px; }
   html.phone #missions .row { font-size: 18px; padding: 8px 12px; }
   html.phone #missions .row b { font-size: 19px; }
   html.phone #missions .row span { font-size: 15px; }
@@ -354,13 +371,12 @@ window.track = function (name, props) { window.LinaAnalytics.track(name, props);
   #playerGate .hint { font-size: 20px; opacity: .75; min-height: 1.2em; }
   #playerGate.loading input, #playerGate.loading button[type="submit"] { opacity: .55; }
   #playerGate.loading .hint { opacity: 1; font-weight: 700; }
-  #playerBtn { position: fixed; top: calc(max(10px, env(safe-area-inset-top)) + 312px); right: max(14px, env(safe-area-inset-right)); padding: 10px 16px; border-radius: 22px; border: 3px solid #fff; background: rgba(0,0,0,.35); color: #fff; font-size: 28px; font-weight: 800; touch-action: none; white-space: nowrap; z-index: 5; max-width: 42vw; overflow: hidden; text-overflow: ellipsis; }
+  #playerBtn { font-size: 28px; }
   html.phone #playerGate h1 { font-size: 30px; }
   html.phone #playerGate p { font-size: 17px; }
   html.phone #playerGate input { font-size: 22px; padding: 12px 14px; border-width: 3px; }
   html.phone #playerGate button[type="submit"] { font-size: 22px; padding: 12px 20px; border-width: 3px; }
   html.phone #playerGate .hint { font-size: 15px; }
-  html.phone #playerBtn { font-size: 15px; padding: 5px 10px; border-width: 2px; border-radius: 16px; right: max(8px, env(safe-area-inset-right)); top: calc(max(8px, env(safe-area-inset-top)) + 144px); }
 </style>
 </head>
 <body>
@@ -373,18 +389,23 @@ window.track = function (name, props) { window.LinaAnalytics.track(name, props);
 })();
 </script>
 <div id="hud"></div>
-<div id="toast"></div>
+<div id="toast" role="status" aria-live="polite" aria-atomic="true"></div>
 <div id="hint">Left circle walks. Drag the world to look around. JUMP, GRAB and SHELL are on the right!</div>
 <script>if (matchMedia('(pointer:fine)').matches) document.getElementById('hint').textContent = 'WASD walks. Arrow keys turn the camera. Space jumps, G grabs, E hides in the shell, V changes view!';</script>
 <div id="stick"><div id="knob"></div></div>
 <button id="shell">SHELL!</button>
 <button id="jump">JUMP</button>
 <button id="grab">GRAB</button>
-<button id="view">👁 View</button>
-<button id="shopBtn">🛍 Shop</button>
-<button id="missionsBtn">📜 Missions</button>
-<button id="feedbackBtn">💬 Tell us</button>
-<button id="playerBtn" type="button" hidden>Who?</button>
+<div id="menuRail">
+  <button id="menuToggle" type="button" aria-expanded="false" aria-controls="menuPanel">☰ Menu</button>
+  <div id="menuPanel" hidden>
+    <button id="view" type="button">👁 View</button>
+    <button id="shopBtn" type="button">🛍 Shop</button>
+    <button id="missionsBtn" type="button">📜 Missions</button>
+    <button id="feedbackBtn" type="button">💬 Tell us</button>
+    <button id="playerBtn" type="button" hidden>Who?</button>
+  </div>
+</div>
 <div id="playerGate" class="open" aria-modal="true" role="dialog">
   <h1>What is your name?</h1>
   <p>Type your name so we can tell players apart.</p>
@@ -793,10 +814,12 @@ function addCoins(n) {
   if (n > 0 && window.LinaAnalytics) LinaAnalytics.bump('coins', n);
   if (n > 0 && !save.shopHinted && coins > 0) {
     save.shopHinted = true;
-    const btn = document.getElementById('shopBtn');
-    btn.classList.add('pulse');
-    btn.addEventListener('animationend', () => btn.classList.remove('pulse'), { once: true });
-    setTimeout(() => toast('New leaf coins! Open 🛍 Shop for shell colours'), 3600);
+    const pulseTargets = [document.getElementById('menuToggle'), document.getElementById('shopBtn')].filter(Boolean);
+    for (const btn of pulseTargets) {
+      btn.classList.add('pulse');
+      btn.addEventListener('animationend', () => btn.classList.remove('pulse'), { once: true });
+    }
+    setTimeout(() => toast('New leaf coins! Open ☰ Menu → 🛍 Shop for shell colours', { kind: 'celebrate' }), 3600);
   }
   persist(); sfx('coin');
 }
@@ -1624,7 +1647,7 @@ const toggleView = cycleView;
 viewBtn.addEventListener('pointerdown', (e) => { e.preventDefault(); cycleView(); });
 viewBtn.textContent = '👁 ' + VIEWS[0].name;
 let lookId = null, lastX = 0, lastY = 0;
-const LOOK_SKIP = '#stick, #shell, #jump, #grab, #view, #shopBtn, #missionsBtn, #feedbackBtn, #playerBtn, #shop, #missions, #feedback, #playerGate';
+const LOOK_SKIP = '#stick, #shell, #jump, #grab, #menuRail, #hud, #shop, #missions, #feedback, #playerGate';
 function lookBlocked(e) {
   const t = e.target;
   return !!(t && t.closest && t.closest(LOOK_SKIP));
@@ -1723,7 +1746,14 @@ function renderShop() {
     `<div class="card"><img class="sw" style="object-fit:cover" src="${patternThumb(k.id)}"><div class="name">${k.name}</div>${btn(save.patterns.includes(k.id), save.pattern === k.id, k.price, `data-pat="${k.id}"`)}</div>`).join('')
     + `</div><button class="close" id="shopClose">Back to the game</button>`;
 }
-function openShop() { if (needsPlayer) return; track('shop_opened'); document.getElementById('shopBtn').classList.remove('pulse'); paused = true; renderShop(); shopEl.classList.add('open'); resetStick(); }
+function openShop() {
+  if (needsPlayer) return;
+  track('shop_opened');
+  document.getElementById('shopBtn').classList.remove('pulse');
+  document.getElementById('menuToggle').classList.remove('pulse');
+  setMenuOpen(false);
+  paused = true; renderShop(); shopEl.classList.add('open'); resetStick();
+}
 function closeShop() { paused = false; shopEl.classList.remove('open'); }
 shopEl.addEventListener('click', (e) => {
   if (e.target.id === 'shopClose') return closeShop();
@@ -1942,8 +1972,72 @@ function refreshActive() {
 const hud = document.getElementById('hud');
 const toastEl = document.getElementById('toast');
 const timerEl = document.getElementById('timer');
+const menuToggle = document.getElementById('menuToggle');
+const menuPanel = document.getElementById('menuPanel');
+let menuOpen = false;
+let hudMissionsOpen = false;
+const TOAST_MAX_QUEUE = 3;
+const TOAST_DUR = { status: 2.4, celebrate: 4.2 };
 let toastTimer = 0;
-function toast(msg) { toastEl.textContent = msg; toastEl.style.opacity = 1; toastTimer = 1.6; }
+let toastQueue = [];
+let toastShowing = null;
+function setMenuOpen(open) {
+  menuOpen = !!open;
+  menuToggle.setAttribute('aria-expanded', menuOpen ? 'true' : 'false');
+  menuToggle.textContent = menuOpen ? '✕ Menu' : '☰ Menu';
+  if (menuOpen) menuPanel.removeAttribute('hidden');
+  else menuPanel.setAttribute('hidden', '');
+}
+function toggleMenu(e) {
+  if (e) e.preventDefault();
+  if (needsPlayer) return;
+  setMenuOpen(!menuOpen);
+}
+menuToggle.addEventListener('pointerdown', toggleMenu);
+document.addEventListener('pointerdown', (e) => {
+  if (!menuOpen) return;
+  const t = e.target;
+  if (t && t.closest && t.closest('#menuRail')) return;
+  setMenuOpen(false);
+}, true);
+function showToastNow(item) {
+  toastShowing = item;
+  toastEl.textContent = item.msg;
+  toastEl.classList.toggle('celebrate', item.kind === 'celebrate');
+  toastEl.classList.toggle('status', item.kind !== 'celebrate');
+  toastEl.style.opacity = 1;
+  toastTimer = item.dur;
+}
+function toast(msg, opts) {
+  const kind = (opts && opts.kind) || 'status';
+  const replace = !opts || opts.replace !== false;
+  const item = { msg: String(msg), kind, dur: (opts && opts.dur) || TOAST_DUR[kind] || TOAST_DUR.status };
+  if (replace) {
+    // Same short status stem (e.g. POP! 3/8 → 4/8): swap in place instead of queuing.
+    if (toastShowing && toastShowing.kind === kind && kind === 'status') {
+      showToastNow(item);
+      return;
+    }
+    toastQueue = toastQueue.filter((q) => !(q.kind === kind && kind === 'status'));
+  }
+  if (!toastShowing) { showToastNow(item); return; }
+  if (replace && kind === 'celebrate') {
+    toastQueue = toastQueue.filter((q) => q.kind !== 'celebrate');
+    toastQueue.unshift(item);
+    if (toastQueue.length > TOAST_MAX_QUEUE) toastQueue.length = TOAST_MAX_QUEUE;
+    showToastNow(toastQueue.shift());
+    return;
+  }
+  if (toastQueue.length >= TOAST_MAX_QUEUE) toastQueue.shift();
+  toastQueue.push(item);
+}
+function tickToast(dt) {
+  if (toastTimer <= 0) return;
+  toastTimer -= dt;
+  if (toastTimer > 0) return;
+  if (toastQueue.length) showToastNow(toastQueue.shift());
+  else { toastEl.style.opacity = 0; toastShowing = null; }
+}
 function checkMissions() {
   for (const m of MISSIONS) {
     if (!isActive(m.key) || Q[m.key] < m.goal) continue;
@@ -1953,32 +2047,67 @@ function checkMissions() {
     refreshActive();
     persistProgress();
     const fresh = active.filter((k) => !before.includes(k)).map((k) => MISSIONS.find((x) => x.key === k).name);
-    toast(`DONE: ${m.name}! +${m.reward}`);
+    toast(`DONE: ${m.name}! +${m.reward}`, { kind: 'celebrate' });
     if (window.LinaAnalytics) LinaAnalytics.bump('mission');
     track('mission_complete', { mission: m.key, done: missionDone.size, total: MISSIONS.length, reward: m.reward });
-    if (missionDone.size === MISSIONS.length) setTimeout(() => { toast('LINA WINS! ALL MISSIONS DONE!'); sfx('win'); track('all_missions_done', { missions: MISSIONS.length }); }, 1700);
-    else if (fresh.length) setTimeout(() => toast(`NEW MISSION: ${fresh[0]}`), 1700);
+    if (missionDone.size === MISSIONS.length) setTimeout(() => { toast('LINA WINS! ALL MISSIONS DONE!', { kind: 'celebrate' }); sfx('win'); track('all_missions_done', { missions: MISSIONS.length }); }, 1700);
+    else if (fresh.length) setTimeout(() => toast(`NEW MISSION: ${fresh[0]}`, { kind: 'celebrate' }), 1700);
   }
+}
+function missionLine(k) {
+  const m = MISSIONS.find((x) => x.key === k);
+  return `<div>○ ${m.name}${m.goal > 1 ? ` (${Math.min(Q[k], m.goal)}/${m.goal})` : ''}${k === 'pizza' ? ' ' + PIZZA.items.map((i) => (i.got ? i.e : '▫️')).join('') : ''}</div><div class="obj">${m.desc}</div>`;
 }
 function renderHud() {
   checkMissions();
-  hud.innerHTML = `<div>🥬 ${coins} &nbsp; 📜 ${missionDone.size}/${MISSIONS.length}</div>`
-    + active.map((k) => { const m = MISSIONS.find((x) => x.key === k); return `<div>○ ${m.name}${m.goal > 1 ? ` (${Math.min(Q[k], m.goal)}/${m.goal})` : ''}${k === 'pizza' ? ' ' + PIZZA.items.map((i) => (i.got ? i.e : '▫️')).join('') : ''}</div><div class="obj">${m.desc}</div>`; }).join('');
+  const n = active.length;
+  const chev = hudMissionsOpen ? '▼' : '▶';
+  const label = n ? `${chev} ${n} open` : `${chev} Done!`;
+  hud.innerHTML = `<div class="hud-top"><div>🥬 ${coins} &nbsp; 📜 ${missionDone.size}/${MISSIONS.length}</div>`
+    + `<button type="button" class="hud-toggle" id="hudToggle" aria-expanded="${hudMissionsOpen ? 'true' : 'false'}" aria-controls="hudMissions">${label}</button></div>`
+    + `<div id="hudMissions" class="hud-missions"${hudMissionsOpen ? '' : ' hidden'}>`
+    + (n ? active.map(missionLine).join('') : '<div class="obj">All missions complete — go make more chaos!</div>')
+    + '</div>';
 }
+hud.addEventListener('pointerdown', (e) => {
+  const btn = e.target && e.target.closest && e.target.closest('#hudToggle');
+  if (!btn) return;
+  e.preventDefault();
+  e.stopPropagation();
+  hudMissionsOpen = !hudMissionsOpen;
+  renderHud();
+});
 function checkWin() { renderHud(); }
-// mission board: the three open missions, then what is done
+// mission board: disclosure sections — open first, locked/done collapsed by default
 const missionsEl = document.getElementById('missions');
+const missionSecOpen = { open: true, locked: false, done: false };
+function missionSection(id, title, bodyHtml, startOpen) {
+  const open = missionSecOpen[id] != null ? missionSecOpen[id] : startOpen;
+  const chev = open ? '▼' : '▶';
+  return `<div class="sec" data-sec="${id}"><button type="button" class="sec-toggle" aria-expanded="${open ? 'true' : 'false'}" aria-controls="sec-${id}" data-sec-toggle="${id}"><span>${chev} ${title}</span></button>`
+    + `<div class="sec-body" id="sec-${id}"${open ? '' : ' hidden'}>${bodyHtml}</div></div>`;
+}
 function openMissions() {
   if (needsPlayer) return;
   track('missions_opened', { done: missionDone.size, active: active.slice() });
+  setMenuOpen(false);
   paused = true; resetStick();
   const row = (m, open) => `<div class="row ${open ? '' : 'done'}"><div><b>${open ? '○' : '✓'} ${m.name}</b><span>${m.desc}${open && m.goal > 1 ? ` (${Math.min(Q[m.key], m.goal)}/${m.goal})` : ''}</span></div><div>🥬 ${m.reward}</div></div>`;
   const doneList = MISSIONS.filter((m) => missionDone.has(m.key));
-  const locked = MISSIONS.length - missionDone.size - active.length;
+  const lockedList = MISSIONS.filter((m) => !missionDone.has(m.key) && !active.includes(m.key));
+  const openHtml = active.length
+    ? active.map((k) => row(MISSIONS.find((m) => m.key === k), true)).join('')
+    : '<div class="row done"><div><b>✓ All clear</b><span>Every mission is done</span></div><div></div></div>';
+  const lockedHtml = lockedList.length
+    ? lockedList.map((m) => `<div class="row locked"><div><b>🔒 ${m.name}</b><span>Finish a mission to unlock this one</span></div><div>🥬 ${m.reward}</div></div>`).join('')
+    : '<div class="row"><div><b>Nothing locked</b><span>You can see everything</span></div><div></div></div>';
+  const doneHtml = doneList.length
+    ? doneList.map((m) => row(m, false)).join('')
+    : '<div class="row"><div><b>None yet</b><span>Finish a mission to fill this list</span></div><div></div></div>';
   missionsEl.innerHTML = `<h2>Missions (${missionDone.size}/${MISSIONS.length} done)</h2>`
-    + active.map((k) => row(MISSIONS.find((m) => m.key === k), true)).join('')
-    + MISSIONS.filter((m) => !missionDone.has(m.key) && !active.includes(m.key)).map((m) => `<div class="row locked"><div><b>🔒 ${m.name}</b><span>Finish a mission to unlock this one</span></div><div>🥬 ${m.reward}</div></div>`).join('')
-    + doneList.map((m) => row(m, false)).join('')
+    + missionSection('open', `Open now (${active.length})`, openHtml, true)
+    + missionSection('locked', `Coming up (${lockedList.length})`, lockedHtml, false)
+    + missionSection('done', `Done (${doneList.length})`, doneHtml, false)
     + '<button class="close" id="missionsClose">Back to the game</button>';
   missionsEl.classList.add('open');
 }
@@ -1988,6 +2117,7 @@ let fbMood = '';
 function openFeedback() {
   if (needsPlayer) return;
   fbMood = '';
+  setMenuOpen(false);
   track('feedback_opened'); paused = true; resetStick();
   feedbackEl.innerHTML = '<h2>What did you think?</h2><div class="moods">' + [['😍', 'Loved it'], ['😕', 'Confusing'], ['🐞', 'Something broke']].map(([e, t]) => `<button data-mood="${e} ${t}">${e} ${t}</button>`).join('')
     + '</div><textarea id="fbText" placeholder="Tell Uncle Adam what was fun, what was hard, what you want next..."></textarea>'
@@ -2036,7 +2166,21 @@ feedbackEl.addEventListener('click', async (e) => {
   }
 });
 document.getElementById('feedbackBtn').addEventListener('pointerdown', (e) => { e.preventDefault(); openFeedback(); });
-missionsEl.addEventListener('click', (e) => { if (e.target.id === 'missionsClose') { missionsEl.classList.remove('open'); paused = false; } });
+missionsEl.addEventListener('click', (e) => {
+  if (e.target.id === 'missionsClose') { missionsEl.classList.remove('open'); paused = false; return; }
+  const tog = e.target.closest && e.target.closest('[data-sec-toggle]');
+  if (!tog) return;
+  const id = tog.getAttribute('data-sec-toggle');
+  missionSecOpen[id] = !missionSecOpen[id];
+  const body = document.getElementById('sec-' + id);
+  if (!body) return;
+  const open = missionSecOpen[id];
+  tog.setAttribute('aria-expanded', open ? 'true' : 'false');
+  const label = tog.querySelector('span');
+  if (label) label.textContent = (open ? '▼ ' : '▶ ') + label.textContent.replace(/^[▼▶]\s*/, '');
+  if (open) body.removeAttribute('hidden');
+  else body.setAttribute('hidden', '');
+});
 document.getElementById('missionsBtn').addEventListener('pointerdown', (e) => { e.preventDefault(); openMissions(); });
 for (const k of missionDone) clearMissionProgress(k);
 refreshActive();
@@ -2073,6 +2217,7 @@ window.__gameStats = () => ({
     needsPlayer = true;
     paused = true;
     resetStick();
+    setMenuOpen(false);
     shopEl.classList.remove('open');
     missionsEl.classList.remove('open');
     feedbackEl.classList.remove('open');
@@ -2601,7 +2746,7 @@ function frame() {
   sun.position.set(lenaBody.position.x + 4, 8, lenaBody.position.z + 3); sun.target.position.set(lenaBody.position.x, 0, lenaBody.position.z);
   updateShards(dt);
   updateFloppers(dt);
-  if (toastTimer > 0) { toastTimer -= dt; if (toastTimer <= 0) toastEl.style.opacity = 0; }
+  tickToast(dt);
 
   const lp2 = lena.position;
   camera.up.set(0, overview ? 0 : 1, overview ? -1 : 0);
