@@ -391,7 +391,7 @@ window.track = function (name, props) { window.LinaAnalytics.track(name, props);
 <div id="hud"></div>
 <div id="toast" role="status" aria-live="polite" aria-atomic="true"></div>
 <div id="hint">Left circle walks. Drag the world to look around. JUMP, GRAB and SHELL are on the right!</div>
-<script>if (matchMedia('(pointer:fine)').matches) document.getElementById('hint').textContent = 'WASD walks. Arrow keys turn the camera. Space jumps, G grabs, E hides in the shell, V changes view!';</script>
+<script>if (matchMedia('(pointer:fine)').matches) document.getElementById('hint').textContent = 'WASD walks. Arrow keys turn the camera. Space jumps, Q grabs, E hides in the shell, V changes view!';</script>
 <div id="stick"><div id="knob"></div></div>
 <button id="shell">SHELL!</button>
 <button id="jump">JUMP</button>
@@ -723,7 +723,6 @@ staticFurniture(1.3, 0.45, 0.95, 8.7, 5.6, 0xe6e0d2); deco(1.3, 0.4, 0.25, 8.7, 
 for (const [x, z] of [[7.55, 5.6], [7.6, 6.7]]) deco(0.4, 0.3, 0.4, x, 0.6, z, 0x2f3b55, 0.3);          // cushions
 staticFurniture(0.85, 0.35, 0.85, 8.8, 6.95, 0xf1efe9); deco(0.2, 0.3, 0.2, 8.8, 0.5, 6.95, 0xe9e5da);     // marble coffee table
 staticFurniture(0.4, 0.8, 2.7, 6.6, 6.55, 0x8a7a68);                                                     // console table behind the sofa
-for (const z of [5.5, 7.6]) { deco(0.2, 0.35, 0.2, 6.6, 1.0, z, 0xf3efe6); deco(0.3, 0.2, 0.3, 6.6, 1.25, z, 0xfff0c8); }  // table lamps
 for (const z of [6.0, 7.1]) staticFurniture(0.45, 0.4, 0.5, 6.15, z, 0x4a5568);                           // ottomans
 deco(0.4, 0.45, 0.4, 6.75, 0.225, 4.95, 0xf3efe6);                                                    // white basket
 // fireplace with built-in shelves and the TV
@@ -864,13 +863,17 @@ function addProp(kind, x, y, z, ry = 0) {
       for (const [sx, sz] of [[-0.03, -0.03], [0.03, -0.03], [-0.03, 0.03], [0.03, 0.03]]) { const st = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, 0.02, 8), mat(bc)); st.position.set(sx, 0.07, sz); mesh.add(st); } }   // Lego studs
     shape = new CANNON.Box(new CANNON.Vec3(0.06, 0.06, 0.06)); mass = 0.05;
   } else if (kind === 'lamp') {
+    // table lamp: mesh origin is the base, so it sits on a surface instead of standing as a floor pole
     mesh = new THREE.Group();
-    const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.05, 1.2, 8), mat(0x333333));
-    const shade = new THREE.Mesh(new THREE.ConeGeometry(0.22, 0.3, 12, 1, true), new THREE.MeshLambertMaterial({ color: 0xffe27a, side: THREE.DoubleSide }));
+    const base = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.07, 0.03, 10), mat(0x333333));
+    base.position.y = 0.015;
+    const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.015, 0.16, 8), mat(0x333333));
+    pole.position.y = 0.11;
+    const shade = new THREE.Mesh(new THREE.ConeGeometry(0.11, 0.14, 10, 1, true), new THREE.MeshLambertMaterial({ color: 0xffe27a, side: THREE.DoubleSide }));
     shade.name = 'shade';
-    shade.position.y = 0.6;
-    mesh.add(pole, shade);
-    shape = new CANNON.Box(new CANNON.Vec3(0.08, 0.6, 0.08)); mass = 1.5;
+    shade.position.y = 0.22;
+    mesh.add(base, pole, shade);
+    shape = new CANNON.Box(new CANNON.Vec3(0.07, 0.13, 0.07)); mass = 0.35;
   } else if (kind === 'toy') {
     mesh = new THREE.Group();
     const col = [0xe74c3c, 0xf1c40f, 0x9b59b6][props.length % 3];
@@ -927,7 +930,8 @@ function addProp(kind, x, y, z, ry = 0) {
   if (kind === 'table') {
     body.addShape(new CANNON.Box(new CANNON.Vec3(0.24, 0.03, 0.24)));
     for (const [lx, lz] of [[-0.18, -0.18], [0.18, -0.18], [-0.18, 0.18], [0.18, 0.18]]) body.addShape(new CANNON.Box(new CANNON.Vec3(0.03, 0.23, 0.03)), new CANNON.Vec3(lx, -0.26, lz));
-  } else body.addShape(shape);
+  } else if (kind === 'lamp') body.addShape(shape, new CANNON.Vec3(0, 0.14, 0));
+  else body.addShape(shape);
   if (kind === 'book') { body.material = bookMat; body.angularDamping = 0.12; body.sleepSpeedLimit = 0.04; }
   body.position.set(x, y, z);
   body.quaternion.setFromEuler(0, ry, 0);
@@ -940,23 +944,21 @@ function addProp(kind, x, y, z, ry = 0) {
   props.push(p);
   return p;
 }
-// vases on the floor
-for (const [x, z] of [[1.0, 3.5], [6.2, 2.2], [7.0, 4.8], [5.9, 7.0], [1.3, 6.6], [-2.2, 3.0], [-1.0, 3.6], [-2.0, 7.0], [-3.4, 6.6], [-0.8, 7.9]]) addProp('vase', x, 0.18, z);
-// side tables with vases on top
-addProp('table', 0.4, 0.49, 7.7); addProp('table', 6.0, 0.49, 4.3);
-addProp('vase', 0.4, 0.75, 7.7); addProp('vase', 6.0, 0.75, 4.3);
-// living room: a remote and a glass mug on the coffee table, the fireplace TV, and the floor lamps
+// two side tables where they belong: by the front door, and at the end of the sofa
+addProp('table', 1.85, 0.49, 7.9); addProp('table', 7.6, 0.49, 4.7);
+addProp('vase', 1.85, 0.72, 7.9); addProp('vase', 7.6, 0.72, 4.7);
+addProp('vase', 3.8, 0.97, 2.45);   // one centerpiece on the dining table
+// living room: remote and mug on the coffee table, a lamp at each end of the console, the fireplace TV
 addProp('remote', 8.62, 0.39, 6.72);
 addProp('mug', 8.98, 0.43, 7.12);
+addProp('lamp', 6.6, 0.8, 5.55); addProp('lamp', 6.6, 0.8, 7.55);
 addProp('tv', 9.88, 1.7, 6.55);
-addProp('lamp', 5.7, 0.6, 6.6); addProp('lamp', -2.0, 1.32, 0.3); addProp('lamp', 8.55, 0.6, 8.15);
-// Lego city on the playroom table: topple the towers
-for (const [x, z] of [[-2.9, 1.7], [-2.6, 2.1], [-2.3, 1.65], [-2.0, 2.1], [-2.8, 2.15], [-2.1, 1.75]]) for (let k = 0; k < 3; k++) addProp('brick', x, 0.42 + 0.06 + k * 0.12, z);
-// playroom toys, placed on purpose: one ball, two stuffed toys, a little car
-addProp('ball', -1.15, 0.12, 3.35);
-addProp('toy', -0.7, 0.14, 2.55);
-addProp('car', -1.55, 0.1, 3.15);
-addProp('toy', -0.85, 0.14, 1.7);
+// two small Lego stacks on the playroom table
+for (const [x, z] of [[-2.6, 1.85], [-2.15, 1.95]]) for (let k = 0; k < 3; k++) addProp('brick', x, 0.48 + k * 0.12, z);
+// a few toys on the playroom carpet, not scattered through the house
+addProp('ball', -2.5, 0.12, 3.45);
+addProp('toy', -1.55, 0.14, 3.5);
+addProp('car', -0.9, 0.1, 2.7);
 
 // ---------- the loft: a high shelf along the north wall, reached by hopping up the steps ----------
 const LOFT_Y = LANDMARKS.loft.y;
@@ -969,10 +971,7 @@ for (const px of [0.15, 2.25]) {
   staticBox(0.04, LOFT_Y / 2, 0.04, px, LOFT_Y / 2, 0.62);
 }
 const TOP = LOFT_Y + 0.04;
-for (const [kind, x] of [['crate', 0.4], ['toy', 0.95], ['vase', 1.5], ['crate', 2.05]]) {
-  const lift = kind === 'crate' ? 0.15 : kind === 'vase' ? 0.18 : 0.12;
-  addProp(kind, x, TOP + lift + 0.02, LANDMARKS.loft.z);
-}
+addProp('crate', LANDMARKS.loft.x, TOP + 0.17, LANDMARKS.loft.z);   // one crate stored on the high shelf
 // Lina jumps. Wooden steps lead up to the loft and the fridge.
 const PADS = [];
 function addStep(cx, cz, w, h, d, color = 0xd9a867) {
@@ -1004,8 +1003,8 @@ const RADIO = LANDMARKS.radio;
   const sp = new THREE.Mesh(new THREE.CircleGeometry(0.05, 16), mat(0x222222)); sp.position.set(RADIO.x - 0.08, 0.09, RADIO.z + 0.08); scene.add(sp);
 }
 const disco = { t: 0, beat: 0, cool: 0, i: 0 };
-// domino library: 12 books standing in a row, push the first
-for (let i = 0; i < 12; i++) addProp('book', 0.6 + i * 0.06, 0.16, 3.8);
+// eight books standing in a row on the office desk
+for (let i = 0; i < 8; i++) addProp('book', -2.15 + i * 0.06, 0.90, 8.35);
 // paintings to say hi to
 const paintings = [];
 function addPainting(x, z, ry, emoji, bg) {
@@ -1032,7 +1031,7 @@ function addBalloon(x, y, z, color, tether) {
   g.position.set(x, y, z); scene.add(g);
   balloons.push({ g, x, y, z, color, alive: true, ph: Math.random() * 6 });
 }
-for (const [x, z, c] of [[1.2, 3.2, 0xff5577], [6.2, 4.4, 0x55aaff], [5.9, 1.0, 0xffcc33], [1.4, 6.0, 0x66dd77]]) addBalloon(x, 0.22, z, c, true);
+for (const [x, z, c] of [[-0.6, 1.15, 0xff5577], [-3.4, 3.55, 0x55aaff], [-0.55, 3.6, 0xffcc33], [-2.9, 3.15, 0x66dd77]]) addBalloon(x, 0.22, z, c, true);
 addBalloon(1.9, 1.0, 1.0, 0xff8844); addBalloon(1.0, 1.5, 1.0, 0xcc66ff);
 addBalloon(0.4, 1.7, 0.35, 0xff5577); addBalloon(2.2, 1.7, 0.35, 0x55aaff);
 // footprints Uncle Adam walks around, and spots a bug hunt will not use
@@ -1217,8 +1216,8 @@ for (const [x, z, hx, hz] of [[5.5, 7.4, 0.01, 0.25], [5.9, 7.4, 0.01, 0.25], [5
   const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.2, 2.2, 10), mat(0x7a5232)); trunk.position.set(-4.0, YARD + 1.1, -10.7); trunk.castShadow = true; scene.add(trunk);
   staticBox(0.2, 1.1, 0.2, -4.0, YARD + 1.1, -10.7);
   const canopy = new THREE.Mesh(new THREE.SphereGeometry(1.2, 14, 12), mat(0x3f8f3a)); canopy.position.set(-4.0, YARD + 2.8, -10.7); canopy.castShadow = true; scene.add(canopy); tagCamFade(canopy);
-  // flower pots (they break like vases)
-  for (const [x, z] of [[1.5, -6.0], [8.0, -4.0], [-5.5, -2.0], [-6.0, 4.0]]) addProp('vase', x, YARD + 0.18, z);
+  // two pots flanking the sliding door onto the deck
+  for (const x of [2.1, 5.0]) addProp('vase', x, YARD + 0.18, -0.85);
 }
 // lettuce patch: eat the lettuce, it grows back
 const lettuces = [];
@@ -1610,7 +1609,7 @@ addEventListener('keydown', (e) => {
   if (k.startsWith('arrow')) e.preventDefault();
   if (k === ' ') { e.preventDefault(); jumpReq = true; }
   if (k === 'e' || k === 'x') tuckIn();
-  if (k === 'g') grabOrThrow();
+  if (k === 'q') grabOrThrow();
   if (k === 'v') cycleView();
 });
 addEventListener('keyup', (e) => keys.delete(e.key.toLowerCase()));
