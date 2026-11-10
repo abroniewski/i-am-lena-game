@@ -19,6 +19,8 @@ Live: https://abroniewski.github.io/i-am-lena-game/
 
 PostHog (EU, project **the-lab**) with `site: i-am-lena`. No autocapture, no session replay, and feedback **text** is never sent (mood only). Disabled on localhost.
 
+**Filter kid analytics with `is_test = false` (or `traffic = live`).** Agent / Cursor / Claude browser runs against the live URL should open with `?agent=1` (persists on that browser). `?dev=1` / `?test=1` marks local-style QA. Auto-detect also sets `traffic=agent` when `navigator.webdriver` or headless UAs show up. Past “full clear” sessions without this flag (e.g. Mac Safari endgame tests) should be treated as non-kid / agent noise.
+
 ### Players (required)
 
 Every launch asks **What is your name?** (free text — anyone can play). The last name is pre-filled so the same kid can tap **Let’s play!** quickly.

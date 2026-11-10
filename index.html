@@ -21,10 +21,12 @@ window.LinaAnalytics = (function () {
   var NAME_KEY = 'i-am-lena-player-name';
   var SLUG_KEY = 'i-am-lena-player';
   var DEVICE_KEY = 'i-am-lena-device-id';
+  var TRAFFIC_KEY = 'i-am-lena-traffic';
   var enabled = !/^(localhost|127\.0\.0\.1)$/.test(location.hostname);
   var deviceId = null;     // stable per browser/device — PostHog person key
   var player = null;       // name slug for filters
   var playerName = null;   // display name as typed
+  var traffic = 'live';    // live | agent | dev — filter agent/dev out of kid analytics
   var playId = null;
   var activeMs = 0;
   var lastTick = 0;
@@ -42,6 +44,34 @@ window.LinaAnalytics = (function () {
     if (!name) return null;
     var id = name.toLowerCase().normalize('NFKD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 32);
     return id || null;
+  }
+  function detectTraffic() {
+    // Explicit flags stick on the device so agent/dev sessions stay tagged.
+    try {
+      var q = new URLSearchParams(location.search);
+      if (q.has('agent') || q.get('traffic') === 'agent') {
+        localStorage.setItem(TRAFFIC_KEY, 'agent');
+        return 'agent';
+      }
+      if (q.has('dev') || q.has('test') || q.get('traffic') === 'dev') {
+        localStorage.setItem(TRAFFIC_KEY, 'dev');
+        return 'dev';
+      }
+      if (q.get('traffic') === 'live') {
+        localStorage.removeItem(TRAFFIC_KEY);
+        return 'live';
+      }
+      var saved = localStorage.getItem(TRAFFIC_KEY);
+      if (saved === 'agent' || saved === 'dev') return saved;
+    } catch (e) {}
+    try {
+      var ua = navigator.userAgent || '';
+      if (navigator.webdriver) return 'agent';
+      if (/HeadlessChrome|PhantomJS|Puppeteer|Playwright|Electron/i.test(ua)) return 'agent';
+      // Cursor / automation webviews often expose these
+      if (window.cursorBrowser || window.__cursor || window.cdc_adoQpoasnfa76pfcZLmcfl_Array) return 'agent';
+    } catch (e) {}
+    return 'live';
   }
   function getOrCreateDeviceId() {
     try {
@@ -82,7 +112,9 @@ window.LinaAnalytics = (function () {
       device_id: deviceId || undefined,
       player: player || undefined,
       player_name: playerName || undefined,
-      play_id: playId || undefined
+      play_id: playId || undefined,
+      traffic: traffic,
+      is_test: traffic !== 'live'
     };
     for (var k in extra) if (Object.prototype.hasOwnProperty.call(extra, k) && extra[k] != null) out[k] = extra[k];
     return out;
@@ -98,11 +130,18 @@ window.LinaAnalytics = (function () {
   function syncPostHogPerson() {
     if (!enabled || !window.posthog || !deviceId) return;
     try {
-      var props = { site: 'i-am-lena', device_id: deviceId };
+      var props = {
+        site: 'i-am-lena',
+        device_id: deviceId,
+        traffic: traffic,
+        is_test: traffic !== 'live'
+      };
       if (player) props.player = player;
       if (playerName) {
         props.player_name = playerName;
-        props.name = playerName; // shows up as person display name in PostHog
+        props.name = (traffic !== 'live' ? '[' + traffic + '] ' : '') + playerName;
+      } else if (traffic !== 'live') {
+        props.name = '[' + traffic + '] device';
       }
       posthog.identify('i-am-lena:device:' + deviceId, props);
       posthog.register(props);
@@ -186,6 +225,7 @@ window.LinaAnalytics = (function () {
     return true;
   }
   deviceId = getOrCreateDeviceId();
+  traffic = detectTraffic();
   if (enabled) {
     posthog.init('phc_mjMfR2WRBnW6yqPxtKYZGZF4YfiTYB6pM9CPJseuCpXD', {
       api_host: 'https://eu.i.posthog.com', defaults: '2025-05-24',
@@ -204,6 +244,7 @@ window.LinaAnalytics = (function () {
     getPlayer: function () { return player; },
     getPlayerName: function () { return playerName; },
     getDeviceId: function () { return deviceId; },
+    getTraffic: function () { return traffic; },
     readStoredName: readStoredName,
     snapshot: snapshotCounts
   };
