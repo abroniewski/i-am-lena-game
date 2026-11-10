@@ -258,9 +258,18 @@ window.track = function (name, props) { window.LinaAnalytics.track(name, props);
   #stick, #shell, #jump, #grab, #view, #shopBtn, #missionsBtn, #feedbackBtn, #playerBtn, #hud, #toast, #timer, #hint { z-index: 5; }
   #stick { position: fixed; left: max(28px, env(safe-area-inset-left)); bottom: max(28px, env(safe-area-inset-bottom)); width: 150px; height: 150px; border-radius: 50%; background: rgba(255,255,255,.28); border: 3px solid rgba(255,255,255,.6); touch-action: none; }
   #knob { position: absolute; left: 50%; top: 50%; width: 64px; height: 64px; margin: -32px 0 0 -32px; border-radius: 50%; background: rgba(255,255,255,.85); box-shadow: 0 2px 8px rgba(0,0,0,.3); }
-  #shell { position: fixed; right: max(28px, env(safe-area-inset-right)); bottom: max(28px, env(safe-area-inset-bottom)); width: 108px; height: 108px; border-radius: 50%; border: 4px solid #fff; background: #5b8c3a; color: #fff; font-size: 26px; font-weight: 800; text-shadow: 0 2px 3px rgba(0,0,0,.5); touch-action: none; }
-  #jump { position: fixed; right: calc(max(28px, env(safe-area-inset-right)) + 122px); bottom: max(28px, env(safe-area-inset-bottom)); width: 100px; height: 100px; border-radius: 50%; border: 4px solid #fff; background: #3b7dd8; color: #fff; font-size: 26px; font-weight: 800; text-shadow: 0 2px 3px rgba(0,0,0,.5); touch-action: none; }
-  #grab { position: fixed; right: calc(max(28px, env(safe-area-inset-right)) + 12px); bottom: calc(max(28px, env(safe-area-inset-bottom)) + 120px); width: 104px; height: 104px; border-radius: 50%; border: 4px solid #fff; background: #d8822b; color: #fff; font-size: 23px; font-weight: 800; text-shadow: 0 2px 3px rgba(0,0,0,.5); touch-action: none; }
+  /* iPad Safari adds default button padding that shifts GRAB/JUMP/SHELL off-centre. */
+  #shell, #jump, #grab {
+    display: flex; align-items: center; justify-content: center;
+    box-sizing: border-box; padding: 0; margin: 0;
+    text-align: center; line-height: 1;
+    -webkit-appearance: none; appearance: none;
+    border-radius: 50%; border: 4px solid #fff; color: #fff;
+    font-weight: 800; text-shadow: 0 2px 3px rgba(0,0,0,.5); touch-action: none;
+  }
+  #shell { position: fixed; right: max(28px, env(safe-area-inset-right)); bottom: max(28px, env(safe-area-inset-bottom)); width: 108px; height: 108px; background: #5b8c3a; font-size: 26px; }
+  #jump { position: fixed; right: calc(max(28px, env(safe-area-inset-right)) + 122px); bottom: max(28px, env(safe-area-inset-bottom)); width: 100px; height: 100px; background: #3b7dd8; font-size: 26px; }
+  #grab { position: fixed; right: calc(max(28px, env(safe-area-inset-right)) + 12px); bottom: calc(max(28px, env(safe-area-inset-bottom)) + 120px); width: 104px; height: 104px; background: #d8822b; font-size: 23px; }
   #grab.hold { background: #c0392b; }
   #shell.on { background: #e8a33a; }
   #shell.cool { background: #777; opacity: .7; }
@@ -343,6 +352,8 @@ window.track = function (name, props) { window.LinaAnalytics.track(name, props);
   #playerGate input { width: 100%; box-sizing: border-box; font-size: 34px; font-weight: 700; padding: 16px 18px; border-radius: 18px; border: 4px solid #fff; background: #fff; color: #123; text-align: center; touch-action: auto; -webkit-user-select: text; user-select: text; }
   #playerGate button[type="submit"] { min-width: 200px; padding: 16px 28px; border-radius: 22px; border: 4px solid #fff; background: #6fd36f; color: #123; font-size: 32px; font-weight: 900; touch-action: manipulation; }
   #playerGate .hint { font-size: 20px; opacity: .75; min-height: 1.2em; }
+  #playerGate.loading input, #playerGate.loading button[type="submit"] { opacity: .55; }
+  #playerGate.loading .hint { opacity: 1; font-weight: 700; }
   #playerBtn { position: fixed; top: calc(max(10px, env(safe-area-inset-top)) + 312px); right: max(14px, env(safe-area-inset-right)); padding: 10px 16px; border-radius: 22px; border: 3px solid #fff; background: rgba(0,0,0,.35); color: #fff; font-size: 28px; font-weight: 800; touch-action: none; white-space: nowrap; z-index: 5; max-width: 42vw; overflow: hidden; text-overflow: ellipsis; }
   html.phone #playerGate h1 { font-size: 30px; }
   html.phone #playerGate p { font-size: 17px; }
@@ -401,6 +412,16 @@ window.track = function (name, props) { window.LinaAnalytics.track(name, props);
     var saved = localStorage.getItem('i-am-lena-player-name');
     if (saved) input.value = saved;
   } catch (e) {}
+  function showLoading() {
+    gate.classList.add('open');
+    gate.classList.add('loading');
+    if (hint) hint.textContent = "Loading Lina's house…";
+    var btn = form.querySelector('button[type="submit"]');
+    if (btn) btn.disabled = true;
+    input.readOnly = true;
+    try { input.blur(); } catch (err) {}
+    try { window.scrollTo(0, 0); } catch (err) {}
+  }
   form.addEventListener('submit', function (e) {
     e.preventDefault();
     e.stopPropagation();
@@ -408,15 +429,25 @@ window.track = function (name, props) { window.LinaAnalytics.track(name, props);
       if (hint) hint.textContent = 'Please type a name with letters.';
       return;
     }
-    gate.classList.remove('open');
     window.__linaNameReady = true;
+    // Never reveal the empty sky-blue body before the Three.js module has booted.
+    if (window.__linaGameBooted) {
+      gate.classList.remove('open');
+      gate.classList.remove('loading');
+    } else {
+      showLoading();
+    }
   });
+  setTimeout(function () {
+    if (!window.__linaGameBooted && window.__linaNameReady && hint) {
+      hint.textContent = 'Still loading… try refreshing.';
+    }
+  }, 12000);
 })();
 </script>
-<script type="importmap">{ "imports": { "three": "./vendor/three.module.min.js", "cannon-es": "./vendor/cannon-es.js" } }</script>
 <script type="module">
-import * as THREE from 'three';
-import * as CANNON from 'cannon-es';
+import * as THREE from './vendor/three.module.min.js';
+import * as CANNON from './vendor/cannon-es.js';
 
 // ---------- sound (tiny synth, no files) ----------
 let ac = null;
@@ -607,10 +638,26 @@ function deco(w, h, d, x, y, z, color, ry = 0, glass = false) {
   if (decoHidesLina(w, h, d, glass)) tagCamFade(m);
   return m;
 }
+function fillRoundRect(g, x, y, w, h, r) {
+  // Canvas roundRect is missing on older iPad Safari — path works everywhere.
+  const rr = Math.max(0, Math.min(r, w / 2, h / 2));
+  g.beginPath();
+  g.moveTo(x + rr, y);
+  g.lineTo(x + w - rr, y);
+  g.quadraticCurveTo(x + w, y, x + w, y + rr);
+  g.lineTo(x + w, y + h - rr);
+  g.quadraticCurveTo(x + w, y + h, x + w - rr, y + h);
+  g.lineTo(x + rr, y + h);
+  g.quadraticCurveTo(x, y + h, x, y + h - rr);
+  g.lineTo(x, y + rr);
+  g.quadraticCurveTo(x, y, x + rr, y);
+  g.closePath();
+  g.fill();
+}
 function signSprite(text, emoji, x, y, z, w = 1.4) {
   const c = document.createElement('canvas'); c.width = 512; c.height = 192;
   const g = c.getContext('2d');
-  g.fillStyle = 'rgba(40,30,20,0.85)'; g.beginPath(); g.roundRect(6, 6, 500, 180, 28); g.fill();
+  g.fillStyle = 'rgba(40,30,20,0.85)'; fillRoundRect(g, 6, 6, 500, 180, 28);
   g.fillStyle = '#fff'; g.textAlign = 'center'; g.textBaseline = 'middle';
   g.font = '80px serif'; g.fillText(emoji, 256, 62);
   g.font = 'bold 44px sans-serif'; g.fillText(text, 256, 140);
@@ -622,13 +669,13 @@ const windowPane = (x, y, z, ry, w, h) => deco(w, h, 0.04, x, y, z, 0xbfe6ff, ry
 // kitchen (north wall): cabinets, double wall oven, fridge with steps, 2.9 m x 1.47 m island with stools, brick oven, pendants
 staticFurniture(0.7, 2.2, 0.6, 5.55, 0.3, 0xe8e8e8);
 for (const y of [1.2, 1.65]) deco(0.5, 0.3, 0.03, 5.55, y, 0.62, 0x222222);
-staticFurniture(2.1, 0.9, 0.6, 6.95, 0.3, 0xf2f2f2); deco(2.1, 0.04, 0.65, 6.95, 0.92, 0.3, 0x555b63);
+staticFurniture(2.1, 0.9, 0.6, 6.95, 0.3, 0xf2f2f2); deco(2.1, 0.04, 0.65, 6.95, 0.92, 0.3, 0x555b63); staticBox(1.05, 0.02, 0.325, 6.95, 0.92, 0.3);
 windowPane(7.0, 1.5, 0.04, 0, 1.2, 0.8);
 deco(1.0, 0.55, 0.5, 7.0, 2.2, 0.28, 0xffffff); deco(0.5, 0.35, 0.4, 7.0, 1.9, 0.3, 0xf6f6f6);   // arched range hood
 for (const x of [6.15, 7.85]) deco(0.5, 0.9, 0.35, x, 2.15, 0.2, 0xffffff);                       // upper cabinets
 for (const x of [5.9, 6.4, 7.6, 8.0]) deco(0.02, 0.1, 0.02, x, 0.75, 0.62, 0x222222);           // black handles
 deco(0.3, 0.1, 0.3, 6.4, 0.97, 0.3, 0x2c5aa0);                                                  // blue pot on the counter
-staticFurniture(1.47, 0.95, 2.9, 8.13, 2.8, 0x6b7078); deco(1.57, 0.04, 3.0, 8.13, 0.97, 2.8, 0xe9e9e9);
+staticFurniture(1.47, 0.95, 2.9, 8.13, 2.8, 0x6b7078); deco(1.57, 0.04, 3.0, 8.13, 0.97, 2.8, 0xe9e9e9); staticBox(0.785, 0.02, 1.5, 8.13, 0.97, 2.8);
 for (const z of [1.9, 2.5, 3.1, 3.7]) staticFurniture(0.34, 0.65, 0.34, 7.1, z, 0x4a4d52);
 for (const z of [1.9, 2.8, 3.7]) { deco(0.02, 0.8, 0.02, 8.13, 2.3, z, 0x333333); deco(0.28, 0.22, 0.28, 8.13, 1.8, z, 0xd8f0f5, 0, true); deco(0.1, 0.06, 0.1, 8.13, 1.93, z, 0x222222); }
 deco(0.02, 0.6, 0.6, 7.39, 0.5, 3.2, 0x44474c); deco(0.03, 0.5, 0.5, 7.37, 0.5, 3.2, 0x1e2024);   // wine rack on the island
@@ -725,13 +772,17 @@ for (const x of [-3.2, -0.8]) windowPane(x, 1.5, 8.7, 0, 0.9, 1.0);
 // ---------- props ----------
 const props = []; // { mesh, body, kind, alive }
 const pendingBreaks = new Set();
-// progress (coins, skins) is saved on this device so the kids keep what they bought
+// progress (coins, skins, mid-mission) is saved on this device so the kids keep what they bought / collected
 const SAVE_KEY = 'i-am-lena-save';
-let save = { coins: 0, owned: ['brown'], skin: 'brown', done: [], patterns: ['greek', 'hex', 'none'], pattern: 'greek' };
+let save = { coins: 0, owned: ['brown'], skin: 'brown', done: [], patterns: ['greek', 'hex', 'none'], pattern: 'greek', progress: {}, pizzaGot: [], paintingsGot: [], balloonsPopped: [] };
 try { Object.assign(save, JSON.parse(localStorage.getItem(SAVE_KEY) || '{}')); } catch (e) {}
 if (!save.patterns.includes('greek')) { save.patterns.unshift('greek'); if (save.pattern === 'hex' && save.skin === 'brown') save.pattern = 'greek'; }
 if (!save.owned.includes('brown')) save.owned.push('brown');
 if (!save.migrated) { save.migrated = 1; if (save.skin === 'green') save.skin = 'brown'; } // Lina is brown now
+if (!save.progress || typeof save.progress !== 'object') save.progress = {};
+if (!Array.isArray(save.pizzaGot)) save.pizzaGot = [];
+if (!Array.isArray(save.paintingsGot)) save.paintingsGot = [];
+if (!Array.isArray(save.balloonsPopped)) save.balloonsPopped = [];
 function persist() { try { localStorage.setItem(SAVE_KEY, JSON.stringify(save)); } catch (e) {} }
 let coins = save.coins;
 function addCoins(n) {
@@ -1245,6 +1296,11 @@ for (const it of PIZZA.items) {
   staticBox(0.36, 0.33, 0.3, PIZZA.oven.x, 0.33, PIZZA.oven.z);
 }
 function pizzaOpen() { for (const it of PIZZA.items) it.got = false; PIZZA.baking = 0; }
+function pizzaRestore() {
+  const got = new Set(save.pizzaGot || []);
+  for (const it of PIZZA.items) it.got = got.has(it.id);
+  PIZZA.baking = 0;
+}
 function pizzaLeft() { return PIZZA.items.filter((i) => !i.got).length; }
 function updatePizza(dt) {
   const on = isActive('pizza'), lp = lenaBody.position;
@@ -1676,7 +1732,36 @@ const MISSIONS = [
 const missionDone = new Set(save.done || []);
 let active = [];
 function isActive(k) { return active.includes(k); }
-function credit(k, n = 1) { if (!isActive(k)) return false; Q[k] += n; return true; }
+function persistProgress() {
+  const next = {};
+  for (const k of active) {
+    if (Q[k] > 0) next[k] = Q[k];
+  }
+  save.progress = next;
+  save.pizzaGot = isActive('pizza') ? PIZZA.items.filter((i) => i.got).map((i) => i.id) : [];
+  save.paintingsGot = isActive('paintings') ? paintings.map((pt, i) => (pt.touched ? i : -1)).filter((i) => i >= 0) : [];
+  save.balloonsPopped = isActive('balloons') ? balloons.map((b, i) => (!b.alive ? i : -1)).filter((i) => i >= 0) : [];
+  persist();
+}
+function clearMissionProgress(k) {
+  if (save.progress) delete save.progress[k];
+  if (k === 'pizza') save.pizzaGot = [];
+  if (k === 'paintings') save.paintingsGot = [];
+  if (k === 'balloons') save.balloonsPopped = [];
+}
+function midHas(k) {
+  if (save.progress && save.progress[k] > 0) return true;
+  if (k === 'pizza' && save.pizzaGot && save.pizzaGot.length) return true;
+  if (k === 'paintings' && save.paintingsGot && save.paintingsGot.length) return true;
+  if (k === 'balloons' && save.balloonsPopped && save.balloonsPopped.length) return true;
+  return false;
+}
+function credit(k, n = 1) {
+  if (!isActive(k)) return false;
+  Q[k] += n;
+  persistProgress();
+  return true;
+}
 // put things back where they started so a newly opened mission is always doable
 function restoreProps(filter) {
   for (const p of [...props]) {
@@ -1702,15 +1787,40 @@ function restoreProps(filter) {
 }
 function openMission(k) {
   Q[k] = 0;
+  clearMissionProgress(k);
   if (k === 'vases') restoreProps((p) => p.kind === 'vase');
   if (k === 'tables') restoreProps((p) => p.kind === 'table');
   if (k === 'drops') restoreProps((p) => p.home.y > 1.1);
   if (k === 'lego') restoreProps((p) => p.kind === 'brick');
   if (k === 'books') restoreProps((p) => p.kind === 'book');
   if (k === 'paintings') for (const pt of paintings) { pt.touched = false; pt.frame.material.color.setHex(0x5e3f23); }
-  if (k === 'balloons') for (const b of balloons) b.alive = true;
+  if (k === 'balloons') for (const b of balloons) { b.alive = true; b.g.visible = true; }
   if (k === 'pizza') pizzaOpen();
   if (k === 'lettuce') for (const l of lettuces) { l.alive = true; l.g.visible = true; }
+}
+function restoreMission(k) {
+  Q[k] = (save.progress && save.progress[k]) || 0;
+  if (k === 'pizza') {
+    pizzaRestore();
+    // Bake step is not mid-saved; counter matches collected ingredients after refresh.
+    Q[k] = PIZZA.items.filter((i) => i.got).length;
+  }
+  if (k === 'paintings') {
+    const got = new Set(save.paintingsGot || []);
+    paintings.forEach((pt, i) => {
+      if (got.has(i)) { pt.touched = true; pt.frame.material.color.setHex(0x55dd66); }
+      else { pt.touched = false; pt.frame.material.color.setHex(0x5e3f23); }
+    });
+    Q[k] = got.size;
+  }
+  if (k === 'balloons') {
+    const popped = new Set(save.balloonsPopped || []);
+    balloons.forEach((b, i) => {
+      if (popped.has(i)) { b.alive = false; b.g.visible = false; }
+      else { b.alive = true; }
+    });
+    Q[k] = popped.size;
+  }
 }
 
 // ---------- mission markers: a bobbing icon over everything that counts for the mission Lina is working on ----------
@@ -1778,8 +1888,14 @@ function updateMarkers(t) {
 }
 function refreshActive() {
   const before = active;
+  const booting = before.length === 0;
   active = MISSIONS.filter((m) => !missionDone.has(m.key)).slice(0, 3).map((m) => m.key);
-  for (const k of active) if (!before.includes(k)) openMission(k);
+  for (const k of active) {
+    if (before.includes(k)) continue;
+    // On a fresh page load, keep mid-mission progress (e.g. pizza ingredients already collected).
+    if (booting && midHas(k)) restoreMission(k);
+    else openMission(k);
+  }
   rebuildMarkers();
   for (const b of balloons) b.g.visible = b.alive && isActive('balloons');
   const huntOn = isActive('bugs');
@@ -1793,9 +1909,11 @@ function toast(msg) { toastEl.textContent = msg; toastEl.style.opacity = 1; toas
 function checkMissions() {
   for (const m of MISSIONS) {
     if (!isActive(m.key) || Q[m.key] < m.goal) continue;
-    missionDone.add(m.key); save.done = [...missionDone]; persist(); addCoins(m.reward);
+    missionDone.add(m.key); save.done = [...missionDone];
+    clearMissionProgress(m.key); Q[m.key] = 0; persist(); addCoins(m.reward);
     const before = active.slice();
     refreshActive();
+    persistProgress();
     const fresh = active.filter((k) => !before.includes(k)).map((k) => MISSIONS.find((x) => x.key === k).name);
     toast(`DONE: ${m.name}! +${m.reward}`);
     if (window.LinaAnalytics) LinaAnalytics.bump('mission');
@@ -1882,7 +2000,9 @@ feedbackEl.addEventListener('click', async (e) => {
 document.getElementById('feedbackBtn').addEventListener('pointerdown', (e) => { e.preventDefault(); openFeedback(); });
 missionsEl.addEventListener('click', (e) => { if (e.target.id === 'missionsClose') { missionsEl.classList.remove('open'); paused = false; } });
 document.getElementById('missionsBtn').addEventListener('pointerdown', (e) => { e.preventDefault(); openMissions(); });
+for (const k of missionDone) clearMissionProgress(k);
 refreshActive();
+persistProgress();
 renderHud();
 
 // ---------- player name gate + shared analytics context ----------
@@ -1907,6 +2027,7 @@ window.__gameStats = () => ({
   function closeGate() {
     needsPlayer = false;
     gate.classList.remove('open');
+    gate.classList.remove('loading');
     paused = false;
     refreshPlayerBtn();
   }
@@ -1917,6 +2038,7 @@ window.__gameStats = () => ({
     shopEl.classList.remove('open');
     missionsEl.classList.remove('open');
     feedbackEl.classList.remove('open');
+    gate.classList.remove('loading');
     gate.classList.add('open');
     const title = gate.querySelector('h1');
     const copy = gate.querySelector('p');
@@ -1925,6 +2047,9 @@ window.__gameStats = () => ({
       ? 'Type a name to switch who is playing on this device.'
       : 'Type your name so we can tell players apart.';
     hint.textContent = '';
+    input.readOnly = false;
+    const btnSubmit = form.querySelector('button[type="submit"]');
+    if (btnSubmit) btnSubmit.disabled = false;
     input.value = LinaAnalytics.getPlayerName() || LinaAnalytics.readStoredName() || '';
     // Autofocus on iPad shifts the visual viewport and can hide a fixed overlay — skip on touch.
     if (!touchy) setTimeout(() => { try { input.focus(); input.select(); } catch (e) {} }, 50);
@@ -1947,6 +2072,7 @@ window.__gameStats = () => ({
     needsPlayer = false;
     paused = false;
     gate.classList.remove('open');
+    gate.classList.remove('loading');
     if (!LinaAnalytics.getPlayer() && LinaAnalytics.readStoredName()) {
       LinaAnalytics.setPlayer(LinaAnalytics.readStoredName(), { source: 'gate', silent: true });
     } else if (LinaAnalytics.getPlayer()) {
@@ -2481,6 +2607,10 @@ function frame() {
   requestAnimationFrame(frame);
 }
 frame();
+window.__linaGameBooted = true;
+try { window.dispatchEvent(new Event('lina-game-booted')); } catch (e) {}
+const gateBoot = document.getElementById('playerGate');
+if (gateBoot) gateBoot.classList.remove('loading');
 addEventListener('resize', () => { renderer.setSize(innerWidth, innerHeight); camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); });
 window.__game = { shellCanvas, HOME, LENA_START, PIZZA, droid, lettuces, TREX, hold, grabOrThrow, setView, cycleView, get camAz() { return camAz; }, get overview() { return overview; }, camera, lenaBody, adam, props, Q, S, A, tuckIn, toggleView, get active() { return active; }, isActive, credit, bugs, HUNT, missionDone, balloons, paintings, BOX, disco, get yaw() { return yaw; }, keys, input, world, shards };
 </script>
