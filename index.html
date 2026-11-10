@@ -487,7 +487,10 @@ function sfx(k) {
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.setSize(innerWidth, innerHeight);
+// Shadows stay Minecraft-simple: soft ambient + one sun, modest shadow map,
+// large props cast; characters use one shared soft circle (size + height fade).
 renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.BasicShadowMap;
 document.body.appendChild(renderer.domElement);
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x87ceeb);
@@ -496,7 +499,7 @@ scene.add(new THREE.HemisphereLight(0xffffff, 0x998866, 1.1));
 const sun = new THREE.DirectionalLight(0xffffff, 1.0);
 sun.position.set(4, 8, 3);
 sun.castShadow = true;
-sun.shadow.mapSize.set(2048, 2048);
+sun.shadow.mapSize.set(1024, 1024);
 sun.shadow.camera.left = -6; sun.shadow.camera.right = 6;
 sun.shadow.camera.top = 6; sun.shadow.camera.bottom = -6;
 sun.shadow.bias = -0.0008;
@@ -893,7 +896,9 @@ function addProp(kind, x, y, z, ry = 0) {
     mesh.add(bezel, screen);
     shape = new CANNON.Box(new CANNON.Vec3(0.04, 0.39, 0.64)); mass = 0;
   }
-  mesh.traverse((o) => { if (o.isMesh) o.castShadow = true; });
+  // Small throwables skip casting — Minecraft-style: big shapes cast, clutter does not.
+  const propCasts = kind === 'table' || kind === 'lamp' || kind === 'crate' || kind === 'tv' || kind === 'vase';
+  if (propCasts) mesh.traverse((o) => { if (o.isMesh) o.castShadow = true; });
   scene.add(mesh);
   const body = new CANNON.Body({ mass, material: baseMat, sleepSpeedLimit: 0.15, sleepTimeLimit: 0.6 });
   if (kind === 'table') {
@@ -1229,7 +1234,7 @@ const droid = { g: new THREE.Group(), wp: 0, cool: 0, spin: 0, h: 0 };
   const eye = new THREE.Mesh(new THREE.SphereGeometry(0.05, 8, 6), mat(0x111111)); eye.position.set(0, 0.62, 0.17);
   const band = new THREE.Mesh(new THREE.CylinderGeometry(0.221, 0.221, 0.08, 14), b); band.position.y = 0.38;
   const foot = new THREE.Mesh(new THREE.BoxGeometry(0.34, 0.08, 0.34), b); foot.position.y = 0.04;
-  droid.g.add(body, dome, eye, band, foot); droid.g.traverse((o) => { if (o.isMesh) o.castShadow = true; });
+  droid.g.add(body, dome, eye, band, foot);
   droid.g.scale.setScalar(0.5); droid.g.position.set(2.0, YARD, -5.5); scene.add(droid.g);
 }
 const DROID_WP = [[2.0, -5.5], [6.5, -5.0], [6.0, -8.0], [2.5, -8.5]];
@@ -1371,6 +1376,39 @@ function updateFloppers(dt) {
   }
 }
 
+// Minecraft-style entity shadows: one soft circle for everyone; only radius + height fade change.
+const entityShadowTex = (() => {
+  const c = document.createElement('canvas'); c.width = c.height = 64;
+  const g = c.getContext('2d');
+  const grd = g.createRadialGradient(32, 32, 1, 32, 32, 30);
+  grd.addColorStop(0, 'rgba(0,0,0,0.65)');
+  grd.addColorStop(0.5, 'rgba(0,0,0,0.3)');
+  grd.addColorStop(1, 'rgba(0,0,0,0)');
+  g.fillStyle = grd; g.fillRect(0, 0, 64, 64);
+  return new THREE.CanvasTexture(c);
+})();
+function makeEntityShadow(radius) {
+  const m = new THREE.Mesh(
+    new THREE.PlaneGeometry(radius * 2, radius * 2),
+    new THREE.MeshBasicMaterial({ map: entityShadowTex, transparent: true, depthWrite: false, opacity: 0.55 })
+  );
+  m.rotation.x = -Math.PI / 2;
+  m.renderOrder = 2;
+  m.userData.baseOpacity = 0.55;
+  m.userData.fadeH = 1.6;
+  scene.add(m);
+  return m;
+}
+function placeEntityShadow(mesh, x, entityY, z, show) {
+  if (!show) { mesh.visible = false; return; }
+  let sy = groundY(x, z) + 0.015;
+  if (Math.abs(x - LANDMARKS.loft.x) < 1.15 && Math.abs(z - LANDMARKS.loft.z) < 0.38 && entityY >= LOFT_Y - 0.08) sy = LOFT_Y + 0.05;
+  const k = Math.max(0, 1 - Math.max(0, entityY - sy) / mesh.userData.fadeH);
+  mesh.visible = k > 0.02;
+  mesh.material.opacity = mesh.userData.baseOpacity * k;
+  mesh.position.set(x, sy, z);
+}
+
 // ---------- Lina ----------
 // a Greek tortoise that fits in the palm of a hand: about 15 cm long (1 game unit = 1 metre)
 const LINA_K = 0.3;
@@ -1420,12 +1458,12 @@ function drawPattern(id, g, S) {
 }
 function applyPattern(id) { drawPattern(id, shellCanvas.getContext('2d'), 256); shellTex.needsUpdate = true; save.pattern = id; persist(); }
 const shellMesh = new THREE.Mesh(shellGeo, new THREE.MeshLambertMaterial({ color: 0x8b5a2b, map: shellTex }));
-shellMesh.scale.set(1, 1.12, 1.2); shellMesh.castShadow = true; shellGroup.add(shellMesh);   // a tall Greek-tortoise dome
+shellMesh.scale.set(1, 1.12, 1.2); shellGroup.add(shellMesh);   // a tall Greek-tortoise dome
 const belly = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.28, 0.06, 20), mat(0xe8d9a0));
 belly.scale.set(1, 1, 1.25); shellGroup.add(belly);
 const limbs = new THREE.Group(); lena.add(limbs);
 const head = new THREE.Mesh(new THREE.SphereGeometry(0.1, 12, 10), mat(0xc9a864));
-head.position.set(0, 0.15, 0.42); head.castShadow = true; limbs.add(head);
+head.position.set(0, 0.15, 0.42); limbs.add(head);
 for (const sx of [-0.06, 0.06]) {
   const eye = new THREE.Mesh(new THREE.SphereGeometry(0.02, 8, 6), mat(0x111111));
   eye.position.set(sx, 0.18, 0.5); limbs.add(eye);
@@ -1433,12 +1471,11 @@ for (const sx of [-0.06, 0.06]) {
 const legs = [];
 for (const [lx, lz] of [[-0.2, 0.2], [0.2, 0.2], [-0.2, -0.2], [0.2, -0.2]]) {
   const leg = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, 0.12, 8), mat(0xc9a864));
-  leg.position.set(lx, 0.06, lz); leg.castShadow = true; limbs.add(leg); legs.push(leg);
+  leg.position.set(lx, 0.06, lz); limbs.add(leg); legs.push(leg);
 }
 lena.scale.setScalar(LINA_K);
 scene.add(lena);
-const footBlob = new THREE.Mesh(new THREE.CircleGeometry(0.16, 20), new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.38, depthWrite: false }));
-footBlob.rotation.x = -Math.PI / 2; footBlob.renderOrder = 2; scene.add(footBlob);
+const linaShadow = makeEntityShadow(0.13);   // tiny tortoise footprint
 // skins: colour plus optional dino spikes or a Jedi lightsaber
 const SKINS = [
   { id: 'brown', name: 'Classic Lina', price: 0, color: 0xe3b640 },
@@ -1504,7 +1541,6 @@ for (const sx of [-0.13, 0.13]) {
   const l = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.8, 0.22), mat(0x3d3d52)); l.position.set(sx, 0.4, 0); adam.add(l); alegs.push(l);
   const a = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.62, 0.16), mat(0x2f6db5)); a.position.set(sx * 2.2, 1.12, 0); adam.add(a); aarms.push(a);
 }
-adam.traverse((o) => { if (o.isMesh) o.castShadow = true; });
 const stars = new THREE.Group();
 for (let i = 0; i < 4; i++) {
   const s = new THREE.Mesh(new THREE.OctahedronGeometry(0.07), new THREE.MeshBasicMaterial({ color: 0xffe14d }));
@@ -1512,6 +1548,8 @@ for (let i = 0; i < 4; i++) {
 }
 stars.position.y = 2.2; stars.visible = false; adam.add(stars);
 scene.add(adam);
+const adamShadow = makeEntityShadow(0.28);
+const droidShadow = makeEntityShadow(0.12);
 const WAYPOINTS = [[1.8, 1.2], [6.8, 1.2], [6.8, 3.6], [1.8, 3.6]].map(([x, z]) => new THREE.Vector3(x, 0, z));
 let wp = 0;
 adam.position.copy(WAYPOINTS[0]);
@@ -2557,10 +2595,9 @@ function frame() {
   lena.rotation.y = yaw;
   if (S.on) shellGroup.rotation.x += dt * 14;
   legs.forEach((l, i) => { l.position.y = 0.06 + Math.max(0, Math.sin(walk + (i % 3 ? 0 : Math.PI))) * 0.03; });
-  const gy = groundY(lena.position.x, lena.position.z) + 0.02;
-  const foot = lena.position.y + 0.012;
-  footBlob.position.set(lena.position.x, foot > gy + 0.2 ? foot : gy, lena.position.z);
-  footBlob.visible = !firstPerson;
+  placeEntityShadow(linaShadow, lena.position.x, lena.position.y, lena.position.z, lena.visible && !firstPerson);
+  placeEntityShadow(adamShadow, adam.position.x, adam.position.y, adam.position.z, true);
+  placeEntityShadow(droidShadow, droid.g.position.x, droid.g.position.y, droid.g.position.z, true);
   sun.position.set(lenaBody.position.x + 4, 8, lenaBody.position.z + 3); sun.target.position.set(lenaBody.position.x, 0, lenaBody.position.z);
   updateShards(dt);
   updateFloppers(dt);

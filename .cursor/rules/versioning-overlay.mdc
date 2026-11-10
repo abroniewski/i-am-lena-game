@@ -1,0 +1,22 @@
+---
+description: Opt out of SemVer tags, CHANGELOG, and ship prompts for this casual kids game
+alwaysApply: true
+---
+
+# I Am Lina — no release ceremony
+
+This project ships by pushing `main` (GitHub Pages). Do **not** treat it like a versioned product release.
+
+## Overrides (this overlay wins)
+
+- Do **not** classify PATCH / MINOR / MAJOR at the end of a task.
+- Do **not** ask “Ship and tag this now?” or otherwise prompt to cut a release.
+- Do **not** create, bump, or maintain `VERSION`, `CHANGELOG.md`, `package.json` version, or `docs/version-history/`.
+- Do **not** create git tags (`vX.Y.Z`), push tags, or run `gh release create` / `gh release edit` unless the user **explicitly** asks in this turn.
+- Do **not** run the `cut-release` or `version-review` skills unless the user explicitly asks.
+
+## What to do instead
+
+- Commit when the user asks (normal theme-focused commit messages).
+- Deploy is: push to `main`. No tag, no release notes file, no GitHub Release.
+- Existing historical tags/releases (if any) may stay; do not expand the practice.
