@@ -449,10 +449,42 @@ const baseMat = new CANNON.Material('base'); // everything except Lina
 const bookMat = new CANNON.Material('book');
 world.addContactMaterial(new CANNON.ContactMaterial(bookMat, baseMat, { friction: 1.2, restitution: 0 }));
 world.addContactMaterial(new CANNON.ContactMaterial(bookMat, bookMat, { friction: 0.15, restitution: 0.02 }));
+// ---------- world layout ----------
 // 1 game unit = 1 metre. Origin is the north-west corner of the open kitchen/dining/living area; x runs east, z runs south.
 // Layout follows Adam's sketch: open area (10.4 x 8.7 m) with the sliding door on the north wall onto the elevated deck,
 // the playroom, hall, powder room and office to the west, the front door and stairs at the south-west.
+// Rooms are [x0, x1, z0, z1]. Floors, walls, camera clip, and roomOf all read from here.
 const YARD = -0.6;   // the yard and lower patio are 0.6 m below the house floor and the deck
+const WALL_H = 2.7, DOOR_H = 2.1;
+const ROOMS = {
+  main:     [0, 10.36, 0, 8.73],       // kitchen / dining / living / entry
+  play:     [-4.36, 0, 0, 4.18],
+  powder:   [-4.36, -2, 4.18, 5.64],
+  hall:     [-2, 0, 4.18, 5.64],
+  office:   [-4.36, 0, 5.64, 8.73],
+  deck:     [0, 9.09, -3.45, -0.1],
+  patioW:   [-4.36, 0, -6.9, -0.1],
+  garden:   [-7.1, 12.5, -12.9, -0.1],
+  sideYard: [-7.1, -4.36, 0, 8.4],
+};
+// roomOf / camera clip order: index 0 = "inside" for Adam chase (roomOf > 0 means outside)
+const CAM_ROOMS = [
+  ROOMS.main, ROOMS.play, ROOMS.powder, ROOMS.hall, ROOMS.office,
+  ROOMS.deck, ROOMS.patioW, ROOMS.garden, ROOMS.sideYard,
+];
+const DOORS = {
+  deckSlide: { wallZ: ROOMS.main[2], gap: [2.36, 4.73] },
+  toPlay:    { wallX: ROOMS.main[0], gap: [0.8, 3.2] },
+  hallOffice:{ wallZ: ROOMS.office[2], gap: [-1.4, -0.4] },
+  hallPowder:{ wallX: ROOMS.hall[0], gap: [4.4, 5.4] },
+};
+const LANDMARKS = {
+  home:   { x: -3.8, z: 2.05 },
+  fridge: { x: 9.85, z: 0.4, top: 1.8, hx: 0.5, hz: 0.45 },
+  radio:  { x: 6.1, z: 4.8 },
+  loft:   { x: 1.2, z: 0.35, y: 1.2 },
+  start:  { x: 4.0, z: 3.9 },
+};
 function staticBox(hx, hy, hz, x, y, z) {
   const b = new CANNON.Body({ mass: 0, material: baseMat, shape: new CANNON.Box(new CANNON.Vec3(hx, hy, hz)) });
   b.position.set(x, y, z);
@@ -466,7 +498,6 @@ staticBox(4.545, 0.3, 1.725, 4.545, -0.3, -1.725);     // the elevated deck
 
 // ---------- the house ----------
 const wallMat = mat(0xeeeae0);
-const WALL_H = 2.7, DOOR_H = 2.1;
 // a wall along x (alongX) or along z at position c, from a to b, with doorway gaps [[g0, g1], ...]
 function wallSeg(alongX, c, a, b, gaps = [], header = true, h = WALL_H) {
   const cuts = [a, ...gaps.flat(), b];
@@ -492,20 +523,24 @@ function floorRect(x0, x1, z0, z1, color, planks = false) {
     line.position.set(x, 0.003, (z0 + z1) / 2); scene.add(line);
   }
 }
-floorRect(0, 10.36, 0, 8.73, 0xc9b48a, true);          // kitchen, dining, living, entry
-floorRect(-4.36, 0, 0, 4.18, 0x9aa0a8);                // playroom (grey carpet)
-floorRect(-4.36, -2, 4.18, 5.64, 0xc9b48a);            // powder room
-floorRect(-2, 0, 4.18, 5.64, 0xd8b98a);                // hall
-floorRect(-4.36, 0, 5.64, 8.73, 0xc9b48a, true);       // office
+floorRect(...ROOMS.main, 0xc9b48a, true);              // kitchen, dining, living, entry
+floorRect(...ROOMS.play, 0x9aa0a8);                    // playroom (grey carpet)
+floorRect(...ROOMS.powder, 0xc9b48a);                  // powder room
+floorRect(...ROOMS.hall, 0xd8b98a);                    // hall
+floorRect(...ROOMS.office, 0xc9b48a, true);            // office
 // open area walls
-wallSeg(true, 0, 0, 10.36, [[2.36, 4.73]], false);     // north: sliding glass door to the deck
-wallSeg(false, 10.36, 0, 8.73);
-wallSeg(true, 8.73, 2.7, 10.36); wallSeg(true, 8.73, 0, 2.7, [], false, 5.5);   // south: front door and windows
-wallSeg(false, 0, 0, 4.18, [[0.8, 3.2]]);              // west: glass double doors to the playroom
-wallSeg(false, 0, 5.64, 8.73, [], false, 5.5);         // the entry is two storeys tall
+wallSeg(true, DOORS.deckSlide.wallZ, ROOMS.main[0], ROOMS.main[1], [DOORS.deckSlide.gap], false);  // north: sliding glass door to the deck
+wallSeg(false, ROOMS.main[1], ROOMS.main[2], ROOMS.main[3]);
+wallSeg(true, ROOMS.main[3], 2.7, ROOMS.main[1]); wallSeg(true, ROOMS.main[3], ROOMS.main[0], 2.7, [], false, 5.5);  // south: front door and windows
+wallSeg(false, DOORS.toPlay.wallX, ROOMS.play[2], ROOMS.play[3], [DOORS.toPlay.gap]);  // west: glass double doors to the playroom
+wallSeg(false, ROOMS.main[0], ROOMS.office[2], ROOMS.office[3], [], false, 5.5);        // the entry is two storeys tall
 // west wing
-wallSeg(true, 0, -4.36, 0); wallSeg(false, -4.36, 0, 8.73); wallSeg(true, 4.18, -4.36, 0);
-wallSeg(true, 5.64, -4.36, 0, [[-1.4, -0.4]]); wallSeg(false, -2, 4.18, 5.64, [[4.4, 5.4]]); wallSeg(true, 8.73, -4.36, 0);
+wallSeg(true, ROOMS.play[2], ROOMS.play[0], ROOMS.play[1]);
+wallSeg(false, ROOMS.play[0], ROOMS.play[2], ROOMS.office[3]);
+wallSeg(true, ROOMS.play[3], ROOMS.play[0], ROOMS.play[1]);
+wallSeg(true, DOORS.hallOffice.wallZ, ROOMS.office[0], ROOMS.office[1], [DOORS.hallOffice.gap]);
+wallSeg(false, DOORS.hallPowder.wallX, ROOMS.hall[2], ROOMS.hall[3], [DOORS.hallPowder.gap]);
+wallSeg(true, ROOMS.office[3], ROOMS.office[0], ROOMS.office[1]);
 
 function staticFurniture(w, h, d, x, z, color) {
   const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat(color));
@@ -611,14 +646,14 @@ for (const x of [-2.9, -2.1]) deco(0.4, 0.5, 0.04, x, 0.7, 1.15, 0x2a1d1a);   //
 for (const [x, z, c] of [[-1.4, 2.4, 0xe74c3c], [-0.9, 3.1, 0xf1c40f], [-1.8, 3.0, 0x3498db]]) deco(0.3, 0.07, 0.3, x, 0.035, z, c, 0.4);
 deco(0.5, 0.5, 0.03, -1.2, 1.7, 0.07, 0xf5d142);   // dandelion wall decal
 // Lina's home: a glass tortoise enclosure (1.0 x 1.5 m) with a heat lamp, a hide house and a birch log
-const HOME = { x: -3.8, z: 2.05, in: false, set: false };
-deco(1.0, 0.012, 1.5, -3.8, 0.007, 2.05, 0xe3c88a);
-for (const z of [1.3, 2.8]) { deco(1.0, 0.3, 0.04, -3.8, 0.15, z, 0xaadcf5, 0, true); staticBox(0.5, 0.15, 0.02, -3.8, 0.15, z); }
+const HOME = { x: LANDMARKS.home.x, z: LANDMARKS.home.z, in: false, set: false };
+deco(1.0, 0.012, 1.5, HOME.x, 0.007, HOME.z, 0xe3c88a);
+for (const z of [1.3, 2.8]) { deco(1.0, 0.3, 0.04, HOME.x, 0.15, z, 0xaadcf5, 0, true); staticBox(0.5, 0.15, 0.02, HOME.x, 0.15, z); }
 for (const z of [1.55, 2.55]) { deco(0.04, 0.3, 0.5, -3.3, 0.15, z, 0xaadcf5, 0, true); staticBox(0.02, 0.15, 0.25, -3.3, 0.15, z); }
 staticFurniture(0.35, 0.2, 0.3, -4.15, 2.5, 0x8a5a33);
-{ const log = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, 0.5, 10), mat(0xeeeadf)); log.rotation.z = Math.PI / 2; log.rotation.y = 0.4; log.position.set(-3.8, 0.07, 1.7); scene.add(log); }
+{ const log = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, 0.5, 10), mat(0xeeeadf)); log.rotation.z = Math.PI / 2; log.rotation.y = 0.4; log.position.set(HOME.x, 0.07, 1.7); scene.add(log); }
 deco(0.02, 0.8, 0.02, -4.2, 0.5, 1.45, 0x333333); deco(0.2, 0.1, 0.2, -4.1, 0.92, 1.45, 0xffa733);
-signSprite("Lina's Home", '🐢', -3.8, 1.2, 2.05, 1.3);
+signSprite("Lina's Home", '🐢', HOME.x, 1.2, HOME.z, 1.3);
 // powder room: damask wallpaper, wood vanity with a white top and square sink, toilet
 for (const [w, d, x, z] of [[0.03, 1.42, -4.31, 4.91], [2.3, 0.03, -3.2, 5.61], [2.3, 0.03, -3.2, 4.21]]) deco(w, 2.7, d, x, 1.35, z, 0x8f8c7a);
 deco(1.0, 0.05, 0.5, -3.2, 0.72, 5.38, 0xfafafa); deco(0.4, 0.15, 0.3, -3.2, 0.82, 5.38, 0xffffff); deco(0.04, 0.2, 0.04, -3.2, 0.9, 5.5, 0x111111);
@@ -731,10 +766,10 @@ for (const [x, z] of [[-2.9, 1.7], [-2.6, 2.1], [-2.3, 1.65], [-2.0, 2.1], [-2.8
 for (const [x, z] of [[-3.4, 3.3], [-1.0, 1.6]]) addProp('ball', x, 0.12, z);
 
 // ---------- the loft: a high shelf along the north wall, reached by hopping up the steps ----------
-const LOFT_Y = 1.2;
+const LOFT_Y = LANDMARKS.loft.y;
 const loft = new THREE.Mesh(new THREE.BoxGeometry(2.2, 0.08, 0.6), mat(0x7a5232));
-loft.position.set(1.2, LOFT_Y, 0.35); loft.castShadow = loft.receiveShadow = true; scene.add(loft);
-staticBox(1.1, 0.04, 0.3, 1.2, LOFT_Y, 0.35);
+loft.position.set(LANDMARKS.loft.x, LOFT_Y, LANDMARKS.loft.z); loft.castShadow = loft.receiveShadow = true; scene.add(loft);
+staticBox(1.1, 0.04, 0.3, LANDMARKS.loft.x, LOFT_Y, LANDMARKS.loft.z);
 for (const px of [0.15, 2.25]) {
   const post = new THREE.Mesh(new THREE.BoxGeometry(0.08, LOFT_Y, 0.08), mat(0x5e3f23));
   post.position.set(px, LOFT_Y / 2, 0.62); post.castShadow = true; scene.add(post);
@@ -742,7 +777,7 @@ for (const px of [0.15, 2.25]) {
 }
 const TOP = LOFT_Y + 0.04;
 for (const [kind, x] of [['crate', 0.35], ['ball', 0.65], ['vase', 0.95], ['crate', 1.25], ['ball', 1.55], ['vase', 1.85], ['crate', 2.1]]) {
-  addProp(kind, x, TOP + (kind === 'crate' ? 0.15 : kind === 'ball' ? 0.12 : 0.18) + 0.02, 0.35);
+  addProp(kind, x, TOP + (kind === 'crate' ? 0.15 : kind === 'ball' ? 0.12 : 0.18) + 0.02, LANDMARKS.loft.z);
 }
 // Lina jumps. Wooden steps lead up to the loft and the fridge.
 const PADS = [];
@@ -751,14 +786,14 @@ function addStep(cx, cz, w, h, d, color = 0xd9a867) {
   m.position.set(cx, h / 2, cz); m.castShadow = m.receiveShadow = true; scene.add(m);
   staticBox(w / 2, h / 2, d / 2, cx, h / 2, cz);
 }
-for (const [i, cz] of [1.4, 0.9].entries()) addStep(1.2, cz, 0.9, 0.4 * (i + 1), 0.5, [0xd9a867, 0xcf9a58][i]);                    // up to the loft
-for (const [i, cx] of [8.25, 8.7, 9.15].entries()) addStep(cx, 0.4, 0.45, 0.45 * (i + 1), 0.8, [0xd9a867, 0xcf9a58, 0xc58c4a][i]);   // up to the fridge
+for (const [i, cz] of [1.4, 0.9].entries()) addStep(LANDMARKS.loft.x, cz, 0.9, 0.4 * (i + 1), 0.5, [0xd9a867, 0xcf9a58][i]);                    // up to the loft
+for (const [i, cx] of [8.25, 8.7, 9.15].entries()) addStep(cx, LANDMARKS.fridge.z, 0.45, 0.45 * (i + 1), 0.8, [0xd9a867, 0xcf9a58, 0xc58c4a][i]);   // up to the fridge
 const drift = { t: 0, x: 0, z: 0 };
 let padCool = 0, wasOnLoft = false, wasOnFridge = false;
 
 // ---------- mission pack: Lina flavoured versions of I Am Cat's tasks ----------
 // fridge (king of the fridge)
-const FRIDGE = { x: 9.85, z: 0.4, top: 1.8 };
+const FRIDGE = LANDMARKS.fridge;
 {
   const f = new THREE.Mesh(new THREE.BoxGeometry(0.9, 1.8, 0.8), mat(0xf2f2f2));
   f.position.set(FRIDGE.x, 0.9, FRIDGE.z); f.castShadow = f.receiveShadow = true; scene.add(f);
@@ -766,7 +801,7 @@ const FRIDGE = { x: 9.85, z: 0.4, top: 1.8 };
   const h = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.5, 0.05), mat(0x999999)); h.position.set(FRIDGE.x + 0.3, 1.1, FRIDGE.z + 0.42); scene.add(h);
 }
 // radio (disco)
-const RADIO = { x: 6.1, z: 4.8 };
+const RADIO = LANDMARKS.radio;
 {
   const r = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.18, 0.15), mat(0xd23f3f));
   r.position.set(RADIO.x, 0.09, RADIO.z); r.castShadow = true; scene.add(r);
@@ -816,7 +851,7 @@ const BLOCKS = [
   { x: 8.7, z: 5.6, hx: 0.65, hz: 0.48 },     // chaise
   { x: 6.6, z: 6.55, hx: 0.25, hz: 1.35 },    // console
   { x: 6.3, z: 8.12, hx: 0.85, hz: 0.55 },    // piano
-  { x: 9.85, z: 0.4, hx: 0.5, hz: 0.45 },     // fridge
+  { x: LANDMARKS.fridge.x, z: LANDMARKS.fridge.z, hx: LANDMARKS.fridge.hx, hz: LANDMARKS.fridge.hz }, // fridge
 ];
 function blocked(x, z, pad = 0) {
   for (const b of BLOCKS) if (Math.abs(x - b.x) < b.hx + pad && Math.abs(z - b.z) < b.hz + pad) return true;
@@ -937,8 +972,9 @@ for (const [x, z, hx, hz] of [[5.5, 7.4, 0.01, 0.25], [5.9, 7.4, 0.01, 0.25], [5
 }
 
 // ---------- the garden: Lina's home, through the door in the east wall ----------
-const GARDEN_X0 = -7.1, GARDEN_X1 = 12.5;
+// extents live in ROOMS.garden / ROOMS.sideYard (also drive CAM_ROOMS)
 {
+
   const lawnMat = mat(0x6db04a);
   for (const [x0, x1, z0, z1] of [[-7.2, 12.6, -13, 0], [-7.2, -4.36, 0, 8.5]]) {
     const g = new THREE.Mesh(new THREE.BoxGeometry(x1 - x0, 0.2, z1 - z0), lawnMat);
@@ -1247,7 +1283,7 @@ const PATTERNS = [
   { id: 'scales', name: 'Dino scales', price: 25 },
 ];
 applyPattern(save.pattern);
-const LENA_START = new CANNON.Vec3(4.0, 0.1, 3.9);
+const LENA_START = new CANNON.Vec3(LANDMARKS.start.x, 0.1, LANDMARKS.start.z);
 // Lina glides: her velocity is set directly each frame, so floor friction must not fight it.
 const lenaMat = new CANNON.Material('lena');
 world.addContactMaterial(new CANNON.ContactMaterial(lenaMat, baseMat, { friction: 0, restitution: 0.05 }));
@@ -1554,7 +1590,7 @@ function rebuildMarkers() {
   else if (k === 'throws') onProps('✋', (p) => (p.kind === 'ball' || p.kind === 'crate') && p.home.y < 0.5);
   else if (k === 'drops') onProps('🎯', (p) => p.home.y > 1.1, 7);
   else if (k === 'disco') at('📻', RADIO.x, 0.55, RADIO.z);
-  else if (k === 'loft') at('⭐', 1.2, LOFT_Y + 0.6, 0.35);
+  else if (k === 'loft') at('⭐', LANDMARKS.loft.x, LOFT_Y + 0.6, LANDMARKS.loft.z);
   else if (k === 'fridge') at('👑', FRIDGE.x, FRIDGE.top + 0.5, FRIDGE.z);
   else if (k === 'home') at('🐢', HOME.x, 0.9, HOME.z);
   else if (k === 'bugs') at('🪲', HUNT.x, 0.6, HUNT.z);
@@ -1904,8 +1940,7 @@ let yaw = Math.PI, walk = 0;
 const clock = new THREE.Clock();
 camera.position.set(0.5, 1, 0.5);
 const upVec = new CANNON.Vec3(0, 1, 0);
-// the camera stays inside the room, pulled in along the view ray rather than sliding along the walls
-const CAM_ROOMS = [[0, 10.36, 0, 8.73], [-4.36, 0, 0, 4.18], [-4.36, -2, 4.18, 5.64], [-2, 0, 4.18, 5.64], [-4.36, 0, 5.64, 8.73], [0, 9.09, -3.45, -0.1], [-4.36, 0, -6.9, -0.1], [-7.1, 12.5, -12.9, -0.1], [-7.1, -4.36, 0, 8.4]];
+// the camera stays inside the room, pulled in along the view ray rather than sliding along the walls (CAM_ROOMS from world layout)
 let camRoom = CAM_ROOMS[0];
 function roomBox(lx, lz) {
   for (const r of CAM_ROOMS) if (lx >= r[0] && lx <= r[1] && lz >= r[2] && lz <= r[3]) { camRoom = r; break; }
