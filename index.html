@@ -1216,8 +1216,8 @@ for (const [x, z, hx, hz] of [[5.5, 7.4, 0.01, 0.25], [5.9, 7.4, 0.01, 0.25], [5
   const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.2, 2.2, 10), mat(0x7a5232)); trunk.position.set(-4.0, YARD + 1.1, -10.7); trunk.castShadow = true; scene.add(trunk);
   staticBox(0.2, 1.1, 0.2, -4.0, YARD + 1.1, -10.7);
   const canopy = new THREE.Mesh(new THREE.SphereGeometry(1.2, 14, 12), mat(0x3f8f3a)); canopy.position.set(-4.0, YARD + 2.8, -10.7); canopy.castShadow = true; scene.add(canopy); tagCamFade(canopy);
-  // two pots flanking the sliding door onto the deck
-  for (const x of [2.1, 5.0]) addProp('vase', x, YARD + 0.18, -0.85);
+  // two pots on the deck, just outside the sliding door
+  for (const x of [1.85, 5.25]) addProp('vase', x, 0.18, -0.6);
 }
 // lettuce patch: eat the lettuce, it grows back
 const lettuces = [];
