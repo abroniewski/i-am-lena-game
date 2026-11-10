@@ -459,7 +459,8 @@ world.addContactMaterial(new CANNON.ContactMaterial(bookMat, bookMat, { friction
 // 1 game unit = 1 metre. Origin is the north-west corner of the open kitchen/dining/living area; x runs east, z runs south.
 // Layout follows Adam's sketch: open area (10.4 x 8.7 m) with the sliding door on the north wall onto the elevated deck,
 // the playroom, hall, powder room and office to the west, the front door and stairs at the south-west.
-// Rooms are [x0, x1, z0, z1]. Floors, walls, camera clip, and roomOf all read from here.
+// Rooms are [x0, x1, z0, z1]. Floors, walls, overview framing, and roomOf all read from here.
+// Third-person orbit clips against solid wall runs (CAM_WALLS), not these room boxes.
 const YARD = -0.6;   // the yard and lower patio are 0.6 m below the house floor and the deck
 const WALL_H = 2.7, DOOR_H = 2.1;
 const ROOMS = {
@@ -473,7 +474,7 @@ const ROOMS = {
   garden:   [-7.1, 12.5, -12.9, -0.1],
   sideYard: [-7.1, -4.36, 0, 8.4],
 };
-// roomOf / camera clip order: index 0 = "inside" for Adam chase (roomOf > 0 means outside)
+// roomOf / overview order: index 0 = "inside" for Adam chase (roomOf > 0 means outside)
 const CAM_ROOMS = [
   ROOMS.main, ROOMS.play, ROOMS.powder, ROOMS.hall, ROOMS.office,
   ROOMS.deck, ROOMS.patioW, ROOMS.garden, ROOMS.sideYard,
@@ -504,6 +505,9 @@ staticBox(4.545, 0.3, 1.725, 4.545, -0.3, -1.725);     // the elevated deck
 
 // ---------- the house ----------
 const wallMat = mat(0xeeeae0);
+// Solid wall runs the orbit camera may not cross. Door gaps are left out, so the camera can sit in the next room.
+const CAM_WALLS = [];
+const CAM_WALL_HALF = 0.06, CAM_WALL_MARGIN = 0.18;
 // a wall along x (alongX) or along z at position c, from a to b, with doorway gaps [[g0, g1], ...]
 function wallSeg(alongX, c, a, b, gaps = [], header = true, h = WALL_H) {
   const cuts = [a, ...gaps.flat(), b];
@@ -514,6 +518,7 @@ function wallSeg(alongX, c, a, b, gaps = [], header = true, h = WALL_H) {
     const w = new THREE.Mesh(new THREE.BoxGeometry(alongX ? len : 0.12, h, alongX ? 0.12 : len), wallMat);
     w.position.set(alongX ? mid : c, h / 2, alongX ? c : mid); w.receiveShadow = true; scene.add(w);
     staticBox(alongX ? len / 2 : 0.06, h / 2, alongX ? 0.06 : len / 2, alongX ? mid : c, h / 2, alongX ? c : mid);
+    CAM_WALLS.push({ alongX, c, a: Math.min(s, e) - CAM_WALL_HALF, b: Math.max(s, e) + CAM_WALL_HALF });
   }
   if (header) for (const [g0, g1] of gaps) {
     const hh = h - DOOR_H;
@@ -548,16 +553,30 @@ wallSeg(true, DOORS.hallOffice.wallZ, ROOMS.office[0], ROOMS.office[1], [DOORS.h
 wallSeg(false, DOORS.hallPowder.wallX, ROOMS.hall[2], ROOMS.hall[3], [DOORS.hallPowder.gap]);
 wallSeg(true, ROOMS.office[3], ROOMS.office[0], ROOMS.office[1]);
 
+const camFadeMeshes = [];
+function tagCamFade(mesh) {
+  mesh.userData.camFade = true;
+  camFadeMeshes.push(mesh);
+  return mesh;
+}
+// Skip glass, rugs, tiny accents, and big slabs you stand on (the deck). Those should not ghost the whole floor.
+function decoHidesLina(w, h, d, glass) {
+  if (glass || h < 0.05 || (h < 0.8 && w * d > 6)) return false;
+  const dims = [w, h, d].sort((a, b) => a - b);
+  return dims[1] >= 0.25 && dims[2] >= 0.25;
+}
 function staticFurniture(w, h, d, x, z, color) {
   const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat(color));
   m.position.set(x, h / 2, z); m.castShadow = m.receiveShadow = true; scene.add(m);
   staticBox(w / 2, h / 2, d / 2, x, h / 2, z);
+  tagCamFade(m);
   return m;
 }
 // a box with no physics, just for looks
 function deco(w, h, d, x, y, z, color, ry = 0, glass = false) {
   const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), glass ? new THREE.MeshLambertMaterial({ color, transparent: true, opacity: 0.3 }) : mat(color));
   m.position.set(x, y, z); m.rotation.y = ry; m.castShadow = !glass; m.receiveShadow = true; scene.add(m);
+  if (decoHidesLina(w, h, d, glass)) tagCamFade(m);
   return m;
 }
 function signSprite(text, emoji, x, y, z, w = 1.4) {
@@ -835,7 +854,7 @@ addProp('toy', -0.85, 0.14, 1.7);
 // ---------- the loft: a high shelf along the north wall, reached by hopping up the steps ----------
 const LOFT_Y = LANDMARKS.loft.y;
 const loft = new THREE.Mesh(new THREE.BoxGeometry(2.2, 0.08, 0.6), mat(0x7a5232));
-loft.position.set(LANDMARKS.loft.x, LOFT_Y, LANDMARKS.loft.z); loft.castShadow = loft.receiveShadow = true; scene.add(loft);
+loft.position.set(LANDMARKS.loft.x, LOFT_Y, LANDMARKS.loft.z); loft.castShadow = loft.receiveShadow = true; scene.add(loft); tagCamFade(loft);
 staticBox(1.1, 0.04, 0.3, LANDMARKS.loft.x, LOFT_Y, LANDMARKS.loft.z);
 for (const px of [0.15, 2.25]) {
   const post = new THREE.Mesh(new THREE.BoxGeometry(0.08, LOFT_Y, 0.08), mat(0x5e3f23));
@@ -853,6 +872,7 @@ function addStep(cx, cz, w, h, d, color = 0xd9a867) {
   const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat(color));
   m.position.set(cx, h / 2, cz); m.castShadow = m.receiveShadow = true; scene.add(m);
   staticBox(w / 2, h / 2, d / 2, cx, h / 2, cz);
+  tagCamFade(m);
 }
 for (const [i, cz] of [1.4, 0.9].entries()) addStep(LANDMARKS.loft.x, cz, 0.9, 0.4 * (i + 1), 0.5, [0xd9a867, 0xcf9a58][i]);                    // up to the loft
 for (const [i, cx] of [8.25, 8.7, 9.15].entries()) addStep(cx, LANDMARKS.fridge.z, 0.45, 0.45 * (i + 1), 0.8, [0xd9a867, 0xcf9a58, 0xc58c4a][i]);   // up to the fridge
@@ -864,7 +884,7 @@ let padCool = 0, wasOnLoft = false, wasOnFridge = false;
 const FRIDGE = LANDMARKS.fridge;
 {
   const f = new THREE.Mesh(new THREE.BoxGeometry(0.9, 1.8, 0.8), mat(0xf2f2f2));
-  f.position.set(FRIDGE.x, 0.9, FRIDGE.z); f.castShadow = f.receiveShadow = true; scene.add(f);
+  f.position.set(FRIDGE.x, 0.9, FRIDGE.z); f.castShadow = f.receiveShadow = true; scene.add(f); tagCamFade(f);
   staticBox(0.45, 0.9, 0.4, FRIDGE.x, 0.9, FRIDGE.z);
   const h = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.5, 0.05), mat(0x999999)); h.position.set(FRIDGE.x + 0.3, 1.1, FRIDGE.z + 0.42); scene.add(h);
 }
@@ -1063,7 +1083,7 @@ for (const [x, z, hx, hz] of [[5.5, 7.4, 0.01, 0.25], [5.9, 7.4, 0.01, 0.25], [5
   staticBox(4.45, 0.48, 0.04, 4.55, 0.48, -3.4);
   const stepAt = (cx, cz, w, d, top, color) => {
     const h = top - YARD;
-    const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat(color)); m.position.set(cx, YARD + h / 2, cz); m.castShadow = m.receiveShadow = true; scene.add(m);
+    const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat(color)); m.position.set(cx, YARD + h / 2, cz); m.castShadow = m.receiveShadow = true; scene.add(m); tagCamFade(m);
     staticBox(w / 2, h / 2, d / 2, cx, YARD + h / 2, cz);
   };
   stepAt(9.3, -1.675, 0.42, 1.25, -0.2, 0xd9a867); stepAt(9.71, -1.675, 0.42, 1.25, -0.4, 0xcf9a58);
@@ -1083,13 +1103,13 @@ for (const [x, z, hx, hz] of [[5.5, 7.4, 0.01, 0.25], [5.9, 7.4, 0.01, 0.25], [5
   fenceRun(-7.1, -12.9, 12.5, -12.9); fenceRun(-7.1, -12.9, -7.1, 8.4); fenceRun(12.5, -12.9, 12.5, 0.2);
   fenceRun(10.36, 0.1, 12.5, 0.1); fenceRun(-7.1, 8.4, -4.36, 8.4);
   // shed, vegetable beds, tree
-  const shed = new THREE.Mesh(new THREE.BoxGeometry(4.7, 2.2, 2.3), mat(0x9a7a56)); shed.position.set(10.0, YARD + 1.1, -11.35); shed.castShadow = true; scene.add(shed);
+  const shed = new THREE.Mesh(new THREE.BoxGeometry(4.7, 2.2, 2.3), mat(0x9a7a56)); shed.position.set(10.0, YARD + 1.1, -11.35); shed.castShadow = true; scene.add(shed); tagCamFade(shed);
   staticBox(2.35, 1.1, 1.15, 10.0, YARD + 1.1, -11.35);
   deco(4.9, 0.15, 2.5, 10.0, YARD + 2.25, -11.35, 0x6a4a2e);
   deco(4.7, 0.06, 1.1, 10.0, YARD + 0.03, -9.65, 0x5a3d26); deco(1.05, 0.06, 2.4, 11.8, YARD + 0.03, -7.9, 0x5a3d26);
   const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.2, 2.2, 10), mat(0x7a5232)); trunk.position.set(-4.0, YARD + 1.1, -10.7); trunk.castShadow = true; scene.add(trunk);
   staticBox(0.2, 1.1, 0.2, -4.0, YARD + 1.1, -10.7);
-  const canopy = new THREE.Mesh(new THREE.SphereGeometry(1.2, 14, 12), mat(0x3f8f3a)); canopy.position.set(-4.0, YARD + 2.8, -10.7); canopy.castShadow = true; scene.add(canopy);
+  const canopy = new THREE.Mesh(new THREE.SphereGeometry(1.2, 14, 12), mat(0x3f8f3a)); canopy.position.set(-4.0, YARD + 2.8, -10.7); canopy.castShadow = true; scene.add(canopy); tagCamFade(canopy);
   // flower pots (they break like vases)
   for (const [x, z] of [[1.5, -6.0], [8.0, -4.0], [-5.5, -2.0], [-6.0, 4.0]]) addProp('vase', x, YARD + 0.18, z);
 }
@@ -1465,12 +1485,13 @@ const VIEWS = [
   { name: 'From the side', az: Math.PI / 2, el: 0.3, d: 1.4, fov: 55 },
   { name: 'From the front', az: Math.PI, el: 0.4, d: 1.0, fov: 55 },
 ];
-let viewIdx = 0, firstPerson = false, overview = false, camAz = 0, camEl = 0.65, camD = 1.0, fpPitch = 0;
+let viewIdx = 0, firstPerson = false, overview = false, camAz = 0, camEl = 0.65, camD = 1.0, fpPitch = 0, camTight = 0;
 const viewBtn = document.getElementById('view');
 function setView(i) {
   viewIdx = i; const v = VIEWS[i];
   firstPerson = !!v.fp; overview = !!v.overview; lena.visible = !firstPerson;
   if (!firstPerson && !overview) { camAz = v.az; camEl = v.el; camD = v.d; }
+  camTight = 0;
   camera.up.set(0, overview ? 0 : 1, overview ? -1 : 0);
   camera.fov = v.fov; camera.updateProjectionMatrix();
   viewBtn.textContent = '👁 ' + v.name;
@@ -2109,36 +2130,86 @@ let yaw = Math.PI, walk = 0;
 const clock = new THREE.Clock();
 camera.position.set(0.5, 1, 0.5);
 const upVec = new CANNON.Vec3(0, 1, 0);
-// the camera stays inside the room, pulled in along the view ray rather than sliding along the walls (CAM_ROOMS from world layout)
+// Overview still frames the room Lina is standing in. Orbit pull-in uses CAM_WALLS, not this box.
 let camRoom = CAM_ROOMS[0];
 function roomBox(lx, lz) {
   for (const r of CAM_ROOMS) if (lx >= r[0] && lx <= r[1] && lz >= r[2] && lz <= r[3]) { camRoom = r; break; }
   return camRoom;
 }
-function innerRoom(room) {
-  let x0 = room[0] + 0.25, x1 = room[1] - 0.25, z0 = room[2] + 0.25, z1 = room[3] - 0.25;
-  if (x1 - x0 < 0.4) { const m = (room[0] + room[1]) / 2; x0 = m - 0.2; x1 = m + 0.2; }
-  if (z1 - z0 < 0.4) { const m = (room[2] + room[3]) / 2; z0 = m - 0.2; z1 = m + 0.2; }
-  return { x0, x1, z0, z1 };
+// t along Lina → ideal camera where the ray meets the near face of a solid wall, or null.
+function wallFaceT(w, lx, lz, dx, dz) {
+  if (w.alongX) {
+    if (Math.abs(lz - w.c) <= CAM_WALL_HALF && lx >= w.a && lx <= w.b) return 0;
+    if (Math.abs(dz) < 1e-8 || (w.c - lz) * dz <= 0) return null;
+    const face = w.c + (lz < w.c ? -CAM_WALL_HALF : CAM_WALL_HALF);
+    const t = (face - lz) / dz;
+    if (t <= 1e-4 || t > 1) return null;
+    const u = lx + dx * t;
+    if (u < w.a || u > w.b) return null;
+    return t;
+  }
+  if (Math.abs(lx - w.c) <= CAM_WALL_HALF && lz >= w.a && lz <= w.b) return 0;
+  if (Math.abs(dx) < 1e-8 || (w.c - lx) * dx <= 0) return null;
+  const face = w.c + (lx < w.c ? -CAM_WALL_HALF : CAM_WALL_HALF);
+  const t = (face - lx) / dx;
+  if (t <= 1e-4 || t > 1) return null;
+  const u = lz + dz * t;
+  if (u < w.a || u > w.b) return null;
+  return t;
 }
 function clipCamera(lx, lz, cx, cz) {
-  const box = innerRoom(roomBox(lx, lz));
-  let t0 = 0, t1 = 1;
   const dx = cx - lx, dz = cz - lz;
-  const ps = [-dx, dx, -dz, dz];
-  const qs = [lx - box.x0, box.x1 - lx, lz - box.z0, box.z1 - lz];
-  for (let i = 0; i < 4; i++) {
-    if (Math.abs(ps[i]) < 1e-8) { if (qs[i] < 0) { t0 = 1; t1 = 0; break; } }
-    else {
-      const t = qs[i] / ps[i];
-      if (ps[i] < 0) t0 = Math.max(t0, t); else t1 = Math.min(t1, t);
+  const len = Math.hypot(dx, dz);
+  if (len < 1e-4) return { x: cx, z: cz, dist: 0 };
+  let best = Infinity;
+  for (const w of CAM_WALLS) {
+    const t = wallFaceT(w, lx, lz, dx, dz);
+    if (t != null && t < best) best = t;
+  }
+  if (best === 0) return { x: lx, z: lz, dist: 0 };
+  if (!isFinite(best)) return { x: cx, z: cz, dist: len };
+  const hitDist = best * len;
+  let keep = hitDist - CAM_WALL_MARGIN;
+  if (keep < 0.08) keep = Math.min(0.08, Math.max(0.02, hitDist * 0.45));
+  return { x: lx + dx * (keep / len), z: lz + dz * (keep / len), dist: keep };
+}
+const camRaycaster = new THREE.Raycaster();
+const camAim = new THREE.Vector3();
+const camFadeOn = [];
+function fadeCamOccluders(x, y, z) {
+  const keep = new Set();
+  if (!firstPerson && camFadeMeshes.length) {
+    camAim.set(x, y, z).sub(camera.position);
+    const dist = camAim.length();
+    if (dist > 0.05) {
+      camAim.multiplyScalar(1 / dist);
+      camRaycaster.set(camera.position, camAim);
+      camRaycaster.far = Math.max(0.01, dist - 0.05);
+      const hits = camRaycaster.intersectObjects(camFadeMeshes, false);
+      for (let i = 0; i < hits.length && keep.size < 8; i++) {
+        const mesh = hits[i].object;
+        if (mesh.userData.camFade && mesh.material && !Array.isArray(mesh.material)) keep.add(mesh);
+      }
     }
   }
-  if (t0 <= t1) {
-    const t = Math.max(t0, Math.min(t1, 1));
-    return { x: lx + dx * t, z: lz + dz * t };
+  for (let i = camFadeOn.length - 1; i >= 0; i--) {
+    const mesh = camFadeOn[i];
+    if (keep.has(mesh)) { keep.delete(mesh); continue; }
+    const material = mesh.material, ud = mesh.userData;
+    material.opacity = ud._fadeOp;
+    material.depthWrite = ud._fadeDw;
+    if (material.transparent !== ud._fadeTr) { material.transparent = ud._fadeTr; material.needsUpdate = true; }
+    camFadeOn.splice(i, 1);
   }
-  return { x: Math.max(box.x0, Math.min(box.x1, lx)), z: Math.max(box.z0, Math.min(box.z1, lz)) };
+  for (const mesh of keep) {
+    const material = mesh.material, ud = mesh.userData;
+    if (ud._fadeOp === undefined) { ud._fadeOp = material.opacity; ud._fadeTr = material.transparent; ud._fadeDw = material.depthWrite; }
+    if (!material.transparent) material.needsUpdate = true;
+    material.transparent = true;
+    material.opacity = 0.28;
+    material.depthWrite = false;
+    camFadeOn.push(mesh);
+  }
 }
 function overviewHeight(room) {
   const w = room[1] - room[0], d = room[3] - room[2];
@@ -2329,10 +2400,12 @@ function frame() {
   const lp2 = lena.position;
   camera.up.set(0, overview ? 0 : 1, overview ? -1 : 0);
   if (firstPerson) {
+    camTight = 0;
     const fx = Math.sin(yaw), fz = Math.cos(yaw);
     camera.position.set(lp2.x + fx * 0.1, lp2.y + 0.1, lp2.z + fz * 0.1);
     camera.lookAt(lp2.x + fx * 3, lp2.y + 0.08 + Math.tan(fpPitch) * 3, lp2.z + fz * 3);
   } else if (overview) {
+    camTight = 0;
     const room = roomBox(lp2.x, lp2.z);
     const cx = (room[0] + room[1]) / 2, cz = (room[2] + room[3]) / 2;
     const y = overviewHeight(room);
@@ -2342,15 +2415,25 @@ function frame() {
     camera.position.z += (cz - camera.position.z) * k;
     camera.lookAt(cx, 0, cz);
   } else {
-    // orbit around Lina, shortened along the ray so the camera stays inside the walls
-    const rh = camD * Math.cos(camEl), hh = 0.12 + camD * Math.sin(camEl);
-    const want = clipCamera(lp2.x, lp2.z, lp2.x + Math.sin(camAz) * rh, lp2.z + Math.cos(camAz) * rh);
+    // orbit around Lina; pull in only where a solid wall blocks the ray (door gaps stay open)
+    const el = Math.min(1.45, camEl + camTight * 0.22);
+    const rh = camD * Math.cos(camEl), hh = 0.12 + camD * Math.sin(el);
+    const idealX = lp2.x + Math.sin(camAz) * rh, idealZ = lp2.z + Math.cos(camAz) * rh;
+    const want = clipCamera(lp2.x, lp2.z, idealX, idealZ);
+    const idealDist = Math.abs(rh);
+    const ratio = idealDist > 1e-4 ? want.dist / idealDist : 1;
+    const tightness = Math.max(0, Math.min(1, (0.7 - ratio) / 0.35));
+    camTight += (tightness - camTight) * Math.min(1, dt * 5);
+    const targetFov = VIEWS[viewIdx].fov + (70 - VIEWS[viewIdx].fov) * camTight;
+    const nextFov = camera.fov + (targetFov - camera.fov) * Math.min(1, dt * 6);
+    if (Math.abs(nextFov - camera.fov) > 0.02) { camera.fov = nextFov; camera.updateProjectionMatrix(); }
     const k = Math.min(1, dt * 6);
     camera.position.x += (want.x - camera.position.x) * k;
     camera.position.z += (want.z - camera.position.z) * k;
     camera.position.y += (lp2.y + hh - camera.position.y) * k;
     camera.lookAt(lp2.x, lp2.y + 0.1, lp2.z);
   }
+  fadeCamOccluders(lp2.x, lp2.y + 0.1, lp2.z);
   renderer.render(scene, camera);
   requestAnimationFrame(frame);
 }
