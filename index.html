@@ -15,19 +15,200 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <script>
 // PostHog analytics (the-lab project). No autocapture, no session replay, no feedback text; only named game events.
-!function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.crossOrigin="anonymous",p.async=!0,p.src=s.api_host.replace(".i.posthog.com","-assets.i.posthog.com")+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+".people (stub)"},o="init capture register register_once unregister opt_out_capturing has_opted_out_capturing opt_in_capturing reset isFeatureEnabled getFeatureFlag onFeatureFlags".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);
-if (!/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) {
-  posthog.init('phc_mjMfR2WRBnW6yqPxtKYZGZF4YfiTYB6pM9CPJseuCpXD', { api_host: 'https://eu.i.posthog.com', defaults: '2025-05-24', autocapture: false, disable_session_recording: true, person_profiles: 'identified_only' });
-  posthog.register({ site: 'i-am-lena' });
-  // Optional per-device label: open the game once with ?player=oscar and it is remembered on this device.
-  try {
-    var q = new URLSearchParams(location.search).get('player');
-    if (q) localStorage.setItem('i-am-lena-player', q.toLowerCase().replace(/[^a-z0-9_-]/g, '').slice(0, 24));
-    var who = localStorage.getItem('i-am-lena-player');
-    if (who) posthog.register({ player: who });
-  } catch (e) {}
-}
-window.track = function (name, props) { try { if (window.posthog && posthog.capture) posthog.capture(name, props); } catch (e) {} };
+// Identity is per-device; typed name is a label on that device so same names on two iPads stay separate.
+!function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.crossOrigin="anonymous",p.async=!0,p.src=s.api_host.replace(".i.posthog.com","-assets.i.posthog.com")+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+".people (stub)"},o="init capture register register_once unregister opt_out_capturing has_opted_out_capturing reset isFeatureEnabled getFeatureFlag onFeatureFlags identify".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);
+window.LinaAnalytics = (function () {
+  var NAME_KEY = 'i-am-lena-player-name';
+  var SLUG_KEY = 'i-am-lena-player';
+  var DEVICE_KEY = 'i-am-lena-device-id';
+  var enabled = !/^(localhost|127\.0\.0\.1)$/.test(location.hostname);
+  var deviceId = null;     // stable per browser/device — PostHog person key
+  var player = null;       // name slug for filters
+  var playerName = null;   // display name as typed
+  var playId = null;
+  var activeMs = 0;
+  var lastTick = 0;
+  var ended = false;
+  var heartbeatTimer = null;
+  var counts = { jump: 0, shell: 0, grab: 0, throw: 0, caught: 0, bonk: 0, break: 0, coins: 0, mission: 0 };
+
+  function cleanDisplayName(raw) {
+    if (!raw) return null;
+    var name = String(raw).replace(/\s+/g, ' ').trim().slice(0, 32);
+    return name || null;
+  }
+  function slugify(raw) {
+    var name = cleanDisplayName(raw);
+    if (!name) return null;
+    var id = name.toLowerCase().normalize('NFKD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 32);
+    return id || null;
+  }
+  function getOrCreateDeviceId() {
+    try {
+      var existing = localStorage.getItem(DEVICE_KEY);
+      if (existing && /^[a-z0-9_-]{8,64}$/i.test(existing)) return existing;
+      var id = 'd_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 10);
+      localStorage.setItem(DEVICE_KEY, id);
+      return id;
+    } catch (e) {
+      return 'd_ephemeral_' + Math.random().toString(36).slice(2, 10);
+    }
+  }
+  function readStoredName() {
+    try {
+      var q = new URLSearchParams(location.search).get('player');
+      var fromQ = cleanDisplayName(q);
+      if (fromQ && slugify(fromQ)) {
+        localStorage.setItem(NAME_KEY, fromQ);
+        localStorage.setItem(SLUG_KEY, slugify(fromQ));
+        return fromQ;
+      }
+      var saved = cleanDisplayName(localStorage.getItem(NAME_KEY));
+      if (saved && slugify(saved)) return saved;
+      // migrate old slug-only saves (e.g. clara / oskar)
+      var legacy = localStorage.getItem(SLUG_KEY);
+      if (legacy && slugify(legacy)) {
+        var pretty = legacy.charAt(0).toUpperCase() + legacy.slice(1);
+        localStorage.setItem(NAME_KEY, pretty);
+        return pretty;
+      }
+    } catch (e) {}
+    return null;
+  }
+  function context() {
+    var extra = (typeof window.__gameStats === 'function') ? (window.__gameStats() || {}) : {};
+    var out = {
+      site: 'i-am-lena',
+      device_id: deviceId || undefined,
+      player: player || undefined,
+      player_name: playerName || undefined,
+      play_id: playId || undefined
+    };
+    for (var k in extra) if (Object.prototype.hasOwnProperty.call(extra, k) && extra[k] != null) out[k] = extra[k];
+    return out;
+  }
+  function capture(name, props) {
+    if (!enabled || !window.posthog || !posthog.capture) return;
+    try {
+      var payload = context();
+      if (props) for (var k in props) if (Object.prototype.hasOwnProperty.call(props, k)) payload[k] = props[k];
+      posthog.capture(name, payload);
+    } catch (e) {}
+  }
+  function syncPostHogPerson() {
+    if (!enabled || !window.posthog || !deviceId) return;
+    try {
+      var props = { site: 'i-am-lena', device_id: deviceId };
+      if (player) props.player = player;
+      if (playerName) {
+        props.player_name = playerName;
+        props.name = playerName; // shows up as person display name in PostHog
+      }
+      posthog.identify('i-am-lena:device:' + deviceId, props);
+      posthog.register(props);
+    } catch (e) {}
+  }
+  function applyIdentity(name, opts) {
+    var display = cleanDisplayName(name);
+    var slug = slugify(display);
+    if (!display || !slug) return false;
+    var prev = player;
+    var prevName = playerName;
+    player = slug;
+    playerName = display;
+    try {
+      localStorage.setItem(NAME_KEY, display);
+      localStorage.setItem(SLUG_KEY, slug);
+    } catch (e) {}
+    // Same device keeps the same PostHog person; name is only a label on that device.
+    syncPostHogPerson();
+    if (!(opts && opts.silent)) {
+      capture('player_selected', {
+        player: slug,
+        player_name: display,
+        previous: prev || undefined,
+        previous_name: prevName || undefined,
+        source: (opts && opts.source) || 'ui'
+      });
+    }
+    return true;
+  }
+  function snapshotCounts() {
+    return {
+      jumps: counts.jump, shells: counts.shell, grabs: counts.grab, throws: counts.throw,
+      catches: counts.caught, bonks: counts.bonk, breaks: counts.break,
+      coins_earned: counts.coins, missions_completed: counts.mission,
+      duration_s: Math.round(activeMs / 1000)
+    };
+  }
+  function tickActive() {
+    if (!playId || ended || document.hidden) { lastTick = 0; return; }
+    var now = Date.now();
+    if (lastTick) activeMs += Math.min(5000, now - lastTick);
+    lastTick = now;
+  }
+  function stopHeartbeat() { if (heartbeatTimer) { clearInterval(heartbeatTimer); heartbeatTimer = null; } }
+  function startHeartbeat() {
+    stopHeartbeat();
+    heartbeatTimer = setInterval(function () {
+      tickActive();
+      if (!playId || ended || document.hidden) return;
+      capture('play_heartbeat', snapshotCounts());
+    }, 60000);
+  }
+  function startSession(reason) {
+    tickActive();
+    if (!player) return;
+    if (playId && !ended) endSession('restart');
+    playId = 'p_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 8);
+    activeMs = 0;
+    lastTick = Date.now();
+    ended = false;
+    counts = { jump: 0, shell: 0, grab: 0, throw: 0, caught: 0, bonk: 0, break: 0, coins: 0, mission: 0 };
+    capture('session_started', { reason: reason || 'load' });
+    startHeartbeat();
+  }
+  function endSession(reason) {
+    if (!playId || ended) return;
+    tickActive();
+    ended = true;
+    stopHeartbeat();
+    capture('session_ended', Object.assign({ reason: reason || 'leave' }, snapshotCounts()));
+  }
+  function bump(key, n) {
+    if (!counts.hasOwnProperty(key)) return;
+    counts[key] += (n == null ? 1 : n);
+  }
+  function setPlayer(name, opts) {
+    var prev = player;
+    if (!applyIdentity(name, opts)) return false;
+    if (!playId || ended || prev !== player) startSession(prev && prev !== player ? 'switch' : 'select');
+    return true;
+  }
+  deviceId = getOrCreateDeviceId();
+  if (enabled) {
+    posthog.init('phc_mjMfR2WRBnW6yqPxtKYZGZF4YfiTYB6pM9CPJseuCpXD', {
+      api_host: 'https://eu.i.posthog.com', defaults: '2025-05-24',
+      autocapture: false, disable_session_recording: true, person_profiles: 'identified_only'
+    });
+    syncPostHogPerson();
+  }
+  addEventListener('visibilitychange', function () {
+    if (document.hidden) { tickActive(); endSession('hidden'); }
+    else if (player) startSession('visible');
+  });
+  addEventListener('pagehide', function () { endSession('pagehide'); });
+  return {
+    enabled: enabled, track: capture, bump: bump,
+    setPlayer: setPlayer, startSession: startSession, endSession: endSession,
+    getPlayer: function () { return player; },
+    getPlayerName: function () { return playerName; },
+    getDeviceId: function () { return deviceId; },
+    readStoredName: readStoredName,
+    snapshot: snapshotCounts
+  };
+})();
+window.track = function (name, props) { window.LinaAnalytics.track(name, props); };
 </script>
 <style>
   html, body { margin: 0; height: 100%; overflow: hidden; background: #87ceeb; touch-action: none; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; font-family: system-ui, sans-serif; }
@@ -109,6 +290,21 @@ window.track = function (name, props) { try { if (window.posthog && posthog.capt
   html.phone #feedback .moods button { font-size: 20px; padding: 8px 12px; }
   html.phone #feedback textarea { font-size: 17px; height: 100px; }
   html.phone #feedback .acts button { font-size: 17px; padding: 8px 18px; }
+  #playerGate { position: fixed; inset: 0; z-index: 30; background: rgba(18, 40, 58, .94); display: none; flex-direction: column; align-items: center; justify-content: center; gap: 16px; color: #fff; padding: 24px; text-align: center; -webkit-user-select: text; user-select: text; }
+  #playerGate.open { display: flex; }
+  #playerGate h1 { margin: 0; font-size: 48px; font-weight: 900; }
+  #playerGate p { margin: 0; font-size: 26px; opacity: .9; max-width: 28rem; }
+  #playerGate form { display: flex; flex-direction: column; align-items: center; gap: 14px; width: min(420px, 92vw); }
+  #playerGate input { width: 100%; box-sizing: border-box; font-size: 34px; font-weight: 700; padding: 16px 18px; border-radius: 18px; border: 4px solid #fff; background: rgba(255,255,255,.95); color: #123; text-align: center; }
+  #playerGate button[type="submit"] { min-width: 200px; padding: 16px 28px; border-radius: 22px; border: 4px solid #fff; background: #6fd36f; color: #123; font-size: 32px; font-weight: 900; }
+  #playerGate .hint { font-size: 20px; opacity: .75; min-height: 1.2em; }
+  #playerBtn { position: fixed; top: calc(max(10px, env(safe-area-inset-top)) + 312px); right: max(14px, env(safe-area-inset-right)); padding: 10px 16px; border-radius: 22px; border: 3px solid #fff; background: rgba(0,0,0,.35); color: #fff; font-size: 28px; font-weight: 800; touch-action: none; white-space: nowrap; z-index: 5; max-width: 42vw; overflow: hidden; text-overflow: ellipsis; }
+  html.phone #playerGate h1 { font-size: 30px; }
+  html.phone #playerGate p { font-size: 17px; }
+  html.phone #playerGate input { font-size: 22px; padding: 12px 14px; border-width: 3px; }
+  html.phone #playerGate button[type="submit"] { font-size: 22px; padding: 12px 20px; border-width: 3px; }
+  html.phone #playerGate .hint { font-size: 15px; }
+  html.phone #playerBtn { font-size: 15px; padding: 5px 10px; border-width: 2px; border-radius: 16px; right: max(8px, env(safe-area-inset-right)); top: calc(max(8px, env(safe-area-inset-top)) + 144px); }
 </style>
 </head>
 <body>
@@ -132,6 +328,16 @@ window.track = function (name, props) { try { if (window.posthog && posthog.capt
 <button id="shopBtn">🛍 Shop</button>
 <button id="missionsBtn">📜 Missions</button>
 <button id="feedbackBtn">💬 Tell us</button>
+<button id="playerBtn" type="button" hidden>Who?</button>
+<div id="playerGate" aria-modal="true" role="dialog">
+  <h1>What is your name?</h1>
+  <p>Type your name so we can tell players apart.</p>
+  <form id="playerForm" autocomplete="off">
+    <input id="playerNameInput" name="player" type="text" maxlength="32" enterkeyhint="done" autocapitalize="words" autocomplete="nickname" placeholder="Your name" required>
+    <button type="submit">Let’s play!</button>
+    <div class="hint" id="playerHint"></div>
+  </form>
+</div>
 <div id="feedback"></div>
 <div id="missions"></div>
 <div id="timer"></div>
@@ -399,7 +605,10 @@ if (!save.owned.includes('brown')) save.owned.push('brown');
 if (!save.migrated) { save.migrated = 1; if (save.skin === 'green') save.skin = 'brown'; } // Lina is brown now
 function persist() { try { localStorage.setItem(SAVE_KEY, JSON.stringify(save)); } catch (e) {} }
 let coins = save.coins;
-function addCoins(n) { coins += n; save.coins = coins; persist(); sfx('coin'); }
+function addCoins(n) {
+  coins += n; save.coins = coins; persist(); sfx('coin');
+  if (n > 0 && window.LinaAnalytics) LinaAnalytics.bump('coins', n);
+}
 function addProp(kind, x, y, z, ry = 0) {
   let mesh, shape, mass;
   if (kind === 'vase') {
@@ -629,6 +838,7 @@ const bugs = [];
 function clearBugs() { for (const b of bugs) { scene.remove(b.m); if (b.pin) scene.remove(b.pin); } bugs.length = 0; }
 function startHunt() {
   clearBugs(); HUNT.active = true; HUNT.t = HUNT.time; HUNT.caught = 0;
+  track('bug_hunt_started', { goal: HUNT.goal, time_s: HUNT.time });
   for (let i = 0; i < HUNT.goal; i++) {
     const m = new THREE.Mesh(new THREE.SphereGeometry(0.1, 12, 10), mat(0xff8800)); m.scale.set(1, 0.55, 1.35);
     const dot = new THREE.Mesh(new THREE.SphereGeometry(0.035, 8, 6), mat(0x222222)); dot.position.set(0, 0.06, 0.06); m.add(dot);
@@ -668,8 +878,14 @@ function updateHunt(dt) {
     }
   }
   timerEl.textContent = `🪲 ${HUNT.caught}/${HUNT.goal}   ${Math.ceil(HUNT.t)}s`;
-  if (HUNT.caught >= HUNT.goal) { HUNT.active = false; HUNT.cool = 3; credit('bugs'); timerEl.textContent = ''; clearBugs(); renderHud(); }
-  else if (HUNT.t <= 0) { HUNT.active = false; HUNT.cool = 3; timerEl.textContent = ''; clearBugs(); toast('Too slow! Step on the orange pad to retry'); }
+  if (HUNT.caught >= HUNT.goal) {
+    HUNT.active = false; HUNT.cool = 3; credit('bugs'); timerEl.textContent = ''; clearBugs(); renderHud();
+    track('bug_hunt_finished', { result: 'won', caught: HUNT.caught, left_s: Math.max(0, HUNT.t) });
+  }
+  else if (HUNT.t <= 0) {
+    HUNT.active = false; HUNT.cool = 3; timerEl.textContent = ''; clearBugs(); toast('Too slow! Step on the orange pad to retry');
+    track('bug_hunt_finished', { result: 'timeout', caught: HUNT.caught });
+  }
 }
 // cardboard box: hide in it for 3 seconds and Uncle Adam can't see you
 const BOX = { x: 5.7, z: 7.4, t: 0, inside: false };
@@ -776,11 +992,15 @@ const DROID_WP = [[2.0, -5.5], [6.5, -5.0], [6.0, -8.0], [2.5, -8.5]];
 const gardenState = { visited: false };
 function updateGarden(dt) {
   const lp = lenaBody.position;
-  if (!gardenState.visited && lp.z < -0.2) { gardenState.visited = true; toast('The garden! Lina is home'); }
+  if (!gardenState.visited && lp.z < -0.2) {
+    gardenState.visited = true; toast('The garden! Lina is home');
+    track('garden_entered');
+  }
   for (const l of lettuces) {
     if (l.alive) {
       if (Math.hypot(lp.x - l.x, lp.z - l.z) < 0.22 && lp.y < YARD + 0.4) {
         l.alive = false; l.g.visible = false; l.t = 25; addCoins(2);
+        track('food_eaten', { food: 'lettuce' });
         if (credit('lettuce')) { toast(`Yum! ${Q.lettuce}/8`); renderHud(); } else toast('Yum! +2');
       }
     } else { l.t -= dt; if (l.t <= 0) { l.alive = true; l.g.visible = true; } }
@@ -1088,7 +1308,7 @@ function setView(i) {
   camera.up.set(0, overview ? 0 : 1, overview ? -1 : 0);
   camera.fov = v.fov; camera.updateProjectionMatrix();
   viewBtn.textContent = '👁 ' + v.name;
-  if (i) track('view_changed', { view: v.name });
+  if (i) track('view_changed', { view: v.name, view_index: viewIdx });
 }
 function cycleView() { setView((viewIdx + 1) % VIEWS.length); }
 const toggleView = cycleView;
@@ -1111,11 +1331,13 @@ canvasEl.addEventListener('pointercancel', endLook);
 const hold = { p: null };
 function dropHeld() { const p = hold.p; if (!p) return null; p.held = false; p.body.collisionResponse = true; p.body.wakeUp(); hold.p = null; return p; }
 function grabOrThrow() {
-  if (paused || A.state === 'scoop') return;
+  if (paused || needsPlayer || A.state === 'scoop') return;
   if (hold.p) {
     const p = dropHeld();
     p.body.velocity.set(Math.sin(yaw) * 5 + lenaBody.velocity.x, 2, Math.cos(yaw) * 5 + lenaBody.velocity.z);
     credit('throws'); sfx('launch'); renderHud();
+    if (window.LinaAnalytics) LinaAnalytics.bump('throw');
+    track('control_used', { control: 'throw', item: p.kind });
     return;
   }
   let best = null, bd = 0.5;
@@ -1125,7 +1347,11 @@ function grabOrThrow() {
     const d = Math.hypot(dx, dz);
     if (d < bd && Math.abs(p.body.position.y - lenaBody.position.y) < 0.6) { best = p; bd = d; }
   }
-  if (best) { hold.p = best; best.held = true; best.body.collisionResponse = false; sfx('coin'); }
+  if (best) {
+    hold.p = best; best.held = true; best.body.collisionResponse = false; sfx('coin');
+    if (window.LinaAnalytics) LinaAnalytics.bump('grab');
+    track('control_used', { control: 'grab', item: best.kind });
+  }
   else toast('Nothing to grab here');
 }
 
@@ -1138,13 +1364,15 @@ function setLenaShape(shape) {
   lenaBody.addShape(shape);
 }
 function tuckIn() {
-  if (S.on || S.cool > 0 || paused || A.state === 'scoop') return;
+  if (S.on || S.cool > 0 || paused || needsPlayer || A.state === 'scoop') return;
   dropHeld();
   S.on = true; S.t = SHELL_TIME;
   setLenaShape(lenaBallShape);
   setLenaMass(140); sfx('shell');
   limbs.visible = false;
   hideHint();
+  if (window.LinaAnalytics) LinaAnalytics.bump('shell');
+  track('control_used', { control: 'shell' });
 }
 function popOut() {
   S.on = false; S.cool = SHELL_COOL;
@@ -1156,6 +1384,7 @@ function popOut() {
 
 // ---------- coin shop ----------
 let paused = false;
+let needsPlayer = false;
 const shopEl = document.getElementById('shop');
 function hex(c) { return '#' + c.toString(16).padStart(6, '0'); }
 const thumbs = {};
@@ -1176,7 +1405,7 @@ function renderShop() {
     `<div class="card"><img class="sw" style="object-fit:cover" src="${patternThumb(k.id)}"><div class="name">${k.name}</div>${btn(save.patterns.includes(k.id), save.pattern === k.id, k.price, `data-pat="${k.id}"`)}</div>`).join('')
     + `</div><button class="close" id="shopClose">Back to the game</button>`;
 }
-function openShop() { track('shop_opened'); paused = true; renderShop(); shopEl.classList.add('open'); resetStick(); }
+function openShop() { if (needsPlayer) return; track('shop_opened'); paused = true; renderShop(); shopEl.classList.add('open'); resetStick(); }
 function closeShop() { paused = false; shopEl.classList.remove('open'); }
 shopEl.addEventListener('click', (e) => {
   if (e.target.id === 'shopClose') return closeShop();
@@ -1336,8 +1565,9 @@ function checkMissions() {
     refreshActive();
     const fresh = active.filter((k) => !before.includes(k)).map((k) => MISSIONS.find((x) => x.key === k).name);
     toast(`DONE: ${m.name}! +${m.reward}`);
-    track('mission_complete', { mission: m.key, done: missionDone.size, total: MISSIONS.length });
-    if (missionDone.size === MISSIONS.length) setTimeout(() => { toast('LINA WINS! ALL MISSIONS DONE!'); sfx('win'); track('all_missions_done'); }, 1700);
+    if (window.LinaAnalytics) LinaAnalytics.bump('mission');
+    track('mission_complete', { mission: m.key, done: missionDone.size, total: MISSIONS.length, reward: m.reward });
+    if (missionDone.size === MISSIONS.length) setTimeout(() => { toast('LINA WINS! ALL MISSIONS DONE!'); sfx('win'); track('all_missions_done', { missions: MISSIONS.length }); }, 1700);
     else if (fresh.length) setTimeout(() => toast(`NEW MISSION: ${fresh[0]}`), 1700);
   }
 }
@@ -1350,7 +1580,8 @@ function checkWin() { renderHud(); }
 // mission board: the three open missions, then what is done
 const missionsEl = document.getElementById('missions');
 function openMissions() {
-  track('missions_opened');
+  if (needsPlayer) return;
+  track('missions_opened', { done: missionDone.size, active: active.slice() });
   paused = true; resetStick();
   const row = (m, open) => `<div class="row ${open ? '' : 'done'}"><div><b>${open ? '○' : '✓'} ${m.name}</b><span>${m.desc}${open && m.goal > 1 ? ` (${Math.min(Q[m.key], m.goal)}/${m.goal})` : ''}</span></div><div>🥬 ${m.reward}</div></div>`;
   const doneList = MISSIONS.filter((m) => missionDone.has(m.key));
@@ -1366,6 +1597,8 @@ function openMissions() {
 const feedbackEl = document.getElementById('feedback');
 let fbMood = '';
 function openFeedback() {
+  if (needsPlayer) return;
+  fbMood = '';
   track('feedback_opened'); paused = true; resetStick();
   feedbackEl.innerHTML = '<h2>What did you think?</h2><div class="moods">' + [['😍', 'Loved it'], ['😕', 'Confusing'], ['🐞', 'Something broke']].map(([e, t]) => `<button data-mood="${e} ${t}">${e} ${t}</button>`).join('')
     + '</div><textarea id="fbText" placeholder="Tell Uncle Adam what was fun, what was hard, what you want next..."></textarea>'
@@ -1374,15 +1607,43 @@ function openFeedback() {
 }
 feedbackEl.addEventListener('click', async (e) => {
   const m = e.target.dataset && e.target.dataset.mood;
-  if (m) { fbMood = m; feedbackEl.querySelectorAll('.moods button').forEach((b) => b.classList.toggle('sel', b === e.target)); return; }
-  if (e.target.id === 'fbClose') { feedbackEl.classList.remove('open'); paused = false; return; }
+  if (m) {
+    fbMood = m;
+    feedbackEl.querySelectorAll('.moods button').forEach((b) => b.classList.toggle('sel', b === e.target));
+    track('feedback_mood_picked', { mood: fbMood });
+    return;
+  }
+  if (e.target.id === 'fbClose') {
+    track('feedback_dismissed', { mood: fbMood || undefined, had_mood: !!fbMood });
+    feedbackEl.classList.remove('open'); paused = false; return;
+  }
   if (e.target.id === 'fbSend') {
     const note = document.getElementById('fbText').value.trim();
+    if (!fbMood) { toast('Pick a face first!'); return; }
     track('feedback_sent', { mood: fbMood, has_note: !!note });
     const text = `I Am Lina feedback (${missionDone.size}/${MISSIONS.length} missions done)\n${fbMood}\n${note}`.trim();
     try { localStorage.setItem('i-am-lena-feedback', text); } catch (err) {}
-    try { if (navigator.share) { await navigator.share({ title: 'I Am Lina feedback', text }); return; } } catch (err) { return; }
-    try { await navigator.clipboard.writeText(text); e.target.textContent = 'Copied! Paste it in a message'; } catch (err) { e.target.textContent = 'Please tell Uncle Adam!'; }
+    let shared = false;
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: 'I Am Lina feedback', text });
+        shared = true;
+        track('feedback_share_result', { result: 'shared', mood: fbMood });
+        feedbackEl.classList.remove('open'); paused = false;
+        return;
+      }
+    } catch (err) {
+      track('feedback_share_result', { result: 'cancelled', mood: fbMood });
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(text);
+      e.target.textContent = 'Copied! Paste it in a message';
+      track('feedback_share_result', { result: shared ? 'shared' : 'copied', mood: fbMood });
+    } catch (err) {
+      e.target.textContent = 'Please tell Uncle Adam!';
+      track('feedback_share_result', { result: 'failed', mood: fbMood });
+    }
   }
 });
 document.getElementById('feedbackBtn').addEventListener('pointerdown', (e) => { e.preventDefault(); openFeedback(); });
@@ -1391,12 +1652,72 @@ document.getElementById('missionsBtn').addEventListener('pointerdown', (e) => { 
 refreshActive();
 renderHud();
 
+// ---------- player name gate + shared analytics context ----------
+window.__gameStats = () => ({
+  coins,
+  missions_done: missionDone.size,
+  missions_total: MISSIONS.length,
+  active_missions: active.slice(),
+});
+(function setupPlayerGate() {
+  const gate = document.getElementById('playerGate');
+  const form = document.getElementById('playerForm');
+  const input = document.getElementById('playerNameInput');
+  const hint = document.getElementById('playerHint');
+  const btn = document.getElementById('playerBtn');
+  function refreshPlayerBtn() {
+    const name = LinaAnalytics.getPlayerName();
+    btn.hidden = false;
+    btn.textContent = name ? ('👤 ' + name) : 'Who?';
+  }
+  function closeGate() {
+    needsPlayer = false;
+    gate.classList.remove('open');
+    paused = false;
+    refreshPlayerBtn();
+  }
+  function openGate(switching) {
+    needsPlayer = true;
+    paused = true;
+    resetStick();
+    shopEl.classList.remove('open');
+    missionsEl.classList.remove('open');
+    feedbackEl.classList.remove('open');
+    gate.classList.add('open');
+    const title = gate.querySelector('h1');
+    const copy = gate.querySelector('p');
+    if (title) title.textContent = switching ? 'Change player' : 'What is your name?';
+    if (copy) copy.textContent = switching
+      ? 'Type a name to switch who is playing on this device.'
+      : 'Type your name so we can tell players apart.';
+    hint.textContent = '';
+    input.value = LinaAnalytics.getPlayerName() || LinaAnalytics.readStoredName() || '';
+    setTimeout(() => { try { input.focus(); input.select(); } catch (e) {} }, 50);
+  }
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const name = input.value;
+    const switching = !!LinaAnalytics.getPlayer();
+    if (!LinaAnalytics.setPlayer(name, { source: switching ? 'switch' : 'gate' })) {
+      hint.textContent = 'Please type a name with letters.';
+      input.focus();
+      return;
+    }
+    closeGate();
+  });
+  btn.addEventListener('pointerdown', (e) => { e.preventDefault(); openGate(true); });
+  // Ask on every launch (pre-fill last name). Shared devices can change before play.
+  openGate(false);
+})();
+
 function breakProp(p) {
   p.alive = false;
   world.removeBody(p.body);
   scene.remove(p.mesh);
   sfx('crash');
   burst(new THREE.Vector3().copy(p.body.position), p.kind === 'vase' ? 0x3aa6c9 : 0xffe27a, 12);
+  if (window.LinaAnalytics) LinaAnalytics.bump('break');
+  track('prop_broken', { kind: p.kind });
   if (p.kind === 'vase') { addCoins(5); credit('vases'); toast('CRASH! +5'); }
   else { addCoins(3); toast('CLANG! +3'); }
   renderHud(); checkWin();
@@ -1407,9 +1728,12 @@ function breakProp(p) {
 function bonkAdam(prop) {
   if (A.state !== 'patrol') return;
   disco.t = 0;
-  if (prop && prop.high && credit('drops')) { addCoins(15); toast('FROM THE RAFTERS! +15'); sfx('bonk'); }
+  const fromRafters = !!(prop && prop.high);
+  if (fromRafters && credit('drops')) { addCoins(15); toast('FROM THE RAFTERS! +15'); sfx('bonk'); }
   A.state = 'flying'; A.t = 0; A.bonks++; credit('bonks'); addCoins(10);
   toast('BONK! Uncle Adam! +10'); sfx('bonk');
+  if (window.LinaAnalytics) LinaAnalytics.bump('bonk');
+  track('adam_bonked', { how: prop ? 'throw' : 'shell', from_rafters: fromRafters, bonks: A.bonks });
   renderHud(); checkWin();
 }
 function updateAdam(dt) {
@@ -1435,6 +1759,7 @@ function updateAdam(dt) {
       A.state = 'patrol'; A.grace = 3;
       aarms[0].rotation.z = 0; aarms[1].rotation.z = 0;
       toast('Gotcha, Lina! Back to the start!');
+      track('returned_to_start', { by: 'adam' });
     }
     return;
   }
@@ -1456,7 +1781,11 @@ function updateAdam(dt) {
     A.t += dt;
     stars.children.forEach((s, i) => { const a = s.userData.a + A.t * 5; s.position.set(Math.cos(a) * 0.3, Math.sin(A.t * 8 + i) * 0.04, Math.sin(a) * 0.3); });
     adam.rotation.z = Math.sin(A.t * 6) * 0.15;
-    if (A.t > 2.2) { A.state = 'patrol'; stars.visible = false; adam.rotation.z = 0; A.grace = 1.5; A.angry = 25; setAdamMood(true); toast('Uncle Adam is MAD! Run!'); }
+    if (A.t > 2.2) {
+      A.state = 'patrol'; stars.visible = false; adam.rotation.z = 0; A.grace = 1.5; A.angry = 25; setAdamMood(true);
+      toast('Uncle Adam is MAD! Run!');
+      track('adam_chase_started', { angry_s: 25 });
+    }
     return;
   }
 
@@ -1479,7 +1808,10 @@ function updateAdam(dt) {
   }
   adam.position.y = 0; aarms[0].rotation.z = 0; aarms[1].rotation.z = 0;
   A.angry = Math.max(0, A.angry - dt);
-  if (A.mad && A.angry <= 0) { setAdamMood(false); A.doorTold = false; toast('Uncle Adam calmed down'); }
+  if (A.mad && A.angry <= 0) {
+    setAdamMood(false); A.doorTold = false; toast('Uncle Adam calmed down');
+    track('adam_chase_ended');
+  }
   const hidden = BOX.inside;
   const outside = roomOf(lp.x, lp.z) > 0;
   if (!outside) A.doorTold = false;
@@ -1515,10 +1847,13 @@ function updateAdam(dt) {
   }
   // a tortoise out of her shell gets scooped up, then carried back to the start
   if (chasing && !outside && dL < 0.45) {
+    const wasHolding = !!hold.p;
     dropHeld();
     lenaBody.velocity.set(0, 0, 0);
     lenaBody.collisionResponse = false;
     A.state = 'scoop'; A.t = 0;
+    if (window.LinaAnalytics) LinaAnalytics.bump('caught');
+    track('caught_by_adam', { shell: S.on, holding: wasHolding });
   }
 }
 
@@ -1568,7 +1903,7 @@ function overviewHeight(room) {
 }
 function frame() {
   const dt = Math.min(clock.getDelta(), 0.05);
-  if (paused) { renderer.render(scene, camera); requestAnimationFrame(frame); return; }
+  if (paused || needsPlayer) { renderer.render(scene, camera); requestAnimationFrame(frame); return; }
   let ix = input.x, iy = input.y;
   if (keys.has('a')) ix -= 1;
   if (keys.has('d')) ix += 1;
@@ -1633,7 +1968,14 @@ function frame() {
   // jump
   jumpCool = Math.max(0, jumpCool - dt);
   groundT = Math.max(0, groundT - dt);
-  if (jumpReq) { jumpReq = false; if (jumpCool <= 0 && groundT > 0 && lenaBody.velocity.y < 0.8) { lenaBody.velocity.y = 4.2; jumpCool = 0.3; sfx('jump'); } }
+  if (jumpReq) {
+    jumpReq = false;
+    if (jumpCool <= 0 && groundT > 0 && lenaBody.velocity.y < 0.8) {
+      lenaBody.velocity.y = 4.2; jumpCool = 0.3; sfx('jump');
+      // jumps are frequent — count them for session summaries; do not emit every hop
+      if (window.LinaAnalytics) LinaAnalytics.bump('jump');
+    }
+  }
   // carrying something in front of her
   if (hold.p) {
     const hp = hold.p;
