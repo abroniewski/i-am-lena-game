@@ -1,0 +1,248 @@
+<mxfile host="Electron" agent="I-Am-Lina" pages="3">
+  <diagram name="1 — Ground floor (built)" id="page-ground">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1100" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="g_garden" value="GARDEN / BACKYARD" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#D5E8D4;strokeColor=#82B366;fontSize=12;fontStyle=1;verticalAlign=middle;align=center;" vertex="1" parent="1">
+          <mxGeometry x="0.0" y="0.0" width="784.0" height="512.0" as="geometry" />
+        </mxCell>
+        <mxCell id="g_side" value="SIDE YARD" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#E2F0D9;strokeColor=#82B366;fontSize=12;fontStyle=1;verticalAlign=middle;align=center;" vertex="1" parent="1">
+          <mxGeometry x="0.0" y="516.0" width="109.6" height="336.0" as="geometry" />
+        </mxCell>
+        <mxCell id="g_deck" value="DECK (elevated)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F5F5DC;strokeColor=#B0A070;fontSize=12;fontStyle=1;verticalAlign=middle;align=center;" vertex="1" parent="1">
+          <mxGeometry x="284.0" y="378.0" width="363.6" height="134.0" as="geometry" />
+        </mxCell>
+        <mxCell id="g_patio" value="WEST PATIO (lower)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#E8E0C8;strokeColor=#B0A070;fontSize=12;fontStyle=1;verticalAlign=middle;align=center;" vertex="1" parent="1">
+          <mxGeometry x="109.6" y="240.0" width="174.4" height="272.0" as="geometry" />
+        </mxCell>
+        <mxCell id="g_main" value="MAIN OPEN AREA kitchen · dining · living · entry" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFF2CC;strokeColor=#D6B656;fontSize=12;fontStyle=1;verticalAlign=middle;align=center;" vertex="1" parent="1">
+          <mxGeometry x="284.0" y="516.0" width="414.4" height="349.2" as="geometry" />
+        </mxCell>
+        <mxCell id="g_play" value="PLAYROOM (Lina&#39;s home)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#DAE8FC;strokeColor=#6C8EBF;fontSize=12;fontStyle=1;verticalAlign=middle;align=center;" vertex="1" parent="1">
+          <mxGeometry x="109.6" y="516.0" width="174.4" height="167.2" as="geometry" />
+        </mxCell>
+        <mxCell id="g_powder" value="POWDER" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#E1D5E7;strokeColor=#9673A6;fontSize=12;fontStyle=1;verticalAlign=middle;align=center;" vertex="1" parent="1">
+          <mxGeometry x="109.6" y="683.2" width="94.4" height="58.4" as="geometry" />
+        </mxCell>
+        <mxCell id="g_hall" value="HALL" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F8CECC;strokeColor=#B85450;fontSize=12;fontStyle=1;verticalAlign=middle;align=center;" vertex="1" parent="1">
+          <mxGeometry x="204.0" y="683.2" width="80" height="58.4" as="geometry" />
+        </mxCell>
+        <mxCell id="g_office" value="OFFICE" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFE6CC;strokeColor=#D79B00;fontSize=12;fontStyle=1;verticalAlign=middle;align=center;" vertex="1" parent="1">
+          <mxGeometry x="109.6" y="741.6" width="174.4" height="123.6" as="geometry" />
+        </mxCell>
+        <mxCell id="g_kit" value="≈ Kitchen" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;fillOpacity=40;strokeColor=#999999;dashed=1;dashPattern=8 8;fontSize=11;fontColor=#666666;verticalAlign=middle;align=center;" vertex="1" parent="1">
+          <mxGeometry x="504.0" y="516.0" width="194.4" height="100.0" as="geometry" />
+        </mxCell>
+        <mxCell id="g_din" value="≈ Dining" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;fillOpacity=40;strokeColor=#999999;dashed=1;dashPattern=8 8;fontSize=11;fontColor=#666666;verticalAlign=middle;align=center;" vertex="1" parent="1">
+          <mxGeometry x="424.0" y="616.0" width="160.0" height="100.0" as="geometry" />
+        </mxCell>
+        <mxCell id="g_liv" value="≈ Living" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;fillOpacity=40;strokeColor=#999999;dashed=1;dashPattern=8 8;fontSize=11;fontColor=#666666;verticalAlign=middle;align=center;" vertex="1" parent="1">
+          <mxGeometry x="504.0" y="696.0" width="194.4" height="169.2" as="geometry" />
+        </mxCell>
+        <mxCell id="g_ent" value="≈ Entry (2-storey)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;fillOpacity=40;strokeColor=#999999;dashed=1;dashPattern=8 8;fontSize=11;fontColor=#666666;verticalAlign=middle;align=center;" vertex="1" parent="1">
+          <mxGeometry x="284.0" y="696.0" width="200.0" height="169.2" as="geometry" />
+        </mxCell>
+        <mxCell id="g_d1" value="SLIDE" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontSize=9;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="378.4" y="510.0" width="94.8" height="12" as="geometry" />
+        </mxCell>
+        <mxCell id="g_d2" value="DOOR" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontSize=9;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="276.0" y="548.0" width="12" height="96.0" as="geometry" />
+        </mxCell>
+        <mxCell id="g_d3" value="DOOR" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontSize=9;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="228.0" y="736.0" width="40.0" height="12" as="geometry" />
+        </mxCell>
+        <mxCell id="g_d4" value="DOOR" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontSize=9;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="198.0" y="692.0" width="12" height="40.0" as="geometry" />
+        </mxCell>
+        <mxCell id="g_d5" value="FRONT" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;fontSize=9;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="300.0" y="858.0" width="56.0" height="14" as="geometry" />
+        </mxCell>
+        <mxCell id="g_stairs" value="STAIRS ↑ 🔒 locked" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F8CECC;strokeColor=#B85450;fontSize=12;fontStyle=1;verticalAlign=middle;align=center;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="392.0" y="760.0" width="36.0" height="72.0" as="geometry" />
+        </mxCell>
+        <mxCell id="g_base" value="BASEMENT ↓ 🔒 locked" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#E1D5E7;strokeColor=#9673A6;fontSize=12;fontStyle=1;verticalAlign=middle;align=center;fontSize=9;" vertex="1" parent="1">
+          <mxGeometry x="440.0" y="676.0" width="44.0" height="20.0" as="geometry" />
+        </mxCell>
+        <mxCell id="g_note" value="&lt;b&gt;Ground floor — as built&lt;/b&gt;&lt;br&gt;1 square ≈ 1 m · N↑ (page top = north / −z)&lt;br&gt;x → east · z → south&lt;br&gt;Open dashed boxes = soft zones (no walls)&lt;br&gt;Sketch upstairs/basement on other pages." style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;darkOpacity=0.05;fillColor=#FFF9C4;strokeColor=#D6B656;fontSize=11;align=left;spacingLeft=8;spacingTop=4;" vertex="1" parent="1">
+          <mxGeometry x="4.0" y="876.0" width="280" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="g_n" value="N ↑ deck / garden" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=10;fontColor=#666666;fontStyle=2;" vertex="1" parent="1">
+          <mxGeometry x="384.0" y="-24.0" width="80" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="g_s" value="S ↓ front of house" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=10;fontColor=#666666;fontStyle=2;" vertex="1" parent="1">
+          <mxGeometry x="384.0" y="876.0" width="100" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="g_lm1" value="🐢 home" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=#FF6B6B;strokeColor=#C41E3A;fontSize=9;" vertex="1" parent="1">
+          <mxGeometry x="122.0" y="588.0" width="48" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="g_lm2" value="fridge" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=#FF6B6B;strokeColor=#C41E3A;fontSize=9;" vertex="1" parent="1">
+          <mxGeometry x="668.0" y="522.0" width="48" height="20" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram name="2 — Upstairs (sketch)" id="page-upstairs">
+    <mxGraphModel dx="906" dy="531" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1100" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="u_foot" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F5F5F5;strokeColor=#666666;fontSize=12;fontStyle=1;verticalAlign=middle;align=center;dashed=1;dashPattern=12 8;fontSize=13;fontColor=#666666;" value="HOUSE FOOTPRINT (ground outline) — draw upstairs rooms inside —" vertex="1">
+          <mxGeometry height="349.2" width="588.8" x="109.6" y="516" as="geometry" />
+        </mxCell>
+        <mxCell id="u_stairs" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F8CECC;strokeColor=#B85450;fontSize=12;fontStyle=1;verticalAlign=middle;align=center;fontSize=10;" value="stairs from GF" vertex="1">
+          <mxGeometry height="72" width="36" x="392" y="760" as="geometry" />
+        </mxCell>
+        <mxCell id="u_void" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;fillOpacity=40;strokeColor=#999999;dashed=1;dashPattern=8 8;fontSize=11;fontColor=#666666;verticalAlign=middle;align=center;" value="maybe open to entry below? (2-storey)" vertex="1">
+          <mxGeometry height="169.2" width="108" x="284" y="696" as="geometry" />
+        </mxCell>
+        <mxCell id="qHGXGdBIDcwvLIwhpPQI-1" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="Oskar&#39;s Room" vertex="1">
+          <mxGeometry height="120" width="156.2" x="109.6" y="516" as="geometry" />
+        </mxCell>
+        <mxCell id="qHGXGdBIDcwvLIwhpPQI-3" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="Klara&#39;s room" vertex="1">
+          <mxGeometry height="120" width="156.2" x="353.8" y="516" as="geometry" />
+        </mxCell>
+        <mxCell id="qHGXGdBIDcwvLIwhpPQI-4" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="Bathroom" vertex="1">
+          <mxGeometry height="120" width="90.4" x="263.4" y="516" as="geometry" />
+        </mxCell>
+        <mxCell id="qHGXGdBIDcwvLIwhpPQI-5" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="&lt;font style=&quot;font-size: 9px;&quot;&gt;Bathtub&lt;/font&gt;" vertex="1">
+          <mxGeometry height="72" width="36" x="317.8" y="550" as="geometry" />
+        </mxCell>
+        <mxCell id="qHGXGdBIDcwvLIwhpPQI-6" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="&lt;font style=&quot;font-size: 10px;&quot;&gt;Toilet&lt;/font&gt;" vertex="1">
+          <mxGeometry height="34" width="33.8" x="320" y="516" as="geometry" />
+        </mxCell>
+        <mxCell id="qHGXGdBIDcwvLIwhpPQI-7" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="&lt;font style=&quot;font-size: 6px;&quot;&gt;Counter with 2 sinks&lt;/font&gt;" vertex="1">
+          <mxGeometry height="106" width="20" x="264" y="516" as="geometry" />
+        </mxCell>
+        <mxCell id="qHGXGdBIDcwvLIwhpPQI-9" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="Closet" vertex="1">
+          <mxGeometry height="34" width="36" x="227.4" y="516" as="geometry" />
+        </mxCell>
+        <mxCell id="qHGXGdBIDcwvLIwhpPQI-11" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="Bed" vertex="1">
+          <mxGeometry height="46" width="90.4" x="109.6" y="536" as="geometry" />
+        </mxCell>
+        <mxCell id="qHGXGdBIDcwvLIwhpPQI-12" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="Reading Chair" vertex="1">
+          <mxGeometry height="34" width="36" x="109.6" y="594" as="geometry" />
+        </mxCell>
+        <mxCell id="qHGXGdBIDcwvLIwhpPQI-13" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="Bed" vertex="1">
+          <mxGeometry height="46" width="90.4" x="419.6" y="536" as="geometry" />
+        </mxCell>
+        <mxCell id="qHGXGdBIDcwvLIwhpPQI-14" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="Closet" vertex="1">
+          <mxGeometry height="34" width="36" x="353.8" y="516" as="geometry" />
+        </mxCell>
+        <mxCell id="qHGXGdBIDcwvLIwhpPQI-15" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="Master Bed Room" vertex="1">
+          <mxGeometry height="174.6" width="269.4" x="429" y="690.6" as="geometry" />
+        </mxCell>
+        <mxCell id="qHGXGdBIDcwvLIwhpPQI-16" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="Bed" vertex="1">
+          <mxGeometry height="65.1" width="108" x="429" y="748.05" as="geometry" />
+        </mxCell>
+        <mxCell id="qHGXGdBIDcwvLIwhpPQI-17" parent="1" style="whiteSpace=wrap;html=1;aspect=fixed;" value="&lt;font style=&quot;font-size: 6px;&quot;&gt;Night Stand&lt;/font&gt;" vertex="1">
+          <mxGeometry height="20" width="20" x="429" y="728.0500000000001" as="geometry" />
+        </mxCell>
+        <mxCell id="qHGXGdBIDcwvLIwhpPQI-18" parent="1" style="whiteSpace=wrap;html=1;aspect=fixed;" value="&lt;font style=&quot;font-size: 6px;&quot;&gt;Night Stand&lt;/font&gt;" vertex="1">
+          <mxGeometry height="20" width="20" x="429" y="813.15" as="geometry" />
+        </mxCell>
+        <mxCell id="qHGXGdBIDcwvLIwhpPQI-19" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="Walk in closet" vertex="1">
+          <mxGeometry height="106" width="90.4" x="608" y="635.5" as="geometry" />
+        </mxCell>
+        <mxCell id="qHGXGdBIDcwvLIwhpPQI-20" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="Master Washroom" vertex="1">
+          <mxGeometry height="120" width="188.4" x="510" y="516" as="geometry" />
+        </mxCell>
+        <mxCell id="qHGXGdBIDcwvLIwhpPQI-21" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="Steam shower" vertex="1">
+          <mxGeometry height="34" width="94.2" x="604.2" y="516" as="geometry" />
+        </mxCell>
+        <mxCell id="qHGXGdBIDcwvLIwhpPQI-22" parent="1" style="rounded=0;whiteSpace=wrap;html=1;rotation=-90;" value="Fancy Bathtub" vertex="1">
+          <mxGeometry height="33.8" width="60" x="639.2" y="569.1" as="geometry" />
+        </mxCell>
+        <mxCell id="qHGXGdBIDcwvLIwhpPQI-23" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="&lt;font style=&quot;font-size: 10px;&quot;&gt;Toilet room&lt;/font&gt;" vertex="1">
+          <mxGeometry height="46" width="53.7" x="510" y="516" as="geometry" />
+        </mxCell>
+        <mxCell id="qHGXGdBIDcwvLIwhpPQI-24" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="&lt;font style=&quot;font-size: 10px;&quot;&gt;Counter with 2 sinks&lt;/font&gt;" vertex="1">
+          <mxGeometry height="73.1" width="33.8" x="510" y="562.9" as="geometry" />
+        </mxCell>
+        <mxCell id="qHGXGdBIDcwvLIwhpPQI-25" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="&lt;font style=&quot;font-size: 10px;&quot;&gt;Foyer&lt;/font&gt;" vertex="1">
+          <mxGeometry height="55.1" width="100" x="510" y="636" as="geometry" />
+        </mxCell>
+        <mxCell id="xBZ3uTJKRccceVK1u-VY-1" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="&lt;font style=&quot;font-size: 6px;&quot;&gt;Door&lt;/font&gt;" vertex="1">
+          <mxGeometry height="6" width="36" x="210" y="633" as="geometry" />
+        </mxCell>
+        <mxCell id="xBZ3uTJKRccceVK1u-VY-3" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="&lt;font style=&quot;font-size: 6px;&quot;&gt;Door&lt;/font&gt;" vertex="1">
+          <mxGeometry height="6" width="36" x="284" y="633" as="geometry" />
+        </mxCell>
+        <mxCell id="xBZ3uTJKRccceVK1u-VY-4" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="&lt;font style=&quot;font-size: 6px;&quot;&gt;Door&lt;/font&gt;" vertex="1">
+          <mxGeometry height="6" width="36" x="370" y="633" as="geometry" />
+        </mxCell>
+        <mxCell id="xBZ3uTJKRccceVK1u-VY-5" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="&lt;font style=&quot;font-size: 6px;&quot;&gt;Door&lt;/font&gt;" vertex="1">
+          <mxGeometry height="6" width="36" x="640" y="736" as="geometry" />
+        </mxCell>
+        <mxCell id="xBZ3uTJKRccceVK1u-VY-7" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="&lt;font style=&quot;font-size: 6px;&quot;&gt;Door&lt;/font&gt;" vertex="1">
+          <mxGeometry height="6" width="36" x="563.7" y="635.5" as="geometry" />
+        </mxCell>
+        <mxCell id="xBZ3uTJKRccceVK1u-VY-8" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="&lt;font style=&quot;font-size: 6px;&quot;&gt;Door&lt;/font&gt;" vertex="1">
+          <mxGeometry height="6" width="36" x="660" y="630" as="geometry" />
+        </mxCell>
+        <mxCell id="xBZ3uTJKRccceVK1u-VY-10" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="&lt;font style=&quot;font-size: 6px;&quot;&gt;Door&lt;/font&gt;" vertex="1">
+          <mxGeometry height="6" width="36" x="563.7" y="687.6" as="geometry" />
+        </mxCell>
+        <mxCell id="xBZ3uTJKRccceVK1u-VY-11" parent="1" style="rounded=0;whiteSpace=wrap;html=1;rotation=90;" value="&lt;font style=&quot;font-size: 6px;&quot;&gt;Door&lt;/font&gt;" vertex="1">
+          <mxGeometry height="6" width="36" x="495" y="660" as="geometry" />
+        </mxCell>
+        <mxCell id="xBZ3uTJKRccceVK1u-VY-12" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="Guest Bedroom" vertex="1">
+          <mxGeometry height="137.15" width="174.4" x="109.6" y="728.05" as="geometry" />
+        </mxCell>
+        <mxCell id="xBZ3uTJKRccceVK1u-VY-13" parent="1" style="rounded=0;whiteSpace=wrap;html=1;rotation=-90;" value="Bed" vertex="1">
+          <mxGeometry height="46" width="90.4" x="87.4" y="782.1999999999999" as="geometry" />
+        </mxCell>
+        <mxCell id="xBZ3uTJKRccceVK1u-VY-17" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="&lt;font style=&quot;font-size: 6px;&quot;&gt;Door&lt;/font&gt;" vertex="1">
+          <mxGeometry height="6" width="36" x="227.4" y="722" as="geometry" />
+        </mxCell>
+        <mxCell id="xBZ3uTJKRccceVK1u-VY-18" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="Laundry Room" vertex="1">
+          <mxGeometry height="90.4" width="90.4" x="109.6" y="636" as="geometry" />
+        </mxCell>
+        <mxCell id="xBZ3uTJKRccceVK1u-VY-19" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="&lt;font style=&quot;font-size: 6px;&quot;&gt;Washer Dryer upright combo&lt;/font&gt;" vertex="1">
+          <mxGeometry height="34" width="36" x="164" y="635.5" as="geometry" />
+        </mxCell>
+        <mxCell id="xBZ3uTJKRccceVK1u-VY-20" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="Counter" vertex="1">
+          <mxGeometry height="34" width="53.7" x="109.6" y="635" as="geometry" />
+        </mxCell>
+        <mxCell id="xBZ3uTJKRccceVK1u-VY-21" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="Window" vertex="1">
+          <mxGeometry height="6" width="53.7" x="169.95" y="510" as="geometry" />
+        </mxCell>
+        <mxCell id="xBZ3uTJKRccceVK1u-VY-23" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="Window" vertex="1">
+          <mxGeometry height="6" width="53.7" x="428" y="510" as="geometry" />
+        </mxCell>
+        <mxCell id="xBZ3uTJKRccceVK1u-VY-24" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="Window" vertex="1">
+          <mxGeometry height="6" width="53.7" x="200" y="865.2" as="geometry" />
+        </mxCell>
+        <mxCell id="xBZ3uTJKRccceVK1u-VY-25" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="Window" vertex="1">
+          <mxGeometry height="6" width="53.7" x="470" y="865.2" as="geometry" />
+        </mxCell>
+        <mxCell id="xBZ3uTJKRccceVK1u-VY-26" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="Window" vertex="1">
+          <mxGeometry height="6" width="53.7" x="598.6" y="865.2" as="geometry" />
+        </mxCell>
+        <mxCell id="xBZ3uTJKRccceVK1u-VY-27" parent="1" style="rounded=0;whiteSpace=wrap;html=1;rotation=90;" value="Window" vertex="1">
+          <mxGeometry height="6" width="53.7" x="674.55" y="585.85" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram name="3 — Basement (sketch)" id="page-basement">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1100" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="b_foot" value="HOUSE FOOTPRINT (ground outline) — draw basement rooms inside —" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F5F5F5;strokeColor=#666666;fontSize=12;fontStyle=1;verticalAlign=middle;align=center;dashed=1;dashPattern=12 8;fontSize=13;fontColor=#666666;" vertex="1" parent="1">
+          <mxGeometry x="109.6" y="516.0" width="588.8" height="349.2" as="geometry" />
+        </mxCell>
+        <mxCell id="b_access" value="access from GF" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#E1D5E7;strokeColor=#9673A6;fontSize=12;fontStyle=1;verticalAlign=middle;align=center;fontSize=9;" vertex="1" parent="1">
+          <mxGeometry x="440.0" y="676.0" width="44.0" height="20.0" as="geometry" />
+        </mxCell>
+        <mxCell id="b_note" value="&lt;b&gt;Basement — DRAW HERE&lt;/b&gt;&lt;br&gt;Same footprint as ground house for scale reference (may extend beyond).&lt;br&gt;&lt;br&gt;Sketch rooms, stairs, storage, play areas, anything kids mentioned." style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;darkOpacity=0.05;fillColor=#FFF9C4;strokeColor=#D6B656;fontSize=11;align=left;spacingLeft=8;spacingTop=4;" vertex="1" parent="1">
+          <mxGeometry x="4.0" y="396.0" width="320" height="140" as="geometry" />
+        </mxCell>
+        <mxCell id="b_prompt" value="&lt;b&gt;Prompts&lt;/b&gt;&lt;br&gt;• Full under house or partial?&lt;br&gt;• Games / storage?&lt;br&gt;• Crawlspace vs finished?&lt;br&gt;• Exit outdoors?" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;darkOpacity=0.05;fillColor=#FFF9C4;strokeColor=#D6B656;fontSize=11;align=left;spacingLeft=8;spacingTop=4;" vertex="1" parent="1">
+          <mxGeometry x="724.0" y="536.0" width="220" height="180" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

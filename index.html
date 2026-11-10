@@ -1293,22 +1293,66 @@ function updateGarden(dt) {
 }
 
 // ---------- Oskar's pizza: collect every ingredient, then bake it in the oven ----------
+function makePizzaIngredient(id) {
+  const g = new THREE.Group();
+  const add = (geo, m, x, y, z, sx = 1, sy = 1, sz = 1, rx = 0, ry = 0, rz = 0) => {
+    const o = new THREE.Mesh(geo, m); o.position.set(x, y, z); o.scale.set(sx, sy, sz); o.rotation.set(rx, ry, rz); o.castShadow = true; g.add(o); return o;
+  };
+  if (id === 'squash') {
+    // butternut: pear-shaped orange squash with a little green stem
+    add(new THREE.SphereGeometry(0.1, 12, 10), mat(0xe68a2e), 0, 0.02, 0, 0.85, 1.15, 0.85);
+    add(new THREE.SphereGeometry(0.07, 10, 8), mat(0xf0a040), 0, 0.14, 0, 0.9, 1.1, 0.9);
+    add(new THREE.CylinderGeometry(0.012, 0.018, 0.05, 6), mat(0x4a7a2a), 0, 0.23, 0);
+  } else if (id === 'bacon') {
+    // wavy strip of bacon with fat streaks
+    const pink = mat(0xd45a4a), fat = mat(0xf5d9b8);
+    for (let i = 0; i < 3; i++) {
+      const y = i * 0.025 - 0.02;
+      add(new THREE.BoxGeometry(0.22, 0.012, 0.07), pink, 0, y, 0, 1, 1, 1, 0, 0, (i - 1) * 0.18);
+      add(new THREE.BoxGeometry(0.06, 0.014, 0.072), fat, -0.04 + i * 0.03, y + 0.002, 0);
+    }
+  } else if (id === 'maple') {
+    // amber syrup bottle with a cork
+    add(new THREE.CylinderGeometry(0.045, 0.055, 0.14, 10), mat(0xc45a18), 0, 0.07, 0);
+    add(new THREE.CylinderGeometry(0.028, 0.032, 0.05, 8), mat(0xa84810), 0, 0.16, 0);
+    add(new THREE.CylinderGeometry(0.03, 0.03, 0.025, 8), mat(0x8b5a2b), 0, 0.2, 0);
+    add(new THREE.BoxGeometry(0.04, 0.035, 0.005), mat(0xf5e6c8), 0, 0.08, 0.056);
+  } else if (id === 'jam') {
+    // glass jar of onion jam with a purple onion on the lid
+    add(new THREE.CylinderGeometry(0.055, 0.05, 0.1, 12), new THREE.MeshLambertMaterial({ color: 0xd8c4a0, transparent: true, opacity: 0.75 }), 0, 0.05, 0);
+    add(new THREE.CylinderGeometry(0.048, 0.048, 0.08, 12), mat(0x8b4518), 0, 0.045, 0);
+    add(new THREE.CylinderGeometry(0.058, 0.058, 0.02, 12), mat(0xe8e0d0), 0, 0.11, 0);
+    add(new THREE.SphereGeometry(0.045, 10, 8), mat(0xb57bb5), 0, 0.16, 0, 1, 0.85, 1);
+    add(new THREE.CylinderGeometry(0.008, 0.012, 0.03, 5), mat(0x6a4a2a), 0, 0.21, 0);
+  } else if (id === 'cheese') {
+    // soft mozzarella ball with a little stretchy top
+    add(new THREE.SphereGeometry(0.09, 12, 10), mat(0xfff1c4), 0, 0.06, 0, 1, 0.85, 1);
+    add(new THREE.SphereGeometry(0.035, 8, 6), mat(0xffe8a8), 0.02, 0.13, 0.01);
+  } else if (id === 'crust') {
+    // round pizza dough / bread crust — warmer than the floor so it reads as a pickup
+    add(new THREE.CylinderGeometry(0.12, 0.12, 0.04, 16), mat(0xf0c56a), 0, 0.025, 0);
+    add(new THREE.TorusGeometry(0.11, 0.025, 8, 16), mat(0xc8893a), 0, 0.035, 0, 1, 1, 1, Math.PI / 2, 0, 0);
+    add(new THREE.SphereGeometry(0.025, 8, 6), mat(0xe8b050), 0.04, 0.05, 0.03);
+  }
+  return g;
+}
 const PIZZA = {
   oven: { x: 9.95, z: 1.45 }, baking: 0, nag: 0,
   items: [
-    { id: 'squash', e: '🎃', name: 'butternut squash', x: 9.0, y: YARD + 0.25, z: -9.65 },
-    { id: 'bacon', e: '🥓', name: 'bacon', x: -3.0, y: 0.25, z: 4.7 },
-    { id: 'maple', e: '🍁', name: 'maple syrup', x: FRIDGE.x, y: FRIDGE.top + 0.2, z: FRIDGE.z },
-    { id: 'jam', e: '🧅', name: 'onion jam', x: -3.0, y: YARD + 0.25, z: -9.4 },
-    { id: 'cheese', e: '🧀', name: 'mozzarella', x: 1.2, y: LOFT_Y + 0.3, z: 0.55 },
-    { id: 'crust', e: '🍞', name: 'crust', x: 9.35, y: 0.28, z: 2.15 },
+    { id: 'squash', mark: 'S', name: 'butternut squash', x: 9.0, y: YARD + 0.18, z: -9.65 },
+    { id: 'bacon', mark: 'B', name: 'bacon', x: -3.0, y: 0.18, z: 4.7 },
+    { id: 'maple', mark: 'M', name: 'maple syrup', x: FRIDGE.x, y: FRIDGE.top + 0.12, z: FRIDGE.z },
+    { id: 'jam', mark: 'O', name: 'onion jam', x: -3.0, y: YARD + 0.18, z: -9.4 },
+    { id: 'cheese', mark: 'Z', name: 'mozzarella', x: 1.2, y: LOFT_Y + 0.2, z: 0.55 },
+    { id: 'crust', mark: 'C', name: 'crust', x: 9.35, y: 0.2, z: 2.15 },
   ],
 };
 for (const it of PIZZA.items) {
-  const c = document.createElement('canvas'); c.width = c.height = 128;
-  const x = c.getContext('2d'); x.font = '96px serif'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText(it.e, 64, 70);
-  it.sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(c), transparent: true }));
-  it.sprite.scale.set(0.3, 0.3, 0.3); it.sprite.position.set(it.x, it.y, it.z); it.sprite.visible = false; scene.add(it.sprite);
+  it.mesh = makePizzaIngredient(it.id);
+  it.mesh.scale.setScalar(1.55);
+  it.mesh.position.set(it.x, it.y, it.z);
+  it.mesh.visible = false;
+  scene.add(it.mesh);
   it.got = false;
 }
 {
@@ -1333,19 +1377,20 @@ function updatePizza(dt) {
   const on = isActive('pizza'), lp = lenaBody.position;
   PIZZA.nag = Math.max(0, PIZZA.nag - dt);
   for (const it of PIZZA.items) {
-    it.sprite.visible = on && !it.got;
-    if (!it.sprite.visible) continue;
-    it.sprite.position.y = it.y + Math.sin(performance.now() / 300 + it.x) * 0.03;
-    if (Math.hypot(lp.x - it.x, lp.z - it.z) < 0.35 && Math.abs(lp.y + 0.1 - it.y) < 0.4) {
-      it.got = true; sfx('coin'); credit('pizza'); toast(`Got ${it.name}! ${it.e}`); renderHud();
+    it.mesh.visible = on && !it.got;
+    if (!it.mesh.visible) continue;
+    it.mesh.position.y = it.y + Math.sin(performance.now() / 300 + it.x) * 0.03;
+    it.mesh.rotation.y += dt * 0.8;
+    if (Math.hypot(lp.x - it.x, lp.z - it.z) < 0.4 && Math.abs(lp.y + 0.1 - it.y) < 0.45) {
+      it.got = true; sfx('coin'); credit('pizza'); toast(`Got ${it.name}!`); renderHud();
     }
   }
   if (!on) return;
   const near = Math.hypot(lp.x - PIZZA.oven.x, lp.z - PIZZA.oven.z) < 0.9;
   if (PIZZA.baking > 0) {
     PIZZA.baking -= dt;
-    if (PIZZA.baking <= 0) { sfx('win'); toast("OSKAR'S PIZZA IS READY! 🍕"); credit('pizza'); renderHud(); }
-  } else if (near && pizzaLeft() === 0 && Q.pizza < PIZZA.items.length + 1) { PIZZA.baking = 2.5; toast('Baking the pizza... 🔥'); }
+    if (PIZZA.baking <= 0) { sfx('win'); toast("OSKAR'S PIZZA IS READY!"); credit('pizza'); renderHud(); }
+  } else if (near && pizzaLeft() === 0 && Q.pizza < PIZZA.items.length + 1) { PIZZA.baking = 2.5; toast('Baking the pizza...'); }
   else if (near && pizzaLeft() > 0 && PIZZA.nag <= 0) { PIZZA.nag = 3; toast(`The oven needs ${pizzaLeft()} more ingredients!`); }
 }
 
@@ -1783,7 +1828,7 @@ const MISSIONS = [
   { key: 'home', goal: 1, name: 'Home Sweet Home', desc: "Walk to Lina's tortoise home in the playroom (it's her safe spot)", reward: 5 },
   { key: 'bonks', goal: 3, name: 'Uncle Adam Bonker', desc: 'Bonk Uncle Adam 3 times (SHELL roll into him)', reward: 8 },
   { key: 'lettuce', goal: 8, name: 'Lettuce Feast', desc: 'Go out the door to the garden and eat 8 lettuces', reward: 8 },
-  { key: 'pizza', goal: 7, name: "Oskar's Pizza", desc: 'Find 6 ingredients (🎃 🥓 🍁 🧅 🧀 🍞), then bring them to the brick oven in the kitchen', reward: 15 },
+  { key: 'pizza', goal: 7, name: "Oskar's Pizza", desc: 'Find squash, bacon, maple syrup, onion jam, mozzarella, and crust, then bring them to the brick oven in the kitchen', reward: 15 },
   { key: 'lego', goal: 6, name: 'Lego City Smash', desc: 'Knock over 6 Lego blocks in the playroom (jump onto the table)', reward: 8 },
   { key: 'books', goal: 8, name: 'Domino Library', desc: 'Knock over 8 books (try pushing the first one)', reward: 7 },
   { key: 'balloons', goal: 8, name: 'Balloon Pop', desc: 'Pop 8 balloons, some are very high up', reward: 7 },
@@ -1892,17 +1937,20 @@ function restoreMission(k) {
 
 // ---------- mission markers: a bobbing icon over everything that counts for the mission Lina is working on ----------
 const markers = [];
-function makeMarkerSprite(emoji) {
+function makeMarkerSprite(label) {
   const c = document.createElement('canvas'); c.width = c.height = 128;
   const g = c.getContext('2d');
   g.fillStyle = 'rgba(255,255,255,0.92)'; g.beginPath(); g.arc(64, 60, 52, 0, 7); g.fill();
   g.strokeStyle = '#2e9e44'; g.lineWidth = 8; g.stroke();
   g.fillStyle = '#2e9e44'; g.beginPath(); g.moveTo(44, 104); g.lineTo(84, 104); g.lineTo(64, 126); g.closePath(); g.fill();
-  g.font = '64px serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(emoji, 64, 64);
+  const text = String(label);
+  // Letter labels for pizza pickups need a smaller font than single emoji markers.
+  g.font = text.length > 2 ? 'bold 28px sans-serif' : text.length > 1 ? 'bold 36px sans-serif' : /[\u0080-\uFFFF]/.test(text) ? '64px serif' : 'bold 48px sans-serif';
+  g.fillStyle = '#1a5c28'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(text, 64, 62);
   const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(c), transparent: true, depthTest: false }));
   sp.scale.set(0.3, 0.3, 0.3); sp.renderOrder = 10; return sp;
 }
-function addMarker(emoji, get) { const s = makeMarkerSprite(emoji); s.visible = false; scene.add(s); markers.push({ s, get }); }
+function addMarker(label, get) { const s = makeMarkerSprite(label); s.visible = false; scene.add(s); markers.push({ s, get }); }
 function rebuildMarkers() {
   for (const m of markers) scene.remove(m.s);
   markers.length = 0;
@@ -1929,8 +1977,8 @@ function rebuildMarkers() {
   else if (k === 'bugs') at('🪲', HUNT.x, 0.6, HUNT.z);
   else if (k === 'box') at('📦', BOX.x, 0.55, BOX.z);
   else if (k === 'pizza') {
-    at('🍕', PIZZA.oven.x, 1.1, PIZZA.oven.z);
-    for (const it of PIZZA.items) addMarker(it.e, () => (it.got ? null : [it.x, it.y + 0.4, it.z]));
+    at('oven', PIZZA.oven.x, 1.1, PIZZA.oven.z);
+    for (const it of PIZZA.items) addMarker(it.mark, () => (it.got ? null : [it.x, it.y + 0.35, it.z]));
   }
   else if (k === 'bonks') addMarker('😄', () => [adam.position.x, 2.3, adam.position.z]);
   else if (k === 'balloons') for (const b of balloons) addMarker('🎈', () => (b.alive ? [b.x, b.y + 0.35, b.z] : null));
@@ -2055,7 +2103,7 @@ function checkMissions() {
 }
 function missionLine(k) {
   const m = MISSIONS.find((x) => x.key === k);
-  return `<div>○ ${m.name}${m.goal > 1 ? ` (${Math.min(Q[k], m.goal)}/${m.goal})` : ''}${k === 'pizza' ? ' ' + PIZZA.items.map((i) => (i.got ? i.e : '▫️')).join('') : ''}</div><div class="obj">${m.desc}</div>`;
+  return `<div>○ ${m.name}${m.goal > 1 ? ` (${Math.min(Q[k], m.goal)}/${m.goal})` : ''}${k === 'pizza' ? ' ' + PIZZA.items.map((i) => (i.got ? '✓' : '○')).join('') : ''}</div><div class="obj">${m.desc}</div>`;
 }
 function renderHud() {
   checkMissions();
