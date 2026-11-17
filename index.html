@@ -271,10 +271,13 @@ window.track = function (name, props) { window.LinaAnalytics.track(name, props);
   #jump { position: fixed; right: calc(max(28px, env(safe-area-inset-right)) + 122px); bottom: max(28px, env(safe-area-inset-bottom)); width: 100px; height: 100px; background: #3b7dd8; font-size: 26px; }
   #grab { position: fixed; right: calc(max(28px, env(safe-area-inset-right)) + 12px); bottom: calc(max(28px, env(safe-area-inset-bottom)) + 120px); width: 104px; height: 104px; background: #d8822b; font-size: 23px; }
   #grab.hold { background: #c0392b; }
+  #grab.eat { background: #2f9e44; }
   #shell.on { background: #e8a33a; }
   #shell.cool { background: #777; opacity: .7; }
+  #shell.low { background: #777; opacity: .75; font-size: 16px; }
   #hud { position: fixed; top: max(10px, env(safe-area-inset-top)); left: max(14px, env(safe-area-inset-left)); color: #fff; font-size: 36px; font-weight: 800; text-shadow: 0 2px 4px rgba(0,0,0,.7); pointer-events: none; line-height: 1.35; max-width: min(52vw, 560px); }
   #hud .hud-top { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; pointer-events: auto; }
+  #hud .vitals { font-size: 28px; line-height: 1.15; }
   #hud .hud-toggle { pointer-events: auto; touch-action: manipulation; min-height: 44px; padding: 6px 14px; border-radius: 18px; border: 3px solid #fff; background: rgba(0,0,0,.4); color: #fff; font-size: 22px; font-weight: 800; white-space: nowrap; }
   #hud .hud-missions[hidden] { display: none !important; }
   #hud .obj { display: block; font-size: 22px; font-weight: 700; opacity: .95; margin: 0 0 8px; }
@@ -295,9 +298,12 @@ window.track = function (name, props) { window.LinaAnalytics.track(name, props);
   #shop .bal { font-size: 31px; font-weight: 800; margin-bottom: 12px; }
   #shop h3 { margin: 14px 0 8px; font-size: 31px; opacity: .9; }
   #shop .cards { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; max-width: 900px; }
-  #shop .card { width: 160px; padding: 12px; border-radius: 16px; background: rgba(255,255,255,.12); text-align: center; }
+  #shop .card { width: 180px; padding: 12px; border-radius: 16px; background: rgba(255,255,255,.12); text-align: center; }
+  #shop .card.locked { outline: 2px solid rgba(255,255,255,.25); }
   #shop .sw { width: 54px; height: 54px; border-radius: 50%; margin: 4px auto 8px; border: 3px solid #fff; }
   #shop .name { font-weight: 800; font-size: 24px; }
+  #shop .blurb { font-size: 15px; font-weight: 650; opacity: .9; margin-top: 4px; line-height: 1.25; }
+  #shop .lock { font-size: 13px; font-weight: 700; line-height: 1.25; margin-top: 6px; }
   #shop .card button, #shop .close { margin-top: 8px; padding: 10px 14px; border-radius: 14px; border: none; font-size: 22px; font-weight: 800; background: #6fd36f; color: #123; }
   #shop .card button.off { background: #888; color: #eee; }
   #shop .card button.eq { background: #e8a33a; }
@@ -335,9 +341,11 @@ window.track = function (name, props) { window.LinaAnalytics.track(name, props);
   html.phone #stick { width: 108px; height: 108px; left: max(14px, env(safe-area-inset-left)); bottom: max(14px, env(safe-area-inset-bottom)); }
   html.phone #knob { width: 46px; height: 46px; margin: -23px 0 0 -23px; }
   html.phone #shell { width: 80px; height: 80px; font-size: 17px; right: max(14px, env(safe-area-inset-right)); bottom: max(14px, env(safe-area-inset-bottom)); border-width: 3px; }
+  html.phone #shell.low { font-size: 12px; }
   html.phone #jump { width: 74px; height: 74px; font-size: 17px; right: calc(max(14px, env(safe-area-inset-right)) + 88px); bottom: max(14px, env(safe-area-inset-bottom)); border-width: 3px; }
   html.phone #grab { width: 74px; height: 74px; font-size: 16px; right: calc(max(14px, env(safe-area-inset-right)) + 6px); bottom: calc(max(14px, env(safe-area-inset-bottom)) + 88px); border-width: 3px; }
-  html.phone #hud { font-size: 20px; max-width: 58vw; left: max(10px, env(safe-area-inset-left)); top: max(8px, env(safe-area-inset-top)); line-height: 1.25; }
+  html.phone #hud { font-size: 20px; max-width: 62vw; left: max(10px, env(safe-area-inset-left)); top: max(8px, env(safe-area-inset-top)); line-height: 1.25; }
+  html.phone #hud .vitals { font-size: 15px; }
   html.phone #hud .hud-toggle { font-size: 14px; min-height: 40px; padding: 4px 10px; border-width: 2px; border-radius: 14px; }
   html.phone #hud .obj { font-size: 14px; margin-bottom: 4px; }
   html.phone #toast { font-size: 24px; top: 16%; padding: 8px 12px; }
@@ -353,6 +361,7 @@ window.track = function (name, props) { window.LinaAnalytics.track(name, props);
   html.phone #shop .bal { font-size: 19px; }
   html.phone #shop h3 { font-size: 19px; }
   html.phone #shop .name { font-size: 16px; }
+  html.phone #shop .blurb, html.phone #shop .lock { font-size: 12px; }
   html.phone #shop .card button, html.phone #shop .close, html.phone #missions .close { font-size: 16px; padding: 8px 18px; }
   html.phone #missions .sec-toggle { font-size: 17px; padding: 8px 12px; border-width: 2px; }
   html.phone #missions .row { font-size: 18px; padding: 8px 12px; }
@@ -390,8 +399,8 @@ window.track = function (name, props) { window.LinaAnalytics.track(name, props);
 </script>
 <div id="hud"></div>
 <div id="toast" role="status" aria-live="polite" aria-atomic="true"></div>
-<div id="hint">Left circle walks. Drag the world to look around. JUMP, GRAB and SHELL are on the right!</div>
-<script>if (matchMedia('(pointer:fine)').matches) document.getElementById('hint').textContent = 'WASD walks. Arrow keys turn the camera. Space jumps, Q grabs, E hides in the shell, V changes view!';</script>
+<div id="hint">Left circle walks. Drag the world to look around. JUMP, GRAB and SHELL are on the right. GRAB says EAT next to food!</div>
+<script>if (matchMedia('(pointer:fine)').matches) document.getElementById('hint').textContent = 'WASD walks. Arrow keys turn the camera. Space jumps, Q grabs or eats, E hides in the shell, V changes view!';</script>
 <div id="stick"><div id="knob"></div></div>
 <button id="shell">SHELL!</button>
 <button id="jump">JUMP</button>
@@ -470,6 +479,17 @@ window.track = function (name, props) { window.LinaAnalytics.track(name, props);
 import * as THREE from './vendor/three.module.min.js';
 import * as CANNON from './vendor/cannon-es.js';
 
+// The stair gate calls this after a name change. Assigned once the barrier exists.
+let syncUpstairsAccess = () => {};
+if (window.LinaAnalytics) {
+  const setPlayer = LinaAnalytics.setPlayer.bind(LinaAnalytics);
+  LinaAnalytics.setPlayer = function (name, opts) {
+    const ok = setPlayer(name, opts);
+    if (ok) syncUpstairsAccess();
+    return ok;
+  };
+}
+
 // ---------- sound (tiny synth, no files) ----------
 let ac = null;
 function audio() { try { ac = ac || new (window.AudioContext || window.webkitAudioContext)(); if (ac.state === 'suspended') ac.resume(); } catch (e) {} return ac; }
@@ -501,6 +521,7 @@ function sfx(k) {
   else if (k === 'timber') tone(140, 50, 0.45, 'sawtooth', 0.12);
   else if (k === 'shell') tone(160, 330, 0.2, 'sine', 0.15);
   else if (k === 'jump') tone(300, 620, 0.14, 'sine', 0.1);
+  else if (k === 'eat') tone(520, 780, 0.1, 'sine', 0.1);
   else if (k === 'win') { tone(523, 1047, 0.5, 'triangle', 0.15); }
 }
 
@@ -546,6 +567,11 @@ world.addContactMaterial(new CANNON.ContactMaterial(bookMat, bookMat, { friction
 // Third-person orbit clips against solid wall runs (CAM_WALLS), not these room boxes.
 const YARD = -0.6;   // the yard and lower patio are 0.6 m below the house floor and the deck
 const WALL_H = 2.7, DOOR_H = 2.1;
+// Upstairs walking surface matches the 12 x 0.2 m stair risers. The slab hangs just under that.
+// The stair gate stays up for everyone except this player slug (typed name "adam-laptop").
+const UPSTAIRS_Y = 2.4, UPSTAIRS_SLAB = 0.18;
+const UPSTAIRS_CEILING = UPSTAIRS_Y - UPSTAIRS_SLAB;
+const UPSTAIRS_PLAYER = 'adam-laptop';
 const ROOMS = {
   main:     [0, 10.36, 0, 8.73],       // kitchen / dining / living / entry
   play:     [-4.36, 0, 0, 4.18],
@@ -556,8 +582,23 @@ const ROOMS = {
   patioW:   [-4.36, 0, -6.9, -0.1],
   garden:   [-7.1, 12.5, -12.9, -0.1],
   sideYard: [-7.1, -4.36, 0, 8.4],
+  // upstairs (draw.io page 2). Shared edges snapped by a few centimetres so walls don't double up.
+  // Not added to CAM_ROOMS: Lina cannot stand here until the stair lock opens.
+  oskar:      [-4.36, -0.46, 0, 3.0],
+  bathUp:     [-0.46, 1.75, 0, 3.0],
+  klara:      [1.75, 5.65, 0, 3.0],
+  masterBath: [5.65, 10.36, 0, 3.0],
+  laundry:    [-4.36, -2.10, 3.0, 5.28],
+  guest:      [-4.36, 0, 5.28, 8.73],
+  masterFoyer:[5.65, 8.10, 3.0, 4.38],
+  walkIn:     [8.10, 10.36, 3.0, 5.64],
+  master:     [3.63, 10.36, 4.38, 8.73],
+  hallUpW:    [-2.10, 0, 3.0, 5.28],
+  hallUpN:    [0, 2.70, 3.0, 4.50],       // stops at the open entry void
+  hallUpL:    [2.70, 3.63, 3.0, 4.40],    // landing, just north of the top step
+  hallUpE:    [3.63, 5.65, 3.0, 4.38],
 };
-// roomOf / overview order: index 0 = "inside" for Adam chase (roomOf > 0 means outside)
+// roomOf / overview order. Index 0 is the open kitchen, dining, and living room.
 const CAM_ROOMS = [
   ROOMS.main, ROOMS.play, ROOMS.powder, ROOMS.hall, ROOMS.office,
   ROOMS.deck, ROOMS.patioW, ROOMS.garden, ROOMS.sideYard,
@@ -567,6 +608,16 @@ const DOORS = {
   toPlay:    { wallX: ROOMS.main[0], gap: [0.8, 3.2] },
   hallOffice:{ wallZ: ROOMS.office[2], gap: [-1.4, -0.4] },
   hallPowder:{ wallX: ROOMS.hall[0], gap: [4.4, 5.4] },
+  upOskar:   { wallZ: 3.0, gap: [-1.85, -0.95] },
+  upBath:    { wallZ: 3.0, gap: [0.0, 0.9] },
+  upKlara:   { wallZ: 3.0, gap: [2.15, 3.05] },
+  upBathFoyer:{ wallZ: 3.0, gap: [6.99, 7.89] },
+  upBathCloset:{ wallZ: 3.0, gap: [9.4, 10.3] },
+  upLaundry: { wallX: -2.10, gap: [3.7, 4.6] },   // east into the hall (not marked on the sketch)
+  upGuest:   { wallZ: 5.28, gap: [-1.42, -0.52] },
+  upFoyerHall:{ wallX: 5.65, gap: [3.23, 4.13] },
+  upFoyerMaster:{ wallZ: 4.38, gap: [6.99, 7.89] },
+  upClosetMaster:{ wallZ: 5.64, gap: [8.9, 9.8] },
 };
 const LANDMARKS = {
   home:   { x: -3.8, z: 2.05 },
@@ -574,6 +625,7 @@ const LANDMARKS = {
   radio:  { x: 6.1, z: 4.8 },
   loft:   { x: 1.2, z: 0.35, y: 1.2 },
   start:  { x: 4.0, z: 3.9 },
+  broom:  { x: 4.45, z: 1.08 },
 };
 function staticBox(hx, hy, hz, x, y, z) {
   const b = new CANNON.Body({ mass: 0, material: baseMat, shape: new CANNON.Box(new CANNON.Vec3(hx, hy, hz)) });
@@ -592,22 +644,27 @@ const wallMat = mat(0xeeeae0);
 const CAM_WALLS = [];
 const CAM_WALL_HALF = 0.06, CAM_WALL_MARGIN = 0.18;
 // a wall along x (alongX) or along z at position c, from a to b, with doorway gaps [[g0, g1], ...]
-function wallSeg(alongX, c, a, b, gaps = [], header = true, h = WALL_H) {
+// y0 is the bottom of the wall. cam is false for upstairs: CAM_WALLS is 2D, so an upper wall would clip the ground-floor camera.
+function wallSegAt(y0, alongX, c, a, b, gaps = [], header = true, h = WALL_H, cam = false) {
   const cuts = [a, ...gaps.flat(), b];
   for (let i = 0; i < cuts.length; i += 2) {
     const s = cuts[i], e = cuts[i + 1], len = e - s;
     if (len <= 0.01) continue;
     const mid = (s + e) / 2;
     const w = new THREE.Mesh(new THREE.BoxGeometry(alongX ? len : 0.12, h, alongX ? 0.12 : len), wallMat);
-    w.position.set(alongX ? mid : c, h / 2, alongX ? c : mid); w.receiveShadow = true; scene.add(w);
-    staticBox(alongX ? len / 2 : 0.06, h / 2, alongX ? 0.06 : len / 2, alongX ? mid : c, h / 2, alongX ? c : mid);
-    CAM_WALLS.push({ alongX, c, a: Math.min(s, e) - CAM_WALL_HALF, b: Math.max(s, e) + CAM_WALL_HALF });
+    w.position.set(alongX ? mid : c, y0 + h / 2, alongX ? c : mid); w.receiveShadow = true; scene.add(w);
+    staticBox(alongX ? len / 2 : 0.06, h / 2, alongX ? 0.06 : len / 2, alongX ? mid : c, y0 + h / 2, alongX ? c : mid);
+    if (cam) CAM_WALLS.push({ alongX, c, a: Math.min(s, e) - CAM_WALL_HALF, b: Math.max(s, e) + CAM_WALL_HALF });
   }
   if (header) for (const [g0, g1] of gaps) {
     const hh = h - DOOR_H;
+    if (hh <= 0.05 || g1 - g0 <= 0.01) continue;
     const m = new THREE.Mesh(new THREE.BoxGeometry(alongX ? g1 - g0 : 0.12, hh, alongX ? 0.12 : g1 - g0), wallMat);
-    m.position.set(alongX ? (g0 + g1) / 2 : c, DOOR_H + hh / 2, alongX ? c : (g0 + g1) / 2); scene.add(m);
+    m.position.set(alongX ? (g0 + g1) / 2 : c, y0 + DOOR_H + hh / 2, alongX ? c : (g0 + g1) / 2); m.receiveShadow = true; scene.add(m);
   }
+}
+function wallSeg(alongX, c, a, b, gaps = [], header = true, h = WALL_H) {
+  wallSegAt(0, alongX, c, a, b, gaps, header, h, true);
 }
 function floorRect(x0, x1, z0, z1, color, planks = false) {
   const f = new THREE.Mesh(new THREE.BoxGeometry(x1 - x0, 0.2, z1 - z0), mat(color));
@@ -617,24 +674,33 @@ function floorRect(x0, x1, z0, z1, color, planks = false) {
     line.position.set(x, 0.003, (z0 + z1) / 2); scene.add(line);
   }
 }
+// upstairs slab: top at yTop, physics included, no cast shadow (a lid must not black out the ground floor)
+function floorRectAt(yTop, x0, x1, z0, z1, color) {
+  if (x1 - x0 <= 0.02 || z1 - z0 <= 0.02) return;
+  const y = yTop - UPSTAIRS_SLAB / 2;
+  const f = new THREE.Mesh(new THREE.BoxGeometry(x1 - x0, UPSTAIRS_SLAB, z1 - z0), mat(color));
+  f.position.set((x0 + x1) / 2, y, (z0 + z1) / 2); f.receiveShadow = true; scene.add(f);
+  staticBox((x1 - x0) / 2, UPSTAIRS_SLAB / 2, (z1 - z0) / 2, (x0 + x1) / 2, y, (z0 + z1) / 2);
+}
 floorRect(...ROOMS.main, 0xc9b48a, true);              // kitchen, dining, living, entry
 floorRect(...ROOMS.play, 0x9aa0a8);                    // playroom (grey carpet)
 floorRect(...ROOMS.powder, 0xc9b48a);                  // powder room
 floorRect(...ROOMS.hall, 0xd8b98a);                    // hall
 floorRect(...ROOMS.office, 0xc9b48a, true);            // office
-// open area walls
-wallSeg(true, DOORS.deckSlide.wallZ, ROOMS.main[0], ROOMS.main[1], [DOORS.deckSlide.gap], false);  // north: sliding glass door to the deck
-wallSeg(false, ROOMS.main[1], ROOMS.main[2], ROOMS.main[3]);
-wallSeg(true, ROOMS.main[3], 2.7, ROOMS.main[1]); wallSeg(true, ROOMS.main[3], ROOMS.main[0], 2.7, [], false, 5.5);  // south: front door and windows
-wallSeg(false, DOORS.toPlay.wallX, ROOMS.play[2], ROOMS.play[3], [DOORS.toPlay.gap]);  // west: glass double doors to the playroom
+// open area walls. Single-storey runs stop at the upstairs slab so they don't stick through the new floor.
+// The entry (south-west of the main room, and the wall at x = 0 beside the office) stays two storeys.
+wallSeg(true, DOORS.deckSlide.wallZ, ROOMS.main[0], ROOMS.main[1], [DOORS.deckSlide.gap], false, UPSTAIRS_CEILING);  // north: sliding glass door to the deck
+wallSeg(false, ROOMS.main[1], ROOMS.main[2], ROOMS.main[3], [], true, UPSTAIRS_CEILING);
+wallSeg(true, ROOMS.main[3], 2.7, ROOMS.main[1], [], true, UPSTAIRS_CEILING); wallSeg(true, ROOMS.main[3], ROOMS.main[0], 2.7, [], false, 5.5);  // south: front door and windows
+wallSeg(false, DOORS.toPlay.wallX, ROOMS.play[2], ROOMS.play[3], [DOORS.toPlay.gap], true, UPSTAIRS_CEILING);  // west: glass double doors to the playroom
 wallSeg(false, ROOMS.main[0], ROOMS.office[2], ROOMS.office[3], [], false, 5.5);        // the entry is two storeys tall
 // west wing
-wallSeg(true, ROOMS.play[2], ROOMS.play[0], ROOMS.play[1]);
-wallSeg(false, ROOMS.play[0], ROOMS.play[2], ROOMS.office[3]);
-wallSeg(true, ROOMS.play[3], ROOMS.play[0], ROOMS.play[1]);
-wallSeg(true, DOORS.hallOffice.wallZ, ROOMS.office[0], ROOMS.office[1], [DOORS.hallOffice.gap]);
-wallSeg(false, DOORS.hallPowder.wallX, ROOMS.hall[2], ROOMS.hall[3], [DOORS.hallPowder.gap]);
-wallSeg(true, ROOMS.office[3], ROOMS.office[0], ROOMS.office[1]);
+wallSeg(true, ROOMS.play[2], ROOMS.play[0], ROOMS.play[1], [], true, UPSTAIRS_CEILING);
+wallSeg(false, ROOMS.play[0], ROOMS.play[2], ROOMS.office[3], [], true, UPSTAIRS_CEILING);
+wallSeg(true, ROOMS.play[3], ROOMS.play[0], ROOMS.play[1], [], true, UPSTAIRS_CEILING);
+wallSeg(true, DOORS.hallOffice.wallZ, ROOMS.office[0], ROOMS.office[1], [DOORS.hallOffice.gap], true, UPSTAIRS_CEILING);
+wallSeg(false, DOORS.hallPowder.wallX, ROOMS.hall[2], ROOMS.hall[3], [DOORS.hallPowder.gap], true, UPSTAIRS_CEILING);
+wallSeg(true, ROOMS.office[3], ROOMS.office[0], ROOMS.office[1], [], true, UPSTAIRS_CEILING);
 
 const camFadeMeshes = [];
 function tagCamFade(mesh) {
@@ -652,6 +718,14 @@ function staticFurniture(w, h, d, x, z, color) {
   const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat(color));
   m.position.set(x, h / 2, z); m.castShadow = m.receiveShadow = true; scene.add(m);
   staticBox(w / 2, h / 2, d / 2, x, h / 2, z);
+  tagCamFade(m);
+  return m;
+}
+// furniture whose base sits on a raised floor. No cast shadow, so it doesn't shade the rooms below.
+function furnAt(y, w, h, d, x, z, color) {
+  const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat(color));
+  m.position.set(x, y + h / 2, z); m.receiveShadow = true; scene.add(m);
+  staticBox(w / 2, h / 2, d / 2, x, y + h / 2, z);
   tagCamFade(m);
   return m;
 }
@@ -687,6 +761,7 @@ function signSprite(text, emoji, x, y, z, w = 1.4) {
   g.font = 'bold 44px sans-serif'; g.fillText(text, 256, 140);
   const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(c), transparent: true }));
   s.scale.set(w, w * 0.375, 1); s.position.set(x, y, z); scene.add(s);
+  return s;
 }
 const windowPane = (x, y, z, ry, w, h) => deco(w, h, 0.04, x, y, z, 0xbfe6ff, ry);
 
@@ -695,13 +770,13 @@ staticFurniture(0.7, 2.2, 0.6, 5.55, 0.3, 0xe8e8e8);
 for (const y of [1.2, 1.65]) deco(0.5, 0.3, 0.03, 5.55, y, 0.62, 0x222222);
 staticFurniture(2.1, 0.9, 0.6, 6.95, 0.3, 0xf2f2f2); deco(2.1, 0.04, 0.65, 6.95, 0.92, 0.3, 0x555b63); staticBox(1.05, 0.02, 0.325, 6.95, 0.92, 0.3);
 windowPane(7.0, 1.5, 0.04, 0, 1.2, 0.8);
-deco(1.0, 0.55, 0.5, 7.0, 2.2, 0.28, 0xffffff); deco(0.5, 0.35, 0.4, 7.0, 1.9, 0.3, 0xf6f6f6);   // arched range hood
-for (const x of [6.15, 7.85]) deco(0.5, 0.9, 0.35, x, 2.15, 0.2, 0xffffff);                       // upper cabinets
+deco(1.0, 0.55, 0.5, 7.0, 1.90, 0.28, 0xffffff); deco(0.5, 0.35, 0.4, 7.0, 1.9, 0.3, 0xf6f6f6);   // arched range hood
+for (const x of [6.15, 7.85]) deco(0.5, 0.9, 0.35, x, 1.72, 0.2, 0xffffff);                       // upper cabinets
 for (const x of [5.9, 6.4, 7.6, 8.0]) deco(0.02, 0.1, 0.02, x, 0.75, 0.62, 0x222222);           // black handles
 deco(0.3, 0.1, 0.3, 6.4, 0.97, 0.3, 0x2c5aa0);                                                  // blue pot on the counter
 staticFurniture(1.47, 0.95, 2.9, 8.13, 2.8, 0x6b7078); deco(1.57, 0.04, 3.0, 8.13, 0.97, 2.8, 0xe9e9e9); staticBox(0.785, 0.02, 1.5, 8.13, 0.97, 2.8);
 for (const z of [1.9, 2.5, 3.1, 3.7]) staticFurniture(0.34, 0.65, 0.34, 7.1, z, 0x4a4d52);
-for (const z of [1.9, 2.8, 3.7]) { deco(0.02, 0.8, 0.02, 8.13, 2.3, z, 0x333333); deco(0.28, 0.22, 0.28, 8.13, 1.8, z, 0xd8f0f5, 0, true); deco(0.1, 0.06, 0.1, 8.13, 1.93, z, 0x222222); }
+for (const z of [1.9, 2.8, 3.7]) { deco(0.02, 0.7, 0.02, 8.13, 1.85, z, 0x333333); deco(0.28, 0.22, 0.28, 8.13, 1.8, z, 0xd8f0f5, 0, true); deco(0.1, 0.06, 0.1, 8.13, 1.93, z, 0x222222); }
 deco(0.02, 0.6, 0.6, 7.39, 0.5, 3.2, 0x44474c); deco(0.03, 0.5, 0.5, 7.37, 0.5, 3.2, 0x1e2024);   // wine rack on the island
 // dining: a live-edge table (3 m) you can run under, ten chairs, chandelier, glass hutch, mat at the sliding door
 deco(3.0, 0.06, 1.0, 3.8, 0.76, 2.45, 0x3a2216); staticBox(1.5, 0.03, 0.5, 3.8, 0.76, 2.45);
@@ -709,7 +784,7 @@ for (const [x, z] of [[2.4, 2.0], [5.2, 2.0], [2.4, 2.9], [5.2, 2.9]]) { deco(0.
 for (const x of [2.7, 3.4, 4.1, 4.8]) for (const z of [1.75, 3.15]) staticFurniture(0.4, 0.45, 0.4, x, z, 0x9a4f2b);
 staticFurniture(0.4, 0.45, 0.4, 2.1, 2.45, 0x9a4f2b); staticFurniture(0.4, 0.45, 0.4, 5.5, 2.45, 0x9a4f2b);
 for (const x of [2.7, 3.4, 4.1, 4.8]) for (const z of [1.75, 3.15]) deco(0.4, 0.4, 0.04, x, 0.7, z + (z < 2.4 ? -0.2 : 0.2), 0x9a4f2b);   // chair backs
-deco(1.4, 0.04, 0.5, 3.8, 2.2, 2.45, 0xc9a24a); deco(0.02, 0.5, 0.02, 3.8, 2.5, 2.45, 0xc9a24a);   // brass chandelier
+deco(1.4, 0.04, 0.5, 3.8, 2.05, 2.45, 0xc9a24a); deco(0.02, 0.28, 0.02, 3.8, 2.04, 2.45, 0xc9a24a);   // brass chandelier
 for (const x of [3.3, 3.8, 4.3]) deco(0.18, 0.18, 0.18, x, 2.05, 2.45, 0xfff0b0);
 staticFurniture(0.5, 1.8, 0.9, 0.27, 3.65, 0xdcd2c0); deco(0.03, 1.2, 0.7, 0.54, 1.0, 3.65, 0xaadcf5, 0, true);
 deco(2.0, 0.012, 0.8, 3.55, 0.007, 0.55, 0x3d3d44);
@@ -733,19 +808,32 @@ staticFurniture(1.6, 1.0, 0.6, 6.3, 8.35, 0x1c1c1c); deco(1.5, 0.02, 0.2, 6.3, 1
 staticFurniture(0.8, 0.45, 0.8, 9.5, 4.75, 0x3a4252); deco(0.8, 0.4, 0.15, 9.5, 0.65, 5.12, 0x3a4252);       // armchair
 staticFurniture(0.8, 0.45, 0.8, 9.6, 8.2, 0x2f3b55);                                                        // navy chair by the window
 { staticFurniture(0.3, 0.3, 0.3, 5.0, 8.3, 0x8a5a33); const leaf = new THREE.Mesh(new THREE.SphereGeometry(0.4, 12, 10), mat(0x2f7a3a)); leaf.position.set(5.0, 0.75, 8.3); scene.add(leaf); }
-for (const x of [6.8, 8.8]) { windowPane(x, 1.5, 8.67, 0, 1.4, 1.2); for (const d of [-0.9, 0.9]) deco(0.45, 2.4, 0.1, x + d, 1.3, 8.62, 0xefe6cf); }   // curtains
+for (const x of [6.8, 8.8]) { windowPane(x, 1.5, 8.67, 0, 1.4, 1.2); for (const d of [-0.9, 0.9]) deco(0.45, 2.0, 0.1, x + d, 1.05, 8.62, 0xefe6cf); }   // curtains
 // entry (two storeys, 5.5 m): front door, runner, white pillar, stairs up with a locked gate, locked basement stairs
 deco(1.44, 2.2, 0.08, 1.08, 1.1, 8.69, 0x7a5232);
 deco(1.2, 0.012, 3.6, 1.35, 0.007, 6.6, 0xc9b78f); deco(0.9, 0.013, 3.3, 1.35, 0.008, 6.6, 0xb59e72);
-staticFurniture(0.3, 2.7, 0.3, 2.55, 4.5, 0xffffff);
+staticFurniture(0.3, UPSTAIRS_CEILING - 0.02, 0.3, 2.55, 4.5, 0xffffff);
 // stairs up: 12 steps (0.2 m risers), climbable for 6 of them, then a glass-like locked wall with a padlock
 for (let i = 0; i < 12; i++) staticFurniture(0.9, 0.2 * (i + 1), 0.29, 3.15, 7.9 - 0.29 * i - 0.145, i % 2 ? 0xe9d3b0 : 0xdfc79f);
 for (let i = 0; i < 12; i++) deco(0.7, 0.012, 0.22, 3.15, 0.2 * (i + 1) + 0.007, 7.9 - 0.29 * i - 0.145, 0xc9b99a);   // stair runner
-{ const lock = deco(0.9, 4.0, 0.06, 3.15, 2.0, 6.10, 0xbfe0ff, 0, true); lock.material.opacity = 0.18; staticBox(0.45, 2.0, 0.04, 3.15, 2.0, 6.10); }
-signSprite('Upstairs: coming soon', '🔒', 3.15, 2.1, 5.95, 1.2);
-staticFurniture(1.67, 2.7, 4.37, 4.435, 6.545, 0xf0e6d0);
+const upstairsLock = { open: false, meshes: [], body: null };
+{
+  const lock = deco(0.9, 4.0, 0.06, 3.15, 2.0, 6.10, 0xbfe0ff, 0, true); lock.material.opacity = 0.18;
+  upstairsLock.meshes.push(lock, signSprite('Upstairs: coming soon', '🔒', 3.15, 2.1, 5.95, 1.2));
+  upstairsLock.body = staticBox(0.45, 2.0, 0.04, 3.15, 2.0, 6.10);
+}
+function applyUpstairsAccess() {
+  const open = !!(window.LinaAnalytics && LinaAnalytics.getPlayer() === UPSTAIRS_PLAYER);
+  if (open === upstairsLock.open) return;
+  upstairsLock.open = open;
+  for (const mesh of upstairsLock.meshes) { if (open) scene.remove(mesh); else scene.add(mesh); }
+  if (open) world.removeBody(upstairsLock.body); else world.addBody(upstairsLock.body);
+}
+syncUpstairsAccess = applyUpstairsAccess;
+applyUpstairsAccess();
+staticFurniture(1.67, UPSTAIRS_CEILING - 0.02, 4.37, 4.435, 6.545, 0xf0e6d0);
 deco(0.9, 2.0, 0.04, 4.45, 1.0, 4.34, 0xeeeeee);
-signSprite('Basement: coming soon', '🔒', 4.45, 2.3, 4.1, 1.3);
+signSprite('Basement: coming soon', '🔒', 4.45, 1.55, 4.1, 1.3);
 // entry details: wainscot, newel posts, black balusters and a wood handrail, a tall plant in a black pot, a patterned rug
 for (const z of [8.5, 7.5, 6.6]) deco(0.04, 0.9, 0.7, 2.62, 1.0, z, 0xffffff);
 for (const z of [6.5, 8.45]) { deco(0.14, 1.2, 0.14, 2.62, 0.6, z, 0xffffff); deco(0.18, 0.05, 0.18, 2.62, 1.22, z, 0xd9b988); }
@@ -759,7 +847,7 @@ staticFurniture(0.6, 0.5, 0.45, -3.7, 0.6, 0xe8b4c8);
 { const roof = new THREE.Mesh(new THREE.ConeGeometry(0.5, 0.3, 4), mat(0xb5483a)); roof.position.set(-3.7, 0.65, 0.6); roof.rotation.y = Math.PI / 4; roof.castShadow = true; scene.add(roof); }
 staticFurniture(1.85, 0.7, 0.5, -2.475, 0.3, 0xf4f4f4);   // long white desk under the windows
 for (const x of [-2.9, -2.1]) staticFurniture(0.35, 0.4, 0.35, x, 0.95, 0x2a1d1a);   // dark chairs
-for (const x of [-3.0, -2.0]) { windowPane(x, 1.5, 0.04, 0, 0.9, 1.0); deco(1.0, 0.7, 0.05, x, 1.9, 0.06, 0xf3eee2); }   // blinds
+for (const x of [-3.0, -2.0]) { windowPane(x, 1.5, 0.04, 0, 0.9, 1.0); deco(1.0, 0.7, 0.05, x, 1.82, 0.06, 0xf3eee2); }   // blinds
 staticFurniture(0.35, 1.0, 0.8, -4.15, 3.7, 0xf0efe8);
 staticFurniture(1.0, 0.8, 0.35, -1.0, 0.3, 0xffffff); for (const [x, y] of [[-1.25, 0.25], [-0.75, 0.55], [-1.25, 0.55]]) deco(0.22, 0.2, 0.02, x, y, 0.49, 0x3d6f94);   // white cube shelf with blue bins
 deco(0.3, 0.3, 0.3, -1.0, 0.95, 0.3, 0x222222);                                                       // 3D printer
@@ -778,7 +866,7 @@ staticFurniture(0.35, 0.2, 0.3, -4.15, 2.5, 0x8a5a33);
 deco(0.02, 0.8, 0.02, -4.2, 0.5, 1.45, 0x333333); deco(0.2, 0.1, 0.2, -4.1, 0.92, 1.45, 0xffa733);
 signSprite("Lina's Home", '🐢', HOME.x, 1.2, HOME.z, 1.3);
 // powder room: damask wallpaper, wood vanity with a white top and square sink, toilet
-for (const [w, d, x, z] of [[0.03, 1.42, -4.31, 4.91], [2.3, 0.03, -3.2, 5.61], [2.3, 0.03, -3.2, 4.21]]) deco(w, 2.7, d, x, 1.35, z, 0x8f8c7a);
+for (const [w, d, x, z] of [[0.03, 1.42, -4.31, 4.91], [2.3, 0.03, -3.2, 5.61], [2.3, 0.03, -3.2, 4.21]]) deco(w, UPSTAIRS_CEILING, d, x, UPSTAIRS_CEILING / 2, z, 0x8f8c7a);
 deco(1.0, 0.05, 0.5, -3.2, 0.72, 5.38, 0xfafafa); deco(0.4, 0.15, 0.3, -3.2, 0.82, 5.38, 0xffffff); deco(0.04, 0.2, 0.04, -3.2, 0.9, 5.5, 0x111111);
 staticFurniture(1.0, 0.7, 0.5, -3.2, 5.38, 0x8a5a33); deco(0.4, 0.1, 0.3, -3.2, 0.75, 5.38, 0xffffff);
 deco(0.6, 1.2, 0.03, -3.2, 1.5, 5.6, 0xdff0ff);
@@ -791,6 +879,86 @@ staticFurniture(0.35, 1.0, 1.2, -4.15, 7.2, 0xf0efe8);
 { for (const dz of [-0.2, 0.2]) deco(0.03, 1.5, 0.03, -2.7, 0.75, 7.2 + dz, 0x8a5a33); deco(0.4, 0.5, 0.03, -2.7, 1.1, 7.2, 0xfafafa); staticBox(0.25, 0.75, 0.2, -2.7, 0.75, 7.2); }
 for (const [i, c] of [0xe74c3c, 0x3498db, 0xf1c40f, 0x2ecc71, 0x9b59b6].entries()) deco(0.03, 0.4, 0.3, -4.28, 1.5, 6.2 + i * 0.5, c);
 for (const x of [-3.2, -0.8]) windowPane(x, 1.5, 8.7, 0, 0.9, 1.0);
+
+// ---------- upstairs (built, still locked) ----------
+// Layout from ref-docs/house-floorplan.drawio page 2. The two-storey entry stays open:
+// no floor over x 0..2.7, z 4.5..8.73. Attic is not in this pass.
+// The stair barrier drops only while the player slug is adam-laptop.
+{
+  const Y = UPSTAIRS_Y;
+  const R = ROOMS;
+  floorRectAt(Y, ...R.oskar, 0x8ea4b8);
+  floorRectAt(Y, ...R.bathUp, 0xd5ddd8);
+  floorRectAt(Y, ...R.klara, 0xc6a8b6);
+  floorRectAt(Y, ...R.masterBath, 0xd5ddd8);
+  floorRectAt(Y, ...R.laundry, 0xd0ccc4);
+  floorRectAt(Y, ...R.guest, 0xa8b0a4);
+  floorRectAt(Y, ...R.masterFoyer, 0xd8b98a);
+  floorRectAt(Y, ...R.walkIn, 0xc9b48a);
+  floorRectAt(Y, R.master[0], R.walkIn[0], R.master[2], R.master[3], 0xc2b49a);
+  floorRectAt(Y, R.walkIn[0], R.master[1], R.walkIn[3], R.master[3], 0xc2b49a);
+  floorRectAt(Y, ...R.hallUpW, 0xd8b98a);
+  floorRectAt(Y, ...R.hallUpN, 0xd8b98a);
+  floorRectAt(Y, ...R.hallUpL, 0xd8b98a);
+  floorRectAt(Y, ...R.hallUpE, 0xd8b98a);
+
+  const upWall = (alongX, c, a, b, gaps = [], header = true) => wallSegAt(Y, alongX, c, a, b, gaps, header, WALL_H, false);
+  upWall(true, 0, -4.36, 10.36, [], false);
+  upWall(false, 10.36, 0, 8.73, [], false);
+  upWall(true, 8.73, -4.36, 0, [], false);
+  upWall(true, 8.73, 2.7, 10.36, [], false);   // x 0..2.7 is the existing two-storey entry wall
+  upWall(false, -4.36, 0, 8.73, [], false);
+
+  upWall(false, R.oskar[1], 0, 3);
+  upWall(false, R.bathUp[1], 0, 3);
+  upWall(false, R.klara[1], 0, 3);
+  upWall(true, 3, -4.36, 10.36, [DOORS.upOskar.gap, DOORS.upBath.gap, DOORS.upKlara.gap, DOORS.upBathFoyer.gap, DOORS.upBathCloset.gap]);
+  upWall(false, R.laundry[1], R.laundry[2], R.laundry[3], [DOORS.upLaundry.gap]);
+  upWall(true, R.guest[2], R.guest[0], R.guest[1], [DOORS.upGuest.gap]);
+  upWall(false, 0, R.guest[2], 5.64);   // guest's east wall; z 5.64..8.73 is already the two-storey entry wall
+  upWall(false, R.masterFoyer[0], R.masterFoyer[2], R.masterFoyer[3], [DOORS.upFoyerHall.gap]);
+  upWall(true, R.masterFoyer[3], R.masterFoyer[0], R.masterFoyer[1], [DOORS.upFoyerMaster.gap]);
+  upWall(false, R.walkIn[0], R.walkIn[2], R.walkIn[3]);
+  upWall(true, R.walkIn[3], R.walkIn[0], R.walkIn[1], [DOORS.upClosetMaster.gap]);
+  upWall(false, R.master[0], R.master[2], R.master[3]);
+  upWall(true, R.master[2], R.master[0], R.masterFoyer[0]);
+  upWall(true, 1.15, 5.65, 6.99, [[6.05, 6.65]]);   // master-bath toilet stall
+  upWall(false, 6.99, 0, 1.15);
+
+  furnAt(Y, 2.6, 0.85, 0.08, 1.34, 4.46, 0x8a5a33);   // railing on the north edge of the entry void
+  furnAt(Y, 0.08, 0.85, 0.7, -0.04, 4.88, 0x8a5a33);  // railing on the west edge, sitting on the hall floor
+
+  const wy = Y + 1.35;
+  windowPane(-2.18, wy, 0.04, 0, 1.34, 1.05);
+  windowPane(4.27, wy, 0.04, 0, 1.34, 1.05);
+  windowPane(-1.43, wy, 8.69, 0, 1.34, 1.05);
+  windowPane(5.32, wy, 8.69, 0, 1.34, 1.05);
+  windowPane(8.54, wy, 8.69, 0, 1.34, 1.05);
+  windowPane(10.32, wy, 1.82, Math.PI / 2, 1.34, 1.05);
+
+  furnAt(Y, 2.2, 0.35, 1.1, -3.23, 1.08, 0x8a5a33); deco(2.05, 0.1, 0.95, -3.23, Y + 0.4, 1.08, 0xdfe7f2);   // Oskar's bed
+  furnAt(Y, 0.7, 0.45, 0.7, -3.91, 2.38, 0x6d7f99);   // reading chair
+  furnAt(Y, 0.85, 2.0, 0.8, -0.97, 0.45, 0xf0efe8);   // closet
+  furnAt(Y, 2.2, 0.35, 1.1, 4.52, 1.08, 0x8a5a33); deco(2.05, 0.1, 0.95, 4.52, Y + 0.4, 1.08, 0xf3d5e4);   // Klara's bed
+  furnAt(Y, 0.85, 2.0, 0.8, 2.2, 0.45, 0xf0efe8);
+  furnAt(Y, 0.42, 0.85, 2.4, -0.2, 1.35, 0xe4dfd6); deco(0.36, 0.04, 2.3, -0.2, Y + 0.87, 1.35, 0xf7f7f7);   // shared-bath counter
+  deco(0.16, 0.08, 0.2, -0.2, Y + 0.93, 0.7, 0xffffff); deco(0.16, 0.08, 0.2, -0.2, Y + 0.93, 2.0, 0xffffff);
+  furnAt(Y, 0.45, 0.4, 0.55, 1.32, 0.4, 0xf7f7f7);
+  furnAt(Y, 0.8, 0.5, 1.6, 1.3, 1.75, 0xf4f4f4);
+  furnAt(Y, 1.2, 0.9, 0.55, -3.7, 3.4, 0xe8e4dc);   // laundry counter
+  furnAt(Y, 0.7, 1.7, 0.7, -2.55, 3.42, 0xf4f4f4); deco(0.5, 0.7, 0.04, -2.55, Y + 0.85, 3.72, 0x4a5568);   // washer-dryer
+  furnAt(Y, 1.05, 0.35, 2.1, -3.78, 7.2, 0x8a5a33); deco(0.9, 0.1, 1.95, -3.78, Y + 0.4, 7.2, 0xe7eee4);   // guest bed
+  furnAt(Y, 0.45, 0.45, 0.45, 3.88, 5.55, 0x6b5344); furnAt(Y, 0.45, 0.45, 0.45, 3.88, 7.68, 0x6b5344);   // nightstands
+  furnAt(Y, 2.6, 0.4, 1.5, 4.98, 6.62, 0x6b5344); deco(2.4, 0.12, 1.35, 4.98, Y + 0.46, 6.62, 0xf4f1ea);
+  furnAt(Y, 0.45, 1.8, 1.1, 9.95, 3.7, 0xc9b48a); furnAt(Y, 0.45, 1.8, 1.1, 9.95, 4.9, 0xc9b48a);   // walk-in shelves
+  furnAt(Y, 0.4, 0.4, 0.5, 6.3, 0.45, 0xf7f7f7);   // toilet in its stall
+  furnAt(Y, 0.55, 0.85, 1.6, 6.05, 2.1, 0xe4dfd6); deco(0.5, 0.04, 1.5, 6.05, Y + 0.87, 2.1, 0xf7f7f7);
+  deco(0.16, 0.08, 0.22, 6.05, Y + 0.93, 1.6, 0xffffff); deco(0.16, 0.08, 0.22, 6.05, Y + 0.93, 2.55, 0xffffff);
+  furnAt(Y, 2.1, 0.1, 0.7, 9.2, 0.48, 0xd5ddd8);   // steam shower
+  deco(2.1, 1.8, 0.04, 9.2, Y + 1.0, 0.14, 0xbfe6ff, 0, true);
+  deco(0.04, 1.8, 0.7, 10.22, Y + 1.0, 0.48, 0xbfe6ff, 0, true);
+  furnAt(Y, 0.75, 0.5, 1.4, 9.63, 1.75, 0xf7f7f7);   // fancy tub
+}
 
 // ---------- props ----------
 const props = []; // { mesh, body, kind, alive }
@@ -808,6 +976,11 @@ if (!Array.isArray(save.paintingsGot)) save.paintingsGot = [];
 if (!Array.isArray(save.balloonsPopped)) save.balloonsPopped = [];
 function persist() { try { localStorage.setItem(SAVE_KEY, JSON.stringify(save)); } catch (e) {} }
 let coins = save.coins;
+let shellFuel = Number.isFinite(+save.shellFuel) ? Math.min(100, Math.max(0, +save.shellFuel)) : 100;
+let shellFuelSaved = Math.round(shellFuel * 10) / 10;
+shellFuel = shellFuelSaved;
+save.shellFuel = shellFuelSaved;
+const boost = { speedT: 0, jumpT: 0 };
 function addCoins(n) {
   coins += n; save.coins = coins;
   if (n > 0 && window.LinaAnalytics) LinaAnalytics.bump('coins', n);
@@ -1046,15 +1219,55 @@ const BLOCKS = [
   { x: 6.6, z: 6.55, hx: 0.25, hz: 1.35 },    // console
   { x: 6.3, z: 8.12, hx: 0.85, hz: 0.55 },    // piano
   { x: LANDMARKS.fridge.x, z: LANDMARKS.fridge.z, hx: LANDMARKS.fridge.hx, hz: LANDMARKS.fridge.hz }, // fridge
+  { x: 1.2, z: 0.42, hx: 1.15, hz: 0.32 },    // loft
+  { x: 9.95, z: 1.45, hx: 0.4, hz: 0.34 },    // pizza oven
+  { x: 2.55, z: 4.5, hx: 0.2, hz: 0.2, pad: 0.12 }, // entry pillar
+  { x: -2.4, z: 1.9, hx: 0.68, hz: 0.42 },    // playroom lego table
+  { x: -2.5, z: 0.32, hx: 0.95, hz: 0.28 },   // playroom desk
+  { x: -1.0, z: 0.32, hx: 0.52, hz: 0.2 },    // playroom shelf
+  { x: -3.9, z: 2.05, hx: 0.4, hz: 0.62, pad: 0.2 }, // Lina's enclosure
+  { x: -3.2, z: 5.4, hx: 0.52, hz: 0.24 },    // powder vanity
+  { x: -4.05, z: 4.62, hx: 0.22, hz: 0.28 },  // powder toilet
+  { x: -1.5, z: 8.38, hx: 0.82, hz: 0.32 },   // office desk
+  { x: -2.7, z: 7.2, hx: 0.26, hz: 0.2, pad: 0.12 }, // office easel
+  { x: 10.0, z: -11.35, hx: 2.4, hz: 1.2, pad: 0.25 }, // shed
+  { x: -4.0, z: -10.7, hx: 0.35, hz: 0.35, pad: 0.15 }, // tree
 ];
+for (const z of [1.9, 2.5, 3.1, 3.7]) BLOCKS.push({ x: 7.1, z, hx: 0.18, hz: 0.18, pad: 0.12 }); // island stools
+// Walls and rails Adam must walk around. Door gaps are left open. pad is his body clearance.
+function addWall(alongX, c, a, b) {
+  const lo = Math.min(a, b), hi = Math.max(a, b);
+  if (hi - lo < 0.04) return;
+  const mid = (lo + hi) / 2, h = (hi - lo) / 2;
+  if (alongX) BLOCKS.push({ x: mid, z: c, hx: h, hz: 0.06, pad: 0.16, wall: true });
+  else BLOCKS.push({ x: c, z: mid, hx: 0.06, hz: h, pad: 0.16, wall: true });
+}
+addWall(true, 0, 0, 2.36); addWall(true, 0, 4.73, 10.36);          // main north, deck door open
+addWall(false, 10.36, 0, 8.73);                                      // main east
+addWall(true, 8.73, 0, 10.36);                                       // main south
+addWall(false, 0, 0, 0.8); addWall(false, 0, 3.2, 4.18);             // main west to playroom
+addWall(false, 0, 5.64, 8.73);                                       // main west to office
+addWall(true, 0, -4.36, 0);                                          // playroom north
+addWall(false, -4.36, 0, 8.73);                                      // west exterior
+addWall(true, 4.18, -4.36, 0);                                       // playroom south / hall north
+addWall(true, 8.73, -4.36, 0);                                       // office south
+addWall(true, 5.64, -4.36, -1.55); addWall(true, 5.64, -0.25, 0);   // hall to office
+addWall(false, -2, 4.18, 4.28); addWall(false, -2, 5.52, 5.64);     // powder door
+addWall(true, -3.42, 0.15, 8.95);                                    // deck north rail
+addWall(false, 9.02, -3.42, -2.5); addWall(false, 9.02, -0.85, -0.12); // deck east, step gap
+addWall(false, 0.08, -3.42, -2.75); addWall(false, 0.08, -1.15, -0.12); // deck west, step gap
+function blockPad(b, fallback) { return b.pad != null ? b.pad : fallback; }
 function blocked(x, z, pad = 0) {
-  for (const b of BLOCKS) if (Math.abs(x - b.x) < b.hx + pad && Math.abs(z - b.z) < b.hz + pad) return true;
+  for (const b of BLOCKS) {
+    const p = blockPad(b, pad);
+    if (Math.abs(x - b.x) < b.hx + p && Math.abs(z - b.z) < b.hz + p) return true;
+  }
   return false;
 }
 function slideAdam(x, z) {
   for (let pass = 0; pass < 3; pass++) {
     for (const b of BLOCKS) {
-      const hx = b.hx + 0.35, hz = b.hz + 0.35;
+      const hx = b.hx + blockPad(b, 0.35), hz = b.hz + blockPad(b, 0.35);
       const dx = x - b.x, dz = z - b.z;
       if (Math.abs(dx) >= hx || Math.abs(dz) >= hz) continue;
       const px = hx - Math.abs(dx), pz = hz - Math.abs(dz);
@@ -1077,22 +1290,22 @@ function stepAdam(x, z, tx, tz, speed, dt) {
   const px = x + vx * step, pz = z + vz * step;
   let face = null, pen = Infinity;
   for (const b of BLOCKS) {
-    const hx = b.hx + 0.35, hz = b.hz + 0.35;
+    const hx = b.hx + blockPad(b, 0.35), hz = b.hz + blockPad(b, 0.35);
     const ox = hx - Math.abs(px - b.x), oz = hz - Math.abs(pz - b.z);
     if (ox <= 0 || oz <= 0 || Math.min(ox, oz) >= pen) continue;
     pen = Math.min(ox, oz); face = ox < oz ? 'z' : 'x';
   }
   if (!face) return [x, z];
-  if (!A.side) {
-    const plus = face === 'z' ? [x, z + step] : [x + step, z];
-    const minus = face === 'z' ? [x, z - step] : [x - step, z];
-    const dp = Math.hypot(tx - plus[0], tz - plus[1]), dm = Math.hypot(tx - minus[0], tz - minus[1]);
-    A.side = (dp < dist - 1e-3 || dm < dist - 1e-3) ? (dp <= dm ? 1 : -1) : 1;
-  }
+  // Pick the slide that gets closer to the target. A latched side from the previous obstacle
+  // was sending him the long way around the next one (south of the dining table, missing the playroom door).
+  const plus = face === 'z' ? [x, z + step] : [x + step, z];
+  const minus = face === 'z' ? [x, z - step] : [x - step, z];
+  const dp = Math.hypot(tx - plus[0], tz - plus[1]), dm = Math.hypot(tx - minus[0], tz - minus[1]);
+  let side = dp <= dm ? 1 : -1;
+  if (Math.abs(dp - dm) < 0.02 && A.side) side = A.side;
   const go = (s) => face === 'z' ? [x, z + step * s] : [x + step * s, z];
-  if (free(...go(A.side))) return go(A.side);
-  A.side = -A.side;
-  if (free(...go(A.side))) return go(A.side);
+  if (free(...go(side))) { A.side = side; return go(side); }
+  if (free(...go(-side))) { A.side = -side; return go(-side); }
   A.side = 0;
   return [x, z];
 }
@@ -1219,17 +1432,75 @@ for (const [x, z, hx, hz] of [[5.5, 7.4, 0.01, 0.25], [5.9, 7.4, 0.01, 0.25], [5
   // two pots on the deck, just outside the sliding door
   for (const x of [1.85, 5.25]) addProp('vase', x, 0.18, -0.6);
 }
-// lettuce patch: eat the lettuce, it grows back
+// Foods register here first. Later interactables (ladders, switches) can join the same list.
+const interactables = [];
+const FOOD_KINDS = { lettuce: true, shellSquash: true, strawberry: true, apple: true };
+// lettuce patch: eat with INTERACT to heal. It grows back. Not shop coins.
 const lettuces = [];
 for (let i = 0; i < 8; i++) {
   const g = new THREE.Group();
   const outer = new THREE.Mesh(new THREE.SphereGeometry(0.1, 12, 10), mat(0x57b03a)); outer.scale.y = 0.8;
   const inner = new THREE.Mesh(new THREE.SphereGeometry(0.065, 10, 8), mat(0xa6e07a)); inner.position.y = 0.03;
   g.add(outer, inner); outer.castShadow = true;
-  const x = 8.0 + (i % 4) * 0.5 + (i < 4 ? 0 : 0.25), z = i < 4 ? -9.65 : -9.65 + 0.0;
   const px = i < 6 ? 8.2 + i * 0.6 : 11.8, pz = i < 6 ? -9.65 : -8.3 + (i - 6) * 0.9;
-  g.position.set(px, YARD + 0.09, pz); scene.add(g);
-  lettuces.push({ g, x: px, z: pz, alive: true, t: 0 });
+  const y = YARD + 0.09;
+  g.position.set(px, y, pz); scene.add(g);
+  const item = { kind: 'lettuce', g, x: px, y, z: pz, alive: true, t: 0, respawn: 25 };
+  lettuces.push(item);
+  interactables.push(item);
+}
+function makeFoodMesh(kind) {
+  const g = new THREE.Group();
+  const add = (geo, m, x, y, z, sx = 1, sy = 1, sz = 1) => {
+    const o = new THREE.Mesh(geo, m);
+    o.position.set(x, y, z); o.scale.set(sx, sy, sz); o.castShadow = true; g.add(o);
+  };
+  if (kind === 'shellSquash') {
+    // round acorn squash — not the pear-shaped pizza butternut
+    add(new THREE.SphereGeometry(0.09, 12, 10), mat(0x6a8f2a), 0, 0.08, 0, 1, 0.82, 1);
+    add(new THREE.SphereGeometry(0.055, 10, 8), mat(0xd06a1e), 0, 0.07, 0.02, 1, 0.7, 1);
+    add(new THREE.CylinderGeometry(0.012, 0.016, 0.05, 6), mat(0x3d6b28), 0, 0.16, 0);
+  } else if (kind === 'strawberry') {
+    add(new THREE.SphereGeometry(0.055, 10, 8), mat(0xe23b3b), 0, 0.06, 0, 0.9, 1.1, 0.9);
+    add(new THREE.SphereGeometry(0.04, 8, 6), mat(0xff5a5a), 0.035, 0.07, 0.02, 0.85, 1, 0.85);
+    add(new THREE.ConeGeometry(0.028, 0.045, 6), mat(0x3d8f32), 0, 0.13, 0);
+    add(new THREE.SphereGeometry(0.012, 6, 5), mat(0xf2f2f2), 0.02, 0.08, 0.04);
+  } else if (kind === 'apple') {
+    add(new THREE.SphereGeometry(0.08, 12, 10), mat(0xd32626), 0, 0.08, 0);
+    add(new THREE.CylinderGeometry(0.008, 0.012, 0.045, 5), mat(0x6b4a2a), 0, 0.16, 0);
+    add(new THREE.SphereGeometry(0.02, 6, 5), mat(0x3d8f32), 0.018, 0.15, 0.01);
+  }
+  return g;
+}
+function addFood(kind, x, y, z, opt) {
+  const g = makeFoodMesh(kind);
+  g.position.set(x, y, z);
+  scene.add(g);
+  const item = { kind, g, x, y, z, alive: true, t: 0, respawn: (opt && opt.respawn) || 30, home: !!(opt && opt.home) };
+  interactables.push(item);
+  return item;
+}
+addFood('shellSquash', -3.8, 0.14, 3.35, { respawn: 18, home: true });
+addFood('shellSquash', 7.2, YARD + 0.14, -8.2, { respawn: 32 });
+addFood('shellSquash', 6.4, 0.14, 1.05, { respawn: 32 });
+addFood('strawberry', 10.5, YARD + 0.12, -8.15, { respawn: 30 });
+addFood('strawberry', 2.2, YARD + 0.12, -6.8, { respawn: 30 });
+addFood('strawberry', 1.5, 0.14, 1.2, { respawn: 30 });
+addFood('apple', 1.0, YARD + 0.14, -5.0, { respawn: 30 });
+addFood('apple', 5.15, 0.14, 4.85, { respawn: 30 });
+addFood('apple', 7.2, 0.16, -2.2, { respawn: 30 });
+function tickFoods(dt) {
+  const bob = performance.now() / 1000;
+  for (const item of interactables) {
+    if (!FOOD_KINDS[item.kind]) continue;
+    if (item.alive) {
+      item.g.position.y = item.y + Math.sin(bob * 3 + item.x * 2) * 0.03;
+      item.g.rotation.y += dt * 0.7;
+    } else {
+      item.t -= dt;
+      if (item.t <= 0) { item.alive = true; item.g.visible = true; item.g.position.y = item.y; }
+    }
+  }
 }
 // a big toy T-rex (static, say hi to it)
 const TREX = { x: 4.5, z: -6.0 };
@@ -1267,15 +1538,7 @@ function updateGarden(dt) {
     gardenState.visited = true; toast('The garden! Lina is home');
     track('garden_entered');
   }
-  for (const l of lettuces) {
-    if (l.alive) {
-      if (Math.hypot(lp.x - l.x, lp.z - l.z) < 0.22 && lp.y < YARD + 0.4) {
-        l.alive = false; l.g.visible = false; l.t = 25; addCoins(2);
-        track('food_eaten', { food: 'lettuce' });
-        if (credit('lettuce')) { toast(`Yum! ${Q.lettuce}/8`); renderHud(); } else toast('Yum! +2');
-      }
-    } else { l.t -= dt; if (l.t <= 0) { l.alive = true; l.g.visible = true; } }
-  }
+  tickFoods(dt);
   if (Math.hypot(lp.x - TREX.x, lp.z - TREX.z) < 0.8 && lp.y < YARD + 0.6) {
     if (!TREX.hi) { TREX.hi = true; tone(140, 50, 0.6, 'sawtooth', 0.14); toast('ROAR! Hi T-rex!'); if (credit('dino')) renderHud(); }
   } else TREX.hi = false;
@@ -1521,6 +1784,18 @@ function drawPattern(id, g, S) {
     for (const [x, y, r] of [[128, 128, 34], [60, 70, 20], [196, 70, 20], [60, 190, 20], [196, 190, 20], [128, 52, 14], [128, 204, 14], [40, 130, 12], [216, 130, 12]]) star(g, x * k, y * k, r * k);
   } else if (id === 'scales') {
     g.lineWidth = 6 * k; for (let row = 0; row < 8; row++) { g.beginPath(); for (let i = 0; i <= 8; i++) g.lineTo(i * 32 * k, (row * 32 + (i % 2 ? 22 : 4)) * k); g.stroke(); }
+  } else if (id === 'disco') {
+    const cols = ['#ff4d6d', '#ffd166', '#06d6a0', '#4cc9f0', '#c77dff'];
+    for (let i = 0; i < cols.length; i++) {
+      g.fillStyle = cols[i];
+      g.beginPath();
+      g.moveTo(S / 2, S / 2);
+      g.arc(S / 2, S / 2, S * 0.48, (i / cols.length) * Math.PI * 2, ((i + 1) / cols.length) * Math.PI * 2);
+      g.closePath();
+      g.fill();
+    }
+    g.fillStyle = '#fff';
+    star(g, S / 2, S / 2, 26 * k);
   }
 }
 function applyPattern(id) { drawPattern(id, shellCanvas.getContext('2d'), 256); shellTex.needsUpdate = true; save.pattern = id; persist(); }
@@ -1546,12 +1821,12 @@ const linaShadow = makeEntityShadow(0.13);   // tiny tortoise footprint
 // skins: colour plus optional dino spikes or a Jedi lightsaber
 const SKINS = [
   { id: 'brown', name: 'Classic Lina', price: 0, color: 0xe3b640 },
-  { id: 'green', name: 'Leafy Lina', price: 20, color: 0x5b8c3a },
-  { id: 'gold', name: 'Golden Lina', price: 30, color: 0xe6b422 },
-  { id: 'pink', name: 'Bubblegum', price: 30, color: 0xe56bb0 },
-  { id: 'blue', name: 'Blueberry', price: 40, color: 0x3b6fd1 },
-  { id: 'dino', name: 'Dino Lina', price: 60, color: 0x6b8f2a, spikes: true },
-  { id: 'jedi', name: 'Jedi Lina', price: 80, color: 0x6b4a2b, saber: true },
+  { id: 'green', name: 'Leafy Lina', price: 20, color: 0x5b8c3a, unlock: 'lettuce' },
+  { id: 'gold', name: 'Golden Lina', price: 30, color: 0xe6b422, unlock: 'loft' },
+  { id: 'pink', name: 'Bubblegum', price: 30, color: 0xe56bb0, unlock: 'balloons' },
+  { id: 'blue', name: 'Blueberry', price: 40, color: 0x3b6fd1, unlock: 'bugs' },
+  { id: 'dino', name: 'Dino Lina', price: 60, color: 0x6b8f2a, spikes: true, unlock: 'dino' },
+  { id: 'jedi', name: 'Jedi Lina', price: 80, color: 0x6b4a2b, saber: true, unlock: 'droid' },
 ];
 const shellAcc = new THREE.Group(); shellGroup.add(shellAcc);
 function applySkin(id) {
@@ -1574,10 +1849,16 @@ const PATTERNS = [
   { id: 'greek', name: 'Greek tortoise', price: 0 },
   { id: 'hex', name: 'Tortoise scutes', price: 0 },
   { id: 'none', name: 'Plain', price: 0 },
-  { id: 'spots', name: 'Spots', price: 15 },
-  { id: 'stripes', name: 'Rings', price: 15 },
-  { id: 'stars', name: 'Stars', price: 25 },
-  { id: 'scales', name: 'Dino scales', price: 25 },
+  { id: 'spots', name: 'Spots', price: 15, unlock: 'throws' },
+  { id: 'stripes', name: 'Rings', price: 15, unlock: 'throws' },
+  { id: 'stars', name: 'Stars', price: 25, unlock: 'paintings' },
+  { id: 'scales', name: 'Dino scales', price: 25, unlock: 'dino' },
+  { id: 'disco', name: 'Disco sheen', price: 20, unlock: 'disco' },
+];
+const SHOP_BOOSTS = [
+  { id: 'sugar', name: 'Sugar Rush', price: 12, unlock: 'home', blurb: 'Run faster for 10s' },
+  { id: 'jump', name: 'Super Jump', price: 12, unlock: 'loft', blurb: 'Jump higher for 10s' },
+  { id: 'shell', name: 'Shell Top-up', price: 10, unlock: 'bonks', blurb: 'Fill shell energy' },
 ];
 applyPattern(save.pattern);
 const LENA_START = new CANNON.Vec3(LANDMARKS.start.x, 0.1, LANDMARKS.start.z);
@@ -1617,14 +1898,107 @@ stars.position.y = 2.2; stars.visible = false; adam.add(stars);
 scene.add(adam);
 const adamShadow = makeEntityShadow(0.28);
 const droidShadow = makeEntityShadow(0.12);
-const WAYPOINTS = [[1.8, 1.2], [6.8, 1.2], [6.8, 3.6], [1.8, 3.6]].map(([x, z]) => new THREE.Vector3(x, 0, z));
-let wp = 0;
-adam.position.copy(WAYPOINTS[0]);
-const A = { state: 'patrol', t: 0, grace: 0, bonks: 0, angry: 0, mad: false, doorTold: false, side: 0 };
+// House tour. Nodes sit in open floor; links run through door gaps. He paths on this graph, then walks straight when he can see the goal.
+const ADAM_NODES = [
+  { id: 'kit', x: 4.9, z: 1.32 },
+  { id: 'aisle', x: 6.15, z: 1.32 },
+  { id: 'liv', x: 6.15, z: 4.35 },
+  { id: 'din', x: 1.65, z: 1.35 },
+  { id: 'doorPlay', x: 0.42, z: 2.0 },
+  { id: 'play', x: -0.9, z: 2.75 },
+  { id: 'entry', x: 1.15, z: 5.05 },
+  { id: 'hall', x: -1.0, z: 4.9 },
+  { id: 'powder', x: -3.15, z: 4.55 },
+  { id: 'doorOff', x: -0.9, z: 5.9 },
+  { id: 'office', x: -2.15, z: 6.65 },
+  { id: 'doorDeck', x: 3.55, z: 0.38 },
+  { id: 'deck', x: 3.55, z: -1.55 },
+  { id: 'deckE', x: 7.15, z: -1.7 },
+  { id: 'stepE', x: 9.5, z: -1.67 },
+  { id: 'yard', x: 10.8, z: -4.0 },
+  { id: 'glen', x: 4.0, z: -5.1 },
+  { id: 'deckW', x: 1.35, z: -1.65 },
+  { id: 'stepW', x: -0.5, z: -2.0 },
+  { id: 'patio', x: -2.3, z: -3.1 },
+  { id: 'yardW', x: -5.35, z: -1.15 },
+  { id: 'side', x: -5.7, z: 2.4 },
+];
+const ADAM_LINKS = [
+  [1, 3, 11], [0, 2], [1], [0, 4, 6], [3, 5], [4], [3, 7], [6, 8, 9], [7], [7, 10], [9],
+  [0, 12], [11, 13, 17], [12, 14], [13, 15], [14, 16], [15, 19], [12, 18], [17, 19], [18, 16, 20], [19, 21], [20],
+];
+const ADAM_TOUR = [
+  11, 12, 13, 14, 15, 16, 15, 14, 13, 12, 17, 18, 19, 20, 21, 20, 19, 18, 17, 12, 11,
+  0, 1, 2, 1, 0, 3, 4, 5, 4, 3, 6, 7, 8, 7, 9, 10, 9, 7, 6, 3,
+];
+const ACTIVITIES = [
+  { id: 'cook', x: 6.15, z: 1.18, face: [0, -1], dur: 3.4, toast: 'Uncle Adam is cooking...' },
+  { id: 'water', x: 5.25, z: -1.25, face: [0, 1], dur: 3.2, toast: 'Uncle Adam is watering...' },
+  { id: 'putter', x: -1.85, z: 6.5, face: [0, 1], dur: 3.0, toast: 'Uncle Adam is puttering...' },
+];
+const HOME_STAND = { x: -2.05, z: 3.45 };
+const CLEAN_STATES = new Set(['fetch_broom', 'walk_mess', 'sweep', 'return_broom']);
+const BONK_STATES = new Set(['patrol', 'activity', 'fetch_broom', 'walk_mess', 'sweep', 'return_broom']);
+const MESS_KINDS = new Set(['vase', 'mug', 'lamp', 'tv', 'toy', 'car', 'book', 'table', 'brick', 'ball', 'remote']);
+let wp = ADAM_TOUR.indexOf(1);
+adam.position.set(ADAM_NODES[0].x, 0, ADAM_NODES[0].z);
+const A = {
+  state: 'patrol', t: 0, grace: 0, bonks: 0, angry: 0, mad: false, side: 0,
+  unstickT: 0, unstick: 0, flyY: 0,
+  actCool: 12, actI: 0, act: null, phase: 'walk', told: false,
+  dirty: [], mess: null, cleanCool: 6, broomHeld: false,
+};
 // Uncle Adam is calm until he gets bonked, then he goes red and chases for a while
 function setAdamMood(mad) {
   A.mad = mad;
   for (const m of [torso, ...aarms]) m.material.color.setHex(mad ? 0xd23f3f : 0x2f6db5);
+}
+const spoon = new THREE.Group();
+{
+  const handle = new THREE.Mesh(new THREE.CylinderGeometry(0.015, 0.015, 0.28, 6), mat(0xc0c0c0));
+  const bowl = new THREE.Mesh(new THREE.SphereGeometry(0.05, 8, 6), mat(0xc0c0c0));
+  bowl.scale.set(1, 0.45, 1); bowl.position.y = 0.16;
+  spoon.add(handle, bowl); spoon.position.set(0, -0.28, 0.06); spoon.visible = false; aarms[1].add(spoon);
+}
+const can = new THREE.Group();
+{
+  const body = new THREE.Mesh(new THREE.CylinderGeometry(0.055, 0.07, 0.16, 8), mat(0x2f7a3a));
+  const spout = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.02, 0.12, 6), mat(0x2f7a3a));
+  spout.rotation.z = Math.PI / 2.5; spout.position.set(0.08, 0.04, 0);
+  can.add(body, spout); can.position.set(0, -0.3, 0.05); can.visible = false; aarms[1].add(can);
+}
+const steam = new THREE.Group();
+for (let i = 0; i < 4; i++) {
+  const p = new THREE.Mesh(new THREE.SphereGeometry(0.045, 6, 6), new THREE.MeshBasicMaterial({ color: 0xf4f7fb, transparent: true, opacity: 0.45 }));
+  p.userData.i = i; steam.add(p);
+}
+steam.visible = false; scene.add(steam);
+const broom = new THREE.Group();
+{
+  const handle = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, 1.15, 6), mat(0xc4a574)); handle.position.y = 0.62;
+  const bristle = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.24, 0.08), mat(0x6b4a22)); bristle.position.y = 0.08;
+  handle.castShadow = bristle.castShadow = true; broom.add(handle, bristle);
+}
+scene.add(broom);
+function parkBroom() {
+  scene.add(broom);
+  broom.position.set(LANDMARKS.broom.x, 0, LANDMARKS.broom.z);
+  broom.rotation.set(0, 0.4, 0.45);
+  A.broomHeld = false;
+}
+function holdBroom() {
+  spoon.visible = false; can.visible = false;
+  aarms[1].add(broom);
+  broom.position.set(0, -0.28, 0.1);
+  broom.rotation.set(0.6, 0, 0.2);
+  A.broomHeld = true;
+}
+parkBroom();
+function resetAdamPose() {
+  adam.rotation.x = 0; adam.rotation.z = 0;
+  for (const a of aarms) { a.rotation.x = 0; a.rotation.z = 0; }
+  for (const l of alegs) l.rotation.x = 0;
+  spoon.visible = false; can.visible = false; steam.visible = false;
 }
 
 // ---------- input ----------
@@ -1654,7 +2028,7 @@ addEventListener('keydown', (e) => {
   if (k.startsWith('arrow')) e.preventDefault();
   if (k === ' ') { e.preventDefault(); jumpReq = true; }
   if (k === 'e' || k === 'x') tuckIn();
-  if (k === 'q') grabOrThrow();
+  if (k === 'q') interactOrThrow();
   if (k === 'v') cycleView();
 });
 addEventListener('keyup', (e) => keys.delete(e.key.toLowerCase()));
@@ -1663,7 +2037,7 @@ shellBtn.addEventListener('pointerdown', (e) => { e.preventDefault(); tuckIn(); 
 let jumpReq = false, jumpCool = 0;
 document.getElementById('jump').addEventListener('pointerdown', (e) => { e.preventDefault(); jumpReq = true; hideHint(); });
 const grabBtn = document.getElementById('grab');
-grabBtn.addEventListener('pointerdown', (e) => { e.preventDefault(); grabOrThrow(); hideHint(); });
+grabBtn.addEventListener('pointerdown', (e) => { e.preventDefault(); interactOrThrow(); hideHint(); });
 function hideHint() { document.getElementById('hint').style.opacity = 0; }
 
 // camera views: cycle with the View button (or V). Drag empty space to look around; the stick and buttons stay put.
@@ -1715,6 +2089,63 @@ document.addEventListener('pointercancel', endLook);
 // ---------- pick up and throw ----------
 const hold = { p: null };
 function dropHeld() { const p = hold.p; if (!p) return null; p.held = false; p.body.collisionResponse = true; p.body.wakeUp(); hold.p = null; return p; }
+function findNearbyFood() {
+  const lp = lenaBody.position;
+  let best = null, bd = 0.35;
+  for (const item of interactables) {
+    if (!item.alive || !FOOD_KINDS[item.kind]) continue;
+    const d = Math.hypot(lp.x - item.x, lp.z - item.z);
+    if (d < bd && Math.abs(lp.y - item.y) < 0.55) { best = item; bd = d; }
+  }
+  return best;
+}
+function heal(n) {
+  const before = hearts;
+  hearts = Math.min(maxHearts, Math.max(0, hearts + n));
+  if (hearts !== before) persistVitals();
+  return hearts - before;
+}
+function eatFood(item) {
+  item.alive = false;
+  item.g.visible = false;
+  item.t = item.respawn || 30;
+  if (item.kind === 'lettuce') {
+    const gained = heal(1);
+    track('food_eaten', { food: 'lettuce' });
+    const onMission = credit('lettuce');
+    if (onMission && gained > 0) toast(`Yum! ${Q.lettuce}/8  +❤️`);
+    else if (onMission) toast(`Yum! ${Q.lettuce}/8`);
+    else if (gained > 0) toast('Yum! +❤️');
+    else toast('Hearts are full');
+  } else if (item.kind === 'shellSquash') {
+    shellFuel = 100;
+    persistVitals();
+    track('food_eaten', { food: 'shellSquash' });
+    toast('Squash! Shell energy full');
+  } else if (item.kind === 'strawberry') {
+    boost.speedT = 10;
+    track('food_eaten', { food: 'strawberry' });
+    toast('Sugar rush!');
+  } else if (item.kind === 'apple') {
+    boost.jumpT = 10;
+    track('food_eaten', { food: 'apple' });
+    toast('Super jump!');
+  }
+  sfx('eat');
+  renderHud();
+}
+function interactOrThrow() {
+  if (paused || needsPlayer || A.state === 'scoop') return;
+  if (!hold.p) {
+    const food = findNearbyFood();
+    if (food) {
+      eatFood(food);
+      track('control_used', { control: 'eat', item: food.kind });
+      return;
+    }
+  }
+  grabOrThrow();
+}
 function grabOrThrow() {
   if (paused || needsPlayer || A.state === 'scoop') return;
   if (hold.p) {
@@ -1750,6 +2181,14 @@ function setLenaShape(shape) {
 }
 function tuckIn() {
   if (S.on || S.cool > 0 || paused || needsPlayer || A.state === 'scoop') return;
+  if (shellFuel <= 5) {
+    if (!save.shellEmptyHinted) {
+      save.shellEmptyHinted = true;
+      persist();
+      toast("Eat the squash by Lina's home to fill shell energy");
+    } else toast('Need squash for shell energy!');
+    return;
+  }
   dropHeld();
   S.on = true; S.t = SHELL_TIME;
   setLenaShape(lenaBallShape);
@@ -1782,12 +2221,40 @@ function patternThumb(id) {
   }
   return thumbs[key];
 }
+function missionTitle(key) {
+  const m = MISSIONS.find((x) => x.key === key);
+  return m ? m.name : key;
+}
+function shopUnlocked(item) {
+  return !item.unlock || missionDone.has(item.unlock);
+}
+function shopCardButton(item, owned, eq, attr) {
+  if (!owned && !shopUnlocked(item)) {
+    return `<div class="lock">🔒 Finish: ${missionTitle(item.unlock)}</div><button class="off" disabled>Locked</button>`;
+  }
+  const price = item.price;
+  return `<button class="${eq ? 'eq' : owned || coins >= price ? '' : 'off'}" ${attr}>${eq ? 'Wearing' : owned ? 'Wear' : `Buy 🥬${price}`}</button>`;
+}
+function applyShopBoost(id) {
+  if (id === 'sugar') { boost.speedT = 10; toast('Sugar rush!'); }
+  else if (id === 'jump') { boost.jumpT = 10; toast('Super jump!'); }
+  else if (id === 'shell') { shellFuel = 100; persistVitals(); toast('Shell energy full!'); }
+}
 function renderShop() {
-  const btn = (owned, eq, price, attr) => `<button class="${eq ? 'eq' : owned || coins >= price ? '' : 'off'}" ${attr}>${eq ? 'Wearing' : owned ? 'Wear' : `Buy 🥬${price}`}</button>`;
-  shopEl.innerHTML = `<h2>Shell shop</h2><div class="bal">🥬 ${coins}</div><div class="cards"><div class="card"><img class="sw" style="object-fit:cover;border-radius:50%" src="${patternThumb(save.pattern)}"><div class="name">Lina right now</div></div></div><h3>Colours</h3><div class="cards">` + SKINS.map((k) =>
-    `<div class="card"><div class="sw" style="background:${hex(k.color)}"></div><div class="name">${k.name}</div>${btn(save.owned.includes(k.id), save.skin === k.id, k.price, `data-id="${k.id}"`)}</div>`).join('')
-    + `</div><h3>Patterns</h3><div class="cards">` + PATTERNS.map((k) =>
-    `<div class="card"><img class="sw" style="object-fit:cover" src="${patternThumb(k.id)}"><div class="name">${k.name}</div>${btn(save.patterns.includes(k.id), save.pattern === k.id, k.price, `data-pat="${k.id}"`)}</div>`).join('')
+  const colourCard = (k) => `<div class="card${shopUnlocked(k) || save.owned.includes(k.id) ? '' : ' locked'}"><div class="sw" style="background:${hex(k.color)}"></div><div class="name">${k.name}</div>${shopCardButton(k, save.owned.includes(k.id), save.skin === k.id, `data-id="${k.id}"`)}</div>`;
+  const patternCard = (k) => `<div class="card${shopUnlocked(k) || save.patterns.includes(k.id) ? '' : ' locked'}"><img class="sw" style="object-fit:cover" src="${patternThumb(k.id)}"><div class="name">${k.name}</div>${shopCardButton(k, save.patterns.includes(k.id), save.pattern === k.id, `data-pat="${k.id}"`)}</div>`;
+  const boostCard = (b) => {
+    const open = shopUnlocked(b);
+    const lock = open ? '' : `<div class="lock">🔒 Finish: ${missionTitle(b.unlock)}</div>`;
+    const button = open
+      ? `<button class="${coins >= b.price ? '' : 'off'}" data-boost="${b.id}">Buy 🥬${b.price}</button>`
+      : `<button class="off" disabled>Locked</button>`;
+    return `<div class="card${open ? '' : ' locked'}"><div class="name">${b.name}</div><div class="blurb">${b.blurb}</div>${lock}${button}</div>`;
+  };
+  shopEl.innerHTML = `<h2>Shell shop</h2><div class="bal">🥬 ${coins} &nbsp; ❤️ ${hearts}/${maxHearts} &nbsp; 🐚 ${Math.round(shellFuel)}</div><div class="cards"><div class="card"><img class="sw" style="object-fit:cover;border-radius:50%" src="${patternThumb(save.pattern)}"><div class="name">Lina right now</div></div></div><h3>Colours</h3><div class="cards">`
+    + SKINS.map(colourCard).join('')
+    + `</div><h3>Patterns</h3><div class="cards">` + PATTERNS.map(patternCard).join('')
+    + `</div><h3>Boosts</h3><div class="cards">` + SHOP_BOOSTS.map(boostCard).join('')
     + `</div><button class="close" id="shopClose">Back to the game</button>`;
 }
 function openShop() {
@@ -1801,17 +2268,37 @@ function openShop() {
 function closeShop() { paused = false; shopEl.classList.remove('open'); }
 shopEl.addEventListener('click', (e) => {
   if (e.target.id === 'shopClose') return closeShop();
+  const boostId = e.target.dataset && e.target.dataset.boost;
+  if (boostId) {
+    const b = SHOP_BOOSTS.find((x) => x.id === boostId);
+    if (!b || !shopUnlocked(b) || coins < b.price) return;
+    coins -= b.price; save.coins = coins;
+    sfx('coin');
+    track('shop_purchase', { kind: 'boost', item: boostId, price: b.price });
+    applyShopBoost(b.id);
+    persist();
+    renderHud();
+    closeShop();
+    return;
+  }
   const pat = e.target.dataset && e.target.dataset.pat;
   if (pat) {
     const k = PATTERNS.find((x) => x.id === pat);
-    if (!save.patterns.includes(pat)) { if (coins < k.price) return; coins -= k.price; save.coins = coins; save.patterns.push(pat); sfx('coin'); track('shop_purchase', { kind: 'pattern', item: pat, price: k.price }); }
+    if (!k) return;
+    if (!save.patterns.includes(pat)) {
+      if (!shopUnlocked(k) || coins < k.price) return;
+      coins -= k.price; save.coins = coins; save.patterns.push(pat); sfx('coin');
+      track('shop_purchase', { kind: 'pattern', item: pat, price: k.price });
+    }
     applyPattern(pat); renderShop(); renderHud(); return;
   }
   const id = e.target.dataset && e.target.dataset.id; if (!id) return;
   const k = SKINS.find((x) => x.id === id);
+  if (!k) return;
   if (!save.owned.includes(id)) {
-    if (coins < k.price) return;
-    coins -= k.price; save.coins = coins; save.owned.push(id); sfx('coin'); track('shop_purchase', { kind: 'colour', item: id, price: k.price });
+    if (!shopUnlocked(k) || coins < k.price) return;
+    coins -= k.price; save.coins = coins; save.owned.push(id); sfx('coin');
+    track('shop_purchase', { kind: 'colour', item: id, price: k.price });
   }
   applySkin(id); renderShop(); renderHud();
 });
@@ -1842,6 +2329,43 @@ const MISSIONS = [
   { key: 'drops', goal: 1, name: 'From Above', desc: 'Push something off the rafters onto Uncle Adam', reward: 8 },
 ];
 const missionDone = new Set(save.done || []);
+function maxHeartsFor(done) {
+  if (done >= 10) return 6;
+  if (done >= 6) return 5;
+  if (done >= 3) return 4;
+  return 3;
+}
+const earnedMax = maxHeartsFor(missionDone.size);
+let maxHearts = earnedMax;
+let hearts = Number.isFinite(+save.hearts) ? Math.min(earnedMax, Math.max(0, Math.round(+save.hearts))) : earnedMax;
+const firstVitals = !Number.isFinite(+save.maxHearts);
+if (firstVitals || +save.maxHearts < earnedMax || hearts < 1) hearts = earnedMax;
+save.maxHearts = maxHearts;
+save.hearts = hearts;
+function persistVitals() {
+  hearts = Math.max(0, Math.min(maxHearts, hearts));
+  shellFuel = Math.max(0, Math.min(100, shellFuel));
+  save.hearts = hearts;
+  save.maxHearts = maxHearts;
+  save.shellFuel = Math.round(shellFuel * 10) / 10;
+  shellFuelSaved = save.shellFuel;
+  persist();
+}
+function noteShellFuel() {
+  if (shellFuel < 0) shellFuel = 0;
+  else if (shellFuel > 100) shellFuel = 100;
+  const rounded = Math.round(shellFuel * 10) / 10;
+  if (rounded === shellFuelSaved) return;
+  if (shellFuel === 0 || Math.abs(shellFuel - shellFuelSaved) >= 5) {
+    save.shellFuel = rounded;
+    shellFuelSaved = rounded;
+    persist();
+  }
+}
+function vitalsText() {
+  const bits = (boost.speedT > 0 ? ' ⚡' : '') + (boost.jumpT > 0 ? ' ⬆' : '');
+  return `❤️ ${hearts}/${maxHearts}   🐚 ${Math.round(shellFuel)}   🥬 ${coins}${bits}   📜 ${missionDone.size}/${MISSIONS.length}`;
+}
 let active = [];
 function isActive(k) { return active.includes(k); }
 function persistProgress() {
@@ -1896,6 +2420,14 @@ function restoreProps(filter) {
       p.toppled = false; p.high = h.y > 1.1;
     }
   }
+}
+function restoreOne(p) {
+  if (!p) return;
+  const i = A.dirty.indexOf(p);
+  if (i >= 0) A.dirty.splice(i, 1);
+  if (A.mess === p) A.mess = null;
+  if (!props.includes(p) || p.held) return;
+  restoreProps((q) => q === p);
 }
 function openMission(k) {
   Q[k] = 0;
@@ -2097,6 +2629,13 @@ function checkMissions() {
     toast(`DONE: ${m.name}! +${m.reward}`, { kind: 'celebrate' });
     if (window.LinaAnalytics) LinaAnalytics.bump('mission');
     track('mission_complete', { mission: m.key, done: missionDone.size, total: MISSIONS.length, reward: m.reward });
+    const nextMax = maxHeartsFor(missionDone.size);
+    if (nextMax > maxHearts) {
+      maxHearts = nextMax;
+      hearts = maxHearts;
+      persistVitals();
+      setTimeout(() => toast(`More hearts! ❤️ ${hearts}/${maxHearts}`, { kind: 'celebrate' }), 900);
+    }
     if (missionDone.size === MISSIONS.length) setTimeout(() => { toast('LINA WINS! ALL MISSIONS DONE!', { kind: 'celebrate' }); sfx('win'); track('all_missions_done', { missions: MISSIONS.length }); }, 1700);
     else if (fresh.length) setTimeout(() => toast(`NEW MISSION: ${fresh[0]}`, { kind: 'celebrate' }), 1700);
   }
@@ -2110,7 +2649,7 @@ function renderHud() {
   const n = active.length;
   const chev = hudMissionsOpen ? '▼' : '▶';
   const label = n ? `${chev} ${n} open` : `${chev} Done!`;
-  hud.innerHTML = `<div class="hud-top"><div>🥬 ${coins} &nbsp; 📜 ${missionDone.size}/${MISSIONS.length}</div>`
+  hud.innerHTML = `<div class="hud-top"><div class="vitals" id="hudVitals">${vitalsText()}</div>`
     + `<button type="button" class="hud-toggle" id="hudToggle" aria-expanded="${hudMissionsOpen ? 'true' : 'false'}" aria-controls="hudMissions">${label}</button></div>`
     + `<div id="hudMissions" class="hud-missions"${hudMissionsOpen ? '' : ' hidden'}>`
     + (n ? active.map(missionLine).join('') : '<div class="obj">All missions complete — go make more chaos!</div>')
@@ -2237,6 +2776,9 @@ renderHud();
 // ---------- player name gate + shared analytics context ----------
 window.__gameStats = () => ({
   coins,
+  hearts,
+  max_hearts: maxHearts,
+  shell_fuel: Math.round(shellFuel),
   missions_done: missionDone.size,
   missions_total: MISSIONS.length,
   active_missions: active.slice(),
@@ -2390,10 +2932,310 @@ function breakProp(p) {
 }
 
 // ---------- Uncle Adam behaviour ----------
+// He patrols the whole ground floor and yard, does a short calm chore, and sometimes sweeps up a mess.
+// A bonk still launches him; the enclosure stays a safe spot where he will not scoop Lina.
+function nearestAdamNode(x, z) {
+  let best = 0, bd = Infinity;
+  for (let i = 0; i < ADAM_NODES.length; i++) {
+    const d = Math.hypot(ADAM_NODES[i].x - x, ADAM_NODES[i].z - z);
+    if (d < bd) { bd = d; best = i; }
+  }
+  return best;
+}
+function hopCount(from, to) {
+  if (from === to) return 0;
+  const dist = new Array(ADAM_NODES.length).fill(-1);
+  const q = [from];
+  dist[from] = 0;
+  for (let i = 0; i < q.length; i++) {
+    for (const nb of ADAM_LINKS[q[i]]) {
+      if (dist[nb] !== -1) continue;
+      dist[nb] = dist[q[i]] + 1;
+      if (nb === to) return dist[nb];
+      q.push(nb);
+    }
+  }
+  return 99;
+}
+// Prefer a waypoint that is both nearby and actually toward the goal, so a door node beside him cannot pull him backwards.
+function bestStart(x, z, to) {
+  let best = -1, bestCost = Infinity;
+  for (let i = 0; i < ADAM_NODES.length; i++) {
+    const n = ADAM_NODES[i];
+    if (!adamLos(x, z, n.x, n.z)) continue;
+    const cost = Math.hypot(n.x - x, n.z - z) + hopCount(i, to) * 2.4;
+    if (cost < bestCost) { bestCost = cost; best = i; }
+  }
+  return best < 0 ? nearestAdamNode(x, z) : best;
+}
+function nextHop(from, to) {
+  if (from === to) return to;
+  const prev = new Array(ADAM_NODES.length).fill(-1);
+  const q = [to];
+  prev[to] = to;
+  for (let qi = 0; qi < q.length; qi++) {
+    const cur = q[qi];
+    for (const nb of ADAM_LINKS[cur]) {
+      if (prev[nb] !== -1) continue;
+      prev[nb] = cur;
+      q.push(nb);
+    }
+  }
+  return prev[from] === -1 ? from : prev[from];
+}
+function adamLos(x0, z0, x1, z1) {
+  const dist = Math.hypot(x1 - x0, z1 - z0);
+  if (dist < 0.2) return true;
+  const steps = Math.ceil(dist / 0.08);
+  for (let i = 1; i < steps; i++) {
+    const t = i / steps;
+    if (blocked(x0 + (x1 - x0) * t, z0 + (z1 - z0) * t, 0.28)) return false;
+  }
+  return true;
+}
+function steerPoint(tx, tz) {
+  const x = adam.position.x, z = adam.position.z;
+  if (adamLos(x, z, tx, tz)) return [tx, tz];
+  const to = nearestAdamNode(tx, tz);
+  const from = bestStart(x, z, to);
+  const hop = nextHop(from, to);
+  const n = ADAM_NODES[from];
+  const distFrom = Math.hypot(n.x - x, n.z - z);
+  // Already on the goal's waypoint: cover the last stretch even if a chair blocks the ray.
+  if (hop === from) return distFrom > 0.45 ? [n.x, n.z] : [tx, tz];
+  const h = ADAM_NODES[hop];
+  // Walk the anchor first unless the next hop is already in sight. A straight-line shortcut
+  // cuts through counters and rails, then he orbits the doorway.
+  if (distFrom > 0.45 && !adamLos(x, z, h.x, h.z)) return [n.x, n.z];
+  return [h.x, h.z];
+}
+function inHome(x, z) {
+  return Math.abs(x - LANDMARKS.home.x) < 0.55 && Math.abs(z - LANDMARKS.home.z) < 0.82;
+}
+function adamGroundY(x, z) {
+  if (x > 9.0 && x < 10.35 && z > -2.55 && z < -0.85) return YARD * Math.min(1, Math.max(0, (x - 9.0) / 1.2));
+  if (x < 0.1 && x > -1.15 && z > -2.95 && z < -1.1) return YARD * Math.min(1, Math.max(0, (0.1 - x) / 1.15));
+  const onDeck = x >= -0.05 && x <= 9.2 && z >= -3.55 && z <= 0.08;
+  const inHouse = x >= -4.4 && x <= 10.45 && z >= -0.08 && z <= 8.85;
+  return (onDeck || inHouse) ? 0 : YARD;
+}
+function clampAdam(x, z) {
+  return [Math.max(-6.85, Math.min(12.15, x)), Math.max(-12.55, Math.min(8.45, z))];
+}
+function settleAdam(dt) {
+  const gy = adamGroundY(adam.position.x, adam.position.z);
+  adam.position.y += (gy - adam.position.y) * Math.min(1, dt * 5);
+}
+function faceAdam(dx, dz, dt, rate = 6) {
+  if (Math.hypot(dx, dz) < 1e-4) return;
+  const want = Math.atan2(dx, dz);
+  const diff = Math.atan2(Math.sin(want - adam.rotation.y), Math.cos(want - adam.rotation.y));
+  adam.rotation.y += diff * Math.min(1, dt * rate);
+}
+function moveAdamToward(tx, tz, speed, dt) {
+  const goalD = Math.hypot(tx - adam.position.x, tz - adam.position.z);
+  let sx = tx, sz = tz;
+  if (A.unstickT > 0) {
+    A.unstickT -= dt;
+    sx = ADAM_NODES[A.unstick].x; sz = ADAM_NODES[A.unstick].z;
+  } else if (goalD >= 0.34) {
+    const s = steerPoint(tx, tz);
+    sx = s[0]; sz = s[1];
+  }
+  const x = adam.position.x, z = adam.position.z;
+  const dx = sx - x, dz = sz - z;
+  const d = Math.hypot(dx, dz);
+  if (goalD < 0.34 && A.unstickT <= 0) {
+    faceAdam(tx - x, tz - z, dt);
+    alegs[0].rotation.x = 0; alegs[1].rotation.x = 0;
+    if (!A.broomHeld) { aarms[0].rotation.x = 0; aarms[1].rotation.x = 0; aarms[0].rotation.z = 0; aarms[1].rotation.z = 0; }
+    settleAdam(dt);
+    return goalD;
+  }
+  const stepped = slideAdam(...stepAdam(x, z, sx, sz, speed, dt));
+  let nx, nz;
+  [nx, nz] = clampAdam(stepped[0], stepped[1]);
+  const mx = nx - x, mz = nz - z;
+  adam.position.x = nx; adam.position.z = nz;
+  adam.rotation.x = 0;
+  settleAdam(dt);
+  faceAdam(Math.hypot(mx, mz) > 1e-4 ? mx : dx, Math.hypot(mx, mz) > 1e-4 ? mz : dz, dt);
+  const sw = Math.sin(performance.now() / 180 * speed);
+  alegs[0].rotation.x = sw * 0.5; alegs[1].rotation.x = -sw * 0.5;
+  aarms[0].rotation.z = 0;
+  if (A.broomHeld) {
+    aarms[0].rotation.x = -sw * 0.25;
+    aarms[1].rotation.x = -0.95;
+    aarms[1].rotation.z = 0.15;
+  } else {
+    aarms[0].rotation.x = -sw * 0.4;
+    aarms[1].rotation.x = sw * 0.4;
+    aarms[1].rotation.z = 0;
+  }
+  A.progT = (A.progT || 0) + dt;
+  if (!A.prog) A.prog = { x: nx, z: nz };
+  if (A.progT > 0.7) {
+    const moved = Math.hypot(nx - A.prog.x, nz - A.prog.z);
+    A.prog.x = nx; A.prog.z = nz; A.progT = 0;
+    if (moved < 0.15 && goalD > 0.6 && A.unstickT <= 0) {
+      A.side = 0;
+      const i = nearestAdamNode(nx, nz);
+      const links = (ADAM_LINKS[i] || []).filter((nb) => adamLos(nx, nz, ADAM_NODES[nb].x, ADAM_NODES[nb].z)).sort((a, b) => {
+        const da = Math.hypot(ADAM_NODES[a].x - tx, ADAM_NODES[a].z - tz);
+        const db = Math.hypot(ADAM_NODES[b].x - tx, ADAM_NODES[b].z - tz);
+        return da - db;
+      });
+      if (links.length) {
+        A.unstick = links.find((nb) => nb !== A.unstick) || links[0];
+        A.unstickT = 1.1;
+      }
+    }
+  }
+  return Math.hypot(tx - adam.position.x, tz - adam.position.z);
+}
+function considerMess(p) {
+  if (!p || !MESS_KINDS.has(p.kind) || p.held || A.mess === p || A.dirty.includes(p) || A.dirty.length >= 3) return;
+  if (!p.alive) { A.dirty.push(p); return; }
+  const h = p.home;
+  const pos = p.body ? p.body.position : (p.mesh && p.mesh.parent ? p.mesh.position : null);
+  if (!pos) return;
+  // In-place tips (the lego pile settles tilted) are not a mess. Knocked-over or thrown props are.
+  const scattered = Math.hypot(pos.x - h.x, pos.z - h.z) > 0.45 || Math.abs(pos.y - h.y) > 0.35;
+  if (scattered) A.dirty.push(p);
+}
+function nextMess() {
+  for (let i = A.dirty.length - 1; i >= 0; i--) {
+    const p = A.dirty[i];
+    if (!p || !props.includes(p)) A.dirty.splice(i, 1);
+  }
+  return A.dirty.find((p) => p && props.includes(p) && !p.held) || null;
+}
+function messPoint(p) {
+  if (p.alive && p.body) return [p.body.position.x, p.body.position.z];
+  if (p.mesh && p.mesh.parent) return [p.mesh.position.x, p.mesh.position.z];
+  return [p.home.x, p.home.z];
+}
+// Stand beside a mess that landed on furniture instead of trying to occupy its footprint.
+function approachPoint(tx, tz) {
+  if (!blocked(tx, tz, 0.32)) return [tx, tz];
+  const dx = adam.position.x - tx, dz = adam.position.z - tz;
+  const len = Math.hypot(dx, dz) || 1;
+  for (let d = 0.3; d <= 1.35; d += 0.12) {
+    const x = tx + (dx / len) * d, z = tz + (dz / len) * d;
+    if (!blocked(x, z, 0.32)) return [x, z];
+  }
+  return [tx, tz];
+}
+function abortSideJobs() {
+  const side = A.state === 'activity' || CLEAN_STATES.has(A.state);
+  parkBroom();
+  resetAdamPose();
+  A.mess = null;
+  if (!side) return;
+  A.state = 'patrol'; A.phase = 'walk';
+  A.cleanCool = Math.max(A.cleanCool, 4);
+  A.actCool = Math.max(A.actCool, 4);
+}
+function updateActivity(dt) {
+  if (!A.mad && A.cleanCool <= 0 && nextMess()) {
+    resetAdamPose();
+    A.state = 'fetch_broom'; A.phase = 'walk'; A.side = 0;
+    updateCleanup(dt);
+    return;
+  }
+  const act = ACTIVITIES.find((a) => a.id === A.act) || ACTIVITIES[0];
+  if (A.phase !== 'play') {
+    if (moveAdamToward(act.x, act.z, 1.1, dt) < 0.36) { A.phase = 'play'; A.t = 0; A.told = false; }
+    return;
+  }
+  A.t += dt;
+  settleAdam(dt);
+  faceAdam(act.face[0], act.face[1], dt, 8);
+  if (!A.told) { A.told = true; toast(act.toast); }
+  const t = A.t;
+  if (act.id === 'cook') {
+    adam.rotation.x = 0.2;
+    spoon.visible = true; can.visible = false; steam.visible = true;
+    aarms[1].rotation.x = -0.7 + Math.sin(t * 8) * 0.35;
+    aarms[1].rotation.z = -0.2;
+    aarms[0].rotation.x = -0.25;
+    steam.position.set(6.45, 1.05, 0.48);
+    steam.children.forEach((p) => {
+      const a = t * 1.4 + p.userData.i;
+      p.position.set(Math.sin(a) * 0.06, (a % 1.2) * 0.35, Math.cos(a * 0.7) * 0.05);
+      p.material.opacity = 0.45 * (1 - (a % 1.2) / 1.2);
+    });
+  } else if (act.id === 'water') {
+    adam.rotation.x = 0.15;
+    can.visible = true; spoon.visible = false; steam.visible = false;
+    aarms[1].rotation.x = -1.15;
+    aarms[1].rotation.z = -0.35 + Math.sin(t * 3) * 0.12;
+    aarms[0].rotation.x = -0.2;
+  } else {
+    adam.rotation.x = 0.32;
+    can.visible = false; spoon.visible = false; steam.visible = false;
+    aarms[0].rotation.x = -0.85 + Math.sin(t * 4) * 0.25;
+    aarms[1].rotation.x = -0.55 + Math.sin(t * 4 + 1.2) * 0.25;
+    aarms[0].rotation.z = 0.2;
+    aarms[1].rotation.z = -0.15;
+  }
+  if (A.t < act.dur) return;
+  resetAdamPose();
+  A.state = 'patrol'; A.phase = 'walk'; A.actCool = 11;
+}
+function updateCleanup(dt) {
+  if (A.state === 'fetch_broom') {
+    if (moveAdamToward(LANDMARKS.broom.x, LANDMARKS.broom.z, 1.15, dt) < 0.4) {
+      holdBroom();
+      A.mess = nextMess();
+      A.state = A.mess ? 'walk_mess' : 'return_broom';
+      A.side = 0;
+    }
+    return;
+  }
+  if (A.state === 'walk_mess') {
+    if (!A.mess || !props.includes(A.mess) || A.mess.held) A.mess = nextMess();
+    if (!A.mess) { A.state = 'return_broom'; return; }
+    const spot = approachPoint(...messPoint(A.mess));
+    if (moveAdamToward(spot[0], spot[1], 1.15, dt) < 0.42) { A.state = 'sweep'; A.t = 0; A.side = 0; }
+    return;
+  }
+  if (A.state === 'sweep') {
+    A.t += dt;
+    settleAdam(dt);
+    if (A.mess && props.includes(A.mess)) {
+      const spot = messPoint(A.mess);
+      faceAdam(spot[0] - adam.position.x, spot[1] - adam.position.z, dt, 8);
+    }
+    aarms[1].rotation.x = -0.8;
+    aarms[1].rotation.z = Math.sin(A.t * 9) * 0.55;
+    if (A.t < 1.05) return;
+    const kind = A.mess && A.mess.kind;
+    if (A.mess) restoreOne(A.mess);
+    toast('Uncle Adam cleaned up!');
+    if (kind) track('adam_cleaned', { kind });
+    tone(520, 700, 0.09, 'triangle', 0.05);
+    A.mess = nextMess();
+    A.state = A.mess ? 'walk_mess' : 'return_broom';
+    A.t = 0; A.side = 0;
+    return;
+  }
+  if (moveAdamToward(LANDMARKS.broom.x, LANDMARKS.broom.z, 1.15, dt) < 0.4) {
+    parkBroom();
+    resetAdamPose();
+    A.state = 'patrol'; A.cleanCool = 8; A.mess = null;
+  }
+}
 // Slapstick, never violent: a bonk launches him up spinning, he lands dizzy with stars, then shakes it off.
 function bonkAdam(prop) {
-  if (A.state !== 'patrol') return;
+  if (!BONK_STATES.has(A.state)) return;
   disco.t = 0;
+  parkBroom();
+  resetAdamPose();
+  A.mess = null;
+  A.cleanCool = Math.max(A.cleanCool, 4);
+  A.actCool = Math.max(A.actCool, 4);
+  A.flyY = adam.position.y;
   const fromRafters = !!(prop && prop.high);
   if (fromRafters && credit('drops')) { addCoins(15); toast('FROM THE RAFTERS! +15'); sfx('bonk'); }
   A.state = 'flying'; A.t = 0; A.bonks++; credit('bonks'); addCoins(10);
@@ -2406,6 +3248,8 @@ function updateAdam(dt) {
   const lp = lenaBody.position;
   const dL = Math.hypot(lp.x - adam.position.x, lp.z - adam.position.z);
   A.grace = Math.max(0, A.grace - dt);
+  A.cleanCool = Math.max(0, A.cleanCool - dt);
+  A.actCool = Math.max(0, A.actCool - dt);
 
   if (A.state === 'scoop') {
     A.t += dt;
@@ -2420,26 +3264,42 @@ function updateAdam(dt) {
     aarms[0].rotation.z = 0.9; aarms[1].rotation.z = -0.9;
     if (A.t >= 0.7) {
       lenaBody.collisionResponse = true;
-      lenaBody.position.copy(LENA_START);
       lenaBody.velocity.set(0, 0, 0);
-      A.state = 'patrol'; A.grace = 3;
       aarms[0].rotation.z = 0; aarms[1].rotation.z = 0;
-      toast('Gotcha, Lina! Back to the start!');
-      track('returned_to_start', { by: 'adam' });
+      hearts = Math.max(0, hearts - 1);
+      const heartsLeft = hearts;
+      if (heartsLeft > 0) {
+        lenaBody.position.y = A.dropY != null ? A.dropY : 0.12;
+        A.state = 'patrol'; A.grace = 3;
+        toast(`Ouch! ${heartsLeft} ❤️ left`);
+        if (!save.heartHinted) {
+          save.heartHinted = true;
+          setTimeout(() => toast('Eat garden lettuce to get a heart back'), 1600);
+        }
+      } else {
+        lenaBody.position.copy(LENA_START);
+        hearts = maxHearts;
+        A.state = 'patrol'; A.grace = 3;
+        toast(HOME.set ? 'Out of hearts! Safe at home' : 'Out of hearts! Back to the start!');
+        track('returned_to_start', { by: 'adam', hearts_left: 0 });
+      }
+      persistVitals();
+      renderHud();
     }
     return;
   }
   if (A.state === 'flying') {
     A.t += dt;
     const T = 1.8, k = Math.min(1, A.t / T);
-    adam.position.y = 2.4 * Math.sin(Math.PI * k);
+    adam.position.y = A.flyY + 2.4 * Math.sin(Math.PI * k);
     adam.rotation.x = k * Math.PI * 2;
     adam.rotation.y += dt * 10;
     if (k >= 1) {
       A.state = 'dizzy'; A.t = 0;
-      adam.rotation.x = 0; adam.position.y = 0; stars.visible = true;
-      adam.position.x = Math.max(0.4, Math.min(10.0, adam.position.x));
-      adam.position.z = Math.max(0.4, Math.min(8.3, adam.position.z));
+      adam.rotation.x = 0; stars.visible = true;
+      const landed = clampAdam(adam.position.x, adam.position.z);
+      adam.position.x = landed[0]; adam.position.z = landed[1];
+      adam.position.y = adamGroundY(landed[0], landed[1]);
     }
     return;
   }
@@ -2465,61 +3325,59 @@ function updateAdam(dt) {
   }
 
   if (disco.t > 0) { // the radio is on: Uncle Adam cannot help dancing
+    if (A.state === 'activity' || CLEAN_STATES.has(A.state)) abortSideJobs();
     const t = performance.now() / 1000;
     adam.rotation.y += dt * 3;
-    adam.position.y = Math.abs(Math.sin(t * 8)) * 0.12;
+    adam.position.y = adamGroundY(adam.position.x, adam.position.z) + Math.abs(Math.sin(t * 8)) * 0.12;
     aarms[0].rotation.z = 2.4 + Math.sin(t * 9) * 0.4; aarms[1].rotation.z = -2.4 - Math.sin(t * 9) * 0.4;
     alegs[0].rotation.x = Math.sin(t * 8) * 0.5; alegs[1].rotation.x = -Math.sin(t * 8) * 0.5;
     return;
   }
-  adam.position.y = 0; aarms[0].rotation.z = 0; aarms[1].rotation.z = 0;
   A.angry = Math.max(0, A.angry - dt);
   if (A.mad && A.angry <= 0) {
-    setAdamMood(false); A.doorTold = false; toast('Uncle Adam calmed down');
+    setAdamMood(false);
+    A.cleanCool = Math.max(A.cleanCool, 7);
+    toast('Uncle Adam calmed down');
     track('adam_chase_ended');
   }
   const hidden = BOX.inside;
-  const outside = roomOf(lp.x, lp.z) > 0;
-  if (!outside) A.doorTold = false;
+  const safe = inHome(lp.x, lp.z);
   const chasing = A.angry > 0 && !S.on && !lenaUp && !hidden && A.grace <= 0;
-  let target = WAYPOINTS[wp], speed = 1.0, goingDoor = false;
-  if (chasing && outside) {
-    goingDoor = true; speed = 1.2;
-    target = lp.z < 0.15 ? new THREE.Vector3(3.55, 0, 0.45) : new THREE.Vector3(0.45, 0, Math.max(0.9, Math.min(3.0, lp.z)));
-  } else if (chasing && dL < 3.2) { target = new THREE.Vector3(lp.x, 0, lp.z); speed = 1.3; }
-  const dx = target.x - adam.position.x, dz = target.z - adam.position.z;
-  const d = Math.hypot(dx, dz);
-  if (goingDoor && d < 0.4) {
-    if (!A.doorTold) { A.doorTold = true; toast("Uncle Adam can't fit!"); }
-    const want = Math.atan2(dx, dz);
-    const diff = Math.atan2(Math.sin(want - adam.rotation.y), Math.cos(want - adam.rotation.y));
-    adam.rotation.y += diff * Math.min(1, dt * 6);
-    const wave = Math.sin(performance.now() / 200);
-    aarms[0].rotation.z = wave * 0.5; aarms[1].rotation.z = -wave * 0.5;
+  if (chasing && (A.state === 'activity' || CLEAN_STATES.has(A.state))) abortSideJobs();
+  if (A.state === 'activity') { updateActivity(dt); return; }
+  if (CLEAN_STATES.has(A.state)) { updateCleanup(dt); return; }
+  if (!chasing && !A.mad && A.cleanCool <= 0 && nextMess()) {
+    A.state = 'fetch_broom'; A.side = 0;
+    updateCleanup(dt);
     return;
   }
-  if (d < 0.2) { if (!chasing) wp = (wp + 1) % WAYPOINTS.length; }
-  else {
-    const stepped = slideAdam(...stepAdam(adam.position.x, adam.position.z, target.x, target.z, speed, dt));
-    const mx = stepped[0] - adam.position.x, mz = stepped[1] - adam.position.z;
-    adam.position.x = stepped[0];
-    adam.position.z = stepped[1];
-    const want = Math.atan2(Math.hypot(mx, mz) > 1e-4 ? mx : dx, Math.hypot(mx, mz) > 1e-4 ? mz : dz);
-    const diff = Math.atan2(Math.sin(want - adam.rotation.y), Math.cos(want - adam.rotation.y));
-    adam.rotation.y += diff * Math.min(1, dt * 6);
-    const sw = Math.sin(performance.now() / 180 * speed);
-    alegs[0].rotation.x = sw * 0.5; alegs[1].rotation.x = -sw * 0.5;
-    aarms[0].rotation.x = -sw * 0.4; aarms[1].rotation.x = sw * 0.4;
+
+  let speed = 1.1, gx, gz;
+  if (chasing && safe) { gx = HOME_STAND.x; gz = HOME_STAND.z; speed = 1.25; }
+  else if (chasing) { gx = lp.x; gz = lp.z; speed = 1.4; }
+  else { const n = ADAM_NODES[ADAM_TOUR[wp]]; gx = n.x; gz = n.z; }
+  const d = moveAdamToward(gx, gz, speed, dt);
+  if (!chasing && d < 0.36) {
+    wp = (wp + 1) % ADAM_TOUR.length;
+    A.side = 0;
+    if (!A.mad && A.actCool <= 0 && A.dirty.length === 0) {
+      const act = ACTIVITIES[A.actI % ACTIVITIES.length];
+      A.actI++;
+      A.state = 'activity'; A.phase = 'walk'; A.act = act.id; A.t = 0; A.told = false; A.actCool = 11;
+    }
+  } else if (chasing && safe && d < 0.45) {
+    faceAdam(LANDMARKS.home.x - adam.position.x, LANDMARKS.home.z - adam.position.z, dt);
   }
-  // a tortoise out of her shell gets scooped up, then carried back to the start
-  if (chasing && !outside && dL < 0.45) {
+  // a tortoise out of her shell loses a heart. Out of hearts, she goes back to the start.
+  if (chasing && !safe && dL < 0.45) {
     const wasHolding = !!hold.p;
     dropHeld();
+    A.dropY = lenaBody.position.y;
     lenaBody.velocity.set(0, 0, 0);
     lenaBody.collisionResponse = false;
     A.state = 'scoop'; A.t = 0;
     if (window.LinaAnalytics) LinaAnalytics.bump('caught');
-    track('caught_by_adam', { shell: S.on, holding: wasHolding });
+    track('caught_by_adam', { shell: S.on, holding: wasHolding, hearts_left: Math.max(0, hearts - 1) });
   }
 }
 
@@ -2635,10 +3493,17 @@ function frame() {
 
   if (S.on) { S.t -= dt; if (S.t <= 0) popOut(); }
   else if (S.cool > 0) S.cool -= dt;
-  shellBtn.className = S.on ? 'on' : S.cool > 0 ? 'cool' : '';
-  shellBtn.textContent = S.on ? Math.ceil(S.t) + '...' : S.cool > 0 ? 'wait' : 'SHELL!';
+  if (shellFuel > 0) {
+    shellFuel = Math.max(0, shellFuel - (0.4 + (S.on ? 0.15 : 0)) * dt);
+    noteShellFuel();
+  }
+  if (boost.speedT > 0) boost.speedT = Math.max(0, boost.speedT - dt);
+  if (boost.jumpT > 0) boost.jumpT = Math.max(0, boost.jumpT - dt);
+  const fuelLow = !S.on && shellFuel <= 5;
+  shellBtn.className = S.on ? 'on' : S.cool > 0 ? 'cool' : fuelLow ? 'low' : '';
+  shellBtn.textContent = S.on ? Math.ceil(S.t) + '...' : S.cool > 0 ? 'wait' : fuelLow ? 'SQUASH' : 'SHELL!';
 
-  const speed = S.on ? SHELL_SPEED : SPEED;
+  const speed = (S.on ? SHELL_SPEED : SPEED) * (boost.speedT > 0 ? 1.6 : 1);
   const n = Math.hypot(ix, iy); if (n > 1) { ix /= n; iy /= n; }
   const scooped = A.state === 'scoop';
   if (scooped) { ix = 0; iy = 0; jumpReq = false; }
@@ -2686,7 +3551,7 @@ function frame() {
   if (jumpReq) {
     jumpReq = false;
     if (jumpCool <= 0 && groundT > 0 && lenaBody.velocity.y < 0.8) {
-      lenaBody.velocity.y = 4.2; jumpCool = 0.3; sfx('jump');
+      lenaBody.velocity.y = boost.jumpT > 0 ? 6.2 : 4.2; jumpCool = 0.3; sfx('jump');
       // jumps are frequent — count them for session summaries; do not emit every hop
       if (window.LinaAnalytics) LinaAnalytics.bump('jump');
     }
@@ -2700,7 +3565,14 @@ function frame() {
       hp.body.velocity.set(0, 0, 0); hp.body.angularVelocity.set(0, 0, 0); hp.body.wakeUp();
     }
   }
-  grabBtn.textContent = hold.p ? 'THROW!' : 'GRAB'; grabBtn.className = hold.p ? 'hold' : '';
+  const nearFood = !hold.p && findNearbyFood();
+  grabBtn.textContent = hold.p ? 'THROW!' : nearFood ? 'EAT' : 'GRAB';
+  grabBtn.className = hold.p ? 'hold' : nearFood ? 'eat' : '';
+  const vit = document.getElementById('hudVitals');
+  if (vit) {
+    const next = vitalsText();
+    if (vit.textContent !== next) vit.textContent = next;
+  }
   if (drift.t > 0) { lenaBody.velocity.x += drift.x; lenaBody.velocity.z += drift.z; drift.t -= dt; }
   const onLoft = lenaBody.position.y > 1.2 && lenaBody.position.x < 2.4 && lenaBody.position.z < 0.7;
   if (onLoft && !wasOnLoft && credit('loft')) { addCoins(15); toast('RAFTERS! +15'); renderHud(); }
@@ -2720,7 +3592,7 @@ function frame() {
   pendingBreaks.clear();
   for (const p of props) {
     if (p.breakCool > 0) p.breakCool -= dt;
-    if (!p.alive) continue;
+    if (!p.alive) { considerMess(p); continue; }
     p.mesh.position.copy(p.body.position);
     p.mesh.quaternion.copy(p.body.quaternion);
     if (p.body.position.y > 1.1) p.high = true;
@@ -2743,6 +3615,7 @@ function frame() {
     if (p.kind === 'table' && !p.toppled && p.body.quaternion.vmult(upVec).y < 0.75) {
       p.toppled = true; if (credit('tables')) { addCoins(8); toast('TIMBER! +8'); sfx('timber'); renderHud(); }
     }
+    considerMess(p);
   }
 
   const lp = lenaBody.position;
@@ -2773,7 +3646,7 @@ function frame() {
     if (Math.abs(lp.x - HOME.x) < 0.45 && Math.abs(lp.z - HOME.z) < 0.7 && lp.y < 0.4) {
       if (!HOME.in) {
         HOME.in = true;
-        if (!HOME.set) { HOME.set = true; LENA_START.set(HOME.x, 0.1, HOME.z); toast("Lina's home! If Uncle Adam catches you, you come back here"); }
+        if (!HOME.set) { HOME.set = true; LENA_START.set(HOME.x, 0.1, HOME.z); toast("Lina's home! Run out of hearts and you come back here"); }
         if (credit('home')) renderHud();
       }
     } else HOME.in = false;
@@ -2781,8 +3654,6 @@ function frame() {
     if (BOX.inside) { BOX.t += dt; if (isActive('box')) { timerEl.textContent = `Hiding... ${Math.max(0, Math.ceil(3 - BOX.t))}`; if (BOX.t >= 3) { credit('box'); timerEl.textContent = ''; toast('HIDDEN! Uncle Adam cannot find you'); renderHud(); } } }
     else { BOX.t = 0; if (!HUNT.active) timerEl.textContent = ''; }
   updateAdam(dt);
-  adam.position.x = Math.max(0.4, Math.min(10.0, adam.position.x)); // Uncle Adam stays in the open kitchen / dining / living
-  adam.position.z = Math.max(0.4, Math.min(8.3, adam.position.z));
   lena.position.set(lenaBody.position.x, lenaBody.position.y - 0.14 * LINA_K, lenaBody.position.z);
   lena.rotation.y = yaw;
   if (S.on) shellGroup.rotation.x += dt * 14;
@@ -2841,7 +3712,7 @@ try { window.dispatchEvent(new Event('lina-game-booted')); } catch (e) {}
 const gateBoot = document.getElementById('playerGate');
 if (gateBoot) gateBoot.classList.remove('loading');
 addEventListener('resize', () => { renderer.setSize(innerWidth, innerHeight); camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); });
-window.__game = { shellCanvas, HOME, LENA_START, PIZZA, droid, lettuces, TREX, hold, grabOrThrow, setView, cycleView, get camAz() { return camAz; }, get overview() { return overview; }, camera, lenaBody, adam, props, Q, S, A, tuckIn, toggleView, get active() { return active; }, isActive, credit, bugs, HUNT, missionDone, balloons, paintings, BOX, disco, get yaw() { return yaw; }, keys, input, world, shards };
+window.__game = { shellCanvas, HOME, LENA_START, PIZZA, droid, lettuces, interactables, TREX, hold, grabOrThrow, interactOrThrow, setView, cycleView, get camAz() { return camAz; }, get overview() { return overview; }, camera, lenaBody, adam, props, Q, S, A, tuckIn, toggleView, get active() { return active; }, isActive, credit, bugs, HUNT, missionDone, balloons, paintings, BOX, disco, get yaw() { return yaw; }, get hearts() { return hearts; }, set hearts(v) { hearts = Math.max(0, Math.min(maxHearts, Math.round(+v || 0))); save.hearts = hearts; }, get maxHearts() { return maxHearts; }, get shellFuel() { return shellFuel; }, set shellFuel(v) { shellFuel = Math.max(0, Math.min(100, +v || 0)); shellFuelSaved = shellFuel; save.shellFuel = shellFuel; }, boost, keys, input, world, shards };
 </script>
 </body>
 </html>

@@ -1,8 +1,25 @@
-# Kids feedback backlog — 9 Nov 2026 (rev 10 Nov)
+# Kids feedback backlog — 9 Nov 2026 (rev 12 Nov status)
 
-Source: ~16 min call with Clara & Oskar, plus Adam’s planning notes (10 Nov).
+Source: ~16 min call with Clara & Oskar, plus Adam’s planning notes (10 Nov). Status reviewed against `index.html` + `ref-docs/house-floorplan.drawio` on **12 Nov 2026**.
 
 **How to use this doc:** Phases are shippable planning chunks, not “all easy first.” Pick a phase, plan it, ship it. Items inside a phase are still ordered roughly easier → harder within that slice.
+
+---
+
+## Status snapshot (12 Nov 2026)
+
+| Phase | Status | Summary |
+|-------|--------|---------|
+| **0** Polish / throwables | **Done** | Oskar + crust, thoughtful props, varied breaks, shop hint, drag-look |
+| **1** Camera | **Done** | Occlusion fade, tight-space pull-in, wall-based orbit (not room AABB lock) |
+| **2** Uncle Adam | **Done** | Whole-house patrol, cook/water/putter, broom cleanup + restore |
+| **3** Hearts / food / gated shop | **Done** | Hearts on catch, lettuce heals, squash shell meter, strawberry/apple boosts, mission-gated shop |
+| **4** Cats / tree / Strawberry tortoise | **Not started** | — |
+| **5** New spaces | **Partial** | Draw.io ground+upstairs+basement pages; upstairs **built but locked**; no unlock, attic, or upstairs missions |
+| **6** Dig caves | **Not started** | — |
+| **7** Vehicles / moonshots | **Not started** | — |
+
+**Best next slices:** unlock upstairs + supporting missions (finish P5-1), or Phase 4 cats / tree.
 
 **Kids’ area priority (map work):** upstairs → basement → front yard → shed → under the house (as a hidden clubhouse). Attic via laundry called out with upstairs.
 
